@@ -9,7 +9,7 @@
 (defn main-view []
   (fn []
     [:div
-     "Welcome"]))
+     "Hello World"]))
 
 (defn mount-root []
   (re-frame/clear-subscription-cache!)
