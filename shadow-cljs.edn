@@ -1,0 +1,12 @@
+{:source-paths ["src/cljs"]
+ :dependencies []
+ :deps         true
+ :nrepl        {:port 9999}
+ :dev-http     {8060 "resources/public"}
+ :builds       {:app {:target     :browser
+                      :output-dir "resources/public/js"
+                      :asset-path "/js"
+                      :modules    {:main {:entries [dokkuable.core]}}
+                      :devtools   {:after-load dokkuable.core/re-render
+                                   :preloads   [devtools.preload
+                                                re-frisk.preload]}}}}

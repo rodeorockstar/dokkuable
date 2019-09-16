@@ -1,0 +1,19 @@
+{:paths   ["src/cljs" "src/clj" "resources"]
+
+ :deps    {org.clojure/clojure       {:mvn/version "1.10.1"}
+           org.clojure/clojurescript {:mvn/version "1.10.520"}
+
+           binaryage/oops            {:mvn/version "0.5.8"}
+           binaryage/devtools        {:mvn/version "0.9.10"}
+           re-frame                  {:mvn/version "0.10.2"}
+           reagent                   {:mvn/version "0.8.0"}
+           re-frisk                  {:mvn/version "0.5.4.1"}
+           thheller/shadow-cljs      {:mvn/version "2.8.40"}}
+
+ :aliases {:depstar {:extra-deps
+                     {clj-time                {:mvn/version "0.15.2"}
+                      compojure               {:mvn/version "1.6.1"}
+                      ring                    {:mvn/version "1.7.1"}
+                      ring/ring-defaults      {:mvn/version "0.3.2"}
+                      com.healthfinch/depstar {:git/url "https://github.com/healthfinch/depstar.git"
+                                               :sha     "4aa7b35189693feebc7d7e4a180b8af0326c9164"}}}}}

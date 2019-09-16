@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+npx shadow-cljs release app
+clojure -A:depstar -m hf.depstar.uberjar app.jar

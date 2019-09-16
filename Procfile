@@ -1,0 +1,1 @@
+web: java -cp app.jar clojure.main -m server
