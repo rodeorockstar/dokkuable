@@ -1,16 +1,25 @@
 {
-  "name": "dokkuable",
+  "name": "archo",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "shadow-cljs watch app && sass --watch src:sass/resources/public/css"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bootstrap": "^4.3.1",
     "create-react-class": "^15.6.3",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0"
+    "jquery": "^3.4.1",
+    "popper.js": "^1.15.0",
+
+    "react": "^16.8.6",
+    "react-bootstrap": "^1.0.0-beta.12",
+    "react-dom": "^16.8.6",
+    "react-pdf": "^4.1.0",
+
+    "webpack": "^4.41.0"
   }
 }

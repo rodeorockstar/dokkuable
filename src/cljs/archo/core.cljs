@@ -1,15 +1,16 @@
-(ns dokkuable.core
+(ns archo.core
   (:require
     [reagent.core :as r]
     [re-frame.core :as re-frame :refer [dispatch subscribe reg-event-db]]
     [oops.core :refer [oget ocall]]
-    [dokkuable.mem.boot :as mem-boot]))
+    [archo.mem.boot :as mem-boot]
+    [archo.views.canvas :as canvas]
+    ))
 
 
 (defn main-view []
   (fn []
-    [:div
-     "Hello World"]))
+    [canvas/main]))
 
 (defn mount-root []
   (re-frame/clear-subscription-cache!)

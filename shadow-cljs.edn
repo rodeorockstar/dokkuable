@@ -1,12 +1,17 @@
 {:source-paths ["src/cljs"]
- :dependencies []
- :deps         true
+ :dependencies [[reagent "0.9.0-rc1"]
+                [binaryage/devtools "0.9.10"]
+                [binaryage/oops "0.5.8"]
+                [re-frame "0.10.2"]
+                [re-frisk "0.5.4.1"]
+                [cljs-bean "1.5.0"]]
+ ;:deps         true
  :nrepl        {:port 9999}
  :dev-http     {8060 "resources/public"}
  :builds       {:app {:target     :browser
                       :output-dir "resources/public/js"
                       :asset-path "/js"
-                      :modules    {:main {:entries [dokkuable.core]}}
-                      :devtools   {:after-load dokkuable.core/re-render
+                      :modules    {:main {:entries [archo.core]}}
+                      :devtools   {:after-load archo.core/re-render
                                    :preloads   [devtools.preload
                                                 re-frisk.preload]}}}}

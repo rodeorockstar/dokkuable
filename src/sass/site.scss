@@ -1,0 +1,15 @@
+@import "../../node_modules/bootstrap/scss/bootstrap";
+
+@import "./canvas";
+
+body {
+
+}
+
+.document {
+    display: flex;
+    flex-wrap: wrap;
+    .page {
+
+    }
+}
