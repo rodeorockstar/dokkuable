@@ -1,0 +1,1411 @@
+[#:db{:ident       :space/length
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :isComponent true
+      :doc         "Space's length in ms, i.e. {:space/length {:time/ms xxxx}}"}
+ #:db{:ident       :space/accreditation-type
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/many
+      :isComponent true
+      :doc         "Space's accreditation types."}
+ #:db{:ident       :accreditation-type/certificate}
+ #:db{:ident       :accreditation-type/accreditation}
+ #:db{:ident       :space/languages
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/many
+      :isComponent true
+      :doc         "Space's languages."}
+ #:db{:ident       :person/explorative-journey
+      :valueType   :db.type/boolean
+      :cardinality :db.cardinality/one
+      :doc         "User's explorative journey setting."}
+ #:db{:ident       :module.exploration/unlocked?
+      :valueType   :db.type/boolean
+      :cardinality :db.cardinality/one
+      :doc         "Module's exploration unlocked?."}
+ #:db{:ident       :person/classroom-timer
+      :valueType   :db.type/boolean
+      :cardinality :db.cardinality/one
+      :doc         "User's classroom timer setting."}
+ #:db{:ident       :feedback/reason
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/many
+      :isComponent true
+      :doc         "A reference to an entity that represents the reason given for the feedback."}
+ #:db{:ident :feedback.reason/other}
+ #:db{:ident :feedback.reason/topic-not-fully-understood}
+ #:db{:ident :feedback.reason/confusing-answer}
+ #:db{:ident :feedback.reason/confusing-question}
+ #:db{:ident :feedback.reason/distracted}
+ #:db{:ident :feedback.reason/believed-it-right-though-not-confident}
+ #:db{:ident       :feedback/person-question-edge
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :isComponent false
+      :doc         "A reference to the edge that represents a specific person's answer to a question."}
+ #:db{:ident       :feedback/target
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :isComponent false
+      :doc         "The target of the given feedback, e.g. a question, an answer."}
+ #:db{:ident       :certificate/title
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :isComponent true
+      :doc         "The title of the certificate, e.g. the title of the space it is linked to when it was created."}
+ #:db{:ident       :certificate/course
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :isComponent false
+      :doc         "The course of study or training of the certificate, e.g. expectably a space."}
+ #:db{:ident       :certificate/subject
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :isComponent false
+      :doc         "The subject to whom the certificate is granted."}
+ #:db{:ident       :certificate/issued-on
+      :valueType   :db.type/instant
+      :cardinality :db.cardinality/one
+      :isComponent false
+      :doc         "The date and time when the certificate is granted."}
+ #:db{:ident       :certificate/expires-on
+      :valueType   :db.type/instant
+      :cardinality :db.cardinality/one
+      :isComponent false
+      :doc         "The date and time when the certificate expires."}
+ #:db{:ident       :certificate/completion
+      :valueType   :db.type/double
+      :cardinality :db.cardinality/one
+      :doc         "The completion percentage when the certificate was issued, e.g: 0.8."}
+ #:db{:ident       :text/markup,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "Text that also contains some sort of markup (html, markdown etc.)"}
+ #:db{:ident       :node/ext-id,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "external id reference for the entity, video for example"}
+ #:db{:ident       :node/ext-provider,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "the external provider of a node's content, e.g. youtube"}
+ #:db{:ident       :node/ext-url,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "the external URL of a node's content, e.g. a full link to a YouTube video"}
+ #:db{:ident       :question/explanation,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "Explanation of a question"}
+ {:db/ident :text/html}
+ {:db/ident :image/svg+xml}
+ {:db/ident :image/png}
+ {:db/ident :application/pdf}
+ {:db/ident :video/mp4}
+ {:db/ident :application/xml}
+ #:db{:ident       :document/format,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "The format or markup of a document"}
+ #:db{:ident       :address/country,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Address country"}
+ #:db{:ident       :address/name,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Address name"}
+ #:db{:ident       :address/postcode-str,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Address postcode"}
+ #:db{:ident       :address/street,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Address street"}
+ #:db{:ident       :address/town,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Address town"}
+ #:db{:ident       :address/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "Address uuid (currently the same as person uuid)"}
+ #:db{:ident       :affiliation/dep,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "A reference to a :institution/dep"}
+ #:db{:ident       :affiliation/institution,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "A reference to a :institution/name"}
+ #:db{:ident       :affiliation/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "An affiliation's uuid"}
+ #:db{:ident       :brand/color-major,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "A brand's major color"}
+ #:db{:ident       :brand/color-minor,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "A brand's minor color"}
+ #:db{:ident       :brand/dark?,
+      :valueType   :db.type/boolean,
+      :cardinality :db.cardinality/one,
+      :doc         "Does the brand use a dark background?"}
+ #:db{:ident       :brand/hero-images,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A collection of images suitable for UI backgrounds"}
+ #:db{:ident       :brand/logo-url,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "A brand's logo url"}
+ #:db{:ident       :brand/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "A brand's uuid"}
+ #:db{:ident       :coc/license-count,
+      :valueType   :db.type/long,
+      :cardinality :db.cardinality/one,
+      :doc         "The number of licenses a manager has to dispense"}
+ #:db{:ident       :coc/managee,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "The person being managed"}
+ #:db{:ident       :coc/role,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "The level of access (could be manager or student)"}
+ #:db{:ident       :coc/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "A chain of command's uuid"}
+ #:db{:ident       :concept/key,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "An concept's keyword"}
+ #:db{:ident       :current/A,
+      :valueType   :db.type/bigdec,
+      :cardinality :db.cardinality/one,
+      :doc         "Ampere"}
+ #:db{:ident       :edge/context,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "The context of this edge"}
+ {:db/ident       :edge/distributions,
+  :db/valueType   :db.type/ref,
+  :db/cardinality :db.cardinality/many,
+  :db/isComponent true,
+  :db/txInstant   #inst "2018-09-24T13:40:15.794-00:00",
+  :db/doc
+                  "Graph distributions as a set of references to a :graph/distribution"}
+ #:db{:ident       :edge/kind,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "A edge's kind"}
+ #:db{:ident       :edge/mass,
+      :valueType   :db.type/double,
+      :cardinality :db.cardinality/one,
+      :doc         "The mass (weight, probability) of this edge"}
+ #:db{:ident       :edge/node,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent false,
+      :doc         "This edge's destination node"}
+ #:db{:ident       :edge/path,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc
+                   "The path this edge is part of - there can be many paths per set/space"}
+ #:db{:ident       :edge/ref,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :doc         "A reference to an edge's conditions"}
+ #:db{:ident       :eula/md5,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc
+                   "The md5 sum of the whole of a EULA document (including markup)"}
+ #:db{:ident       :graph/bigdec,
+      :valueType   :db.type/bigdec,
+      :cardinality :db.cardinality/one,
+      :doc         "A bigdec value"}
+ #:db{:ident       :graph/distribution,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc
+                   "A reference to a matrix value; i.e. {:graph/uuid :graph/matrix-value :graph/matrix-shape}"}
+ #:db{:ident       :graph/distribution-key,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "A key to a :graph/distribution value"}
+ #:db{:ident       :graph/distributions,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc
+                   "Graph distributions as a set of references to a :graph/distribution"}
+ #:db{:ident       :graph/double,
+      :valueType   :db.type/double,
+      :cardinality :db.cardinality/one,
+      :doc         "A double value"}
+ #:db{:ident       :graph/matrix-shape,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A matrix-shape as a vector of refs to graph/bigdecs"}
+ #:db{:ident       :graph/matrix-value,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A matrix-value as a vector of refs to graph/doubles]"}
+ #:db{:ident       :lang/aa,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Afar"}
+ #:db{:ident       :lang/ab,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Abkhazian"}
+ #:db{:ident       :lang/ae,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Avestan"}
+ #:db{:ident       :lang/af,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Afrikaans"}
+ #:db{:ident       :lang/ak,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Akan"}
+ #:db{:ident       :lang/am,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Amharic"}
+ #:db{:ident       :lang/an,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Aragonese"}
+ #:db{:ident       :lang/ar,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Arabic"}
+ #:db{:ident       :lang/as,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Assamese"}
+ #:db{:ident       :lang/av,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Avaric"}
+ #:db{:ident       :lang/ay,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Aymara"}
+ #:db{:ident       :lang/az,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Azerbaijani"}
+ #:db{:ident       :lang/ba,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Bashkir"}
+ #:db{:ident       :lang/be,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Belarusian"}
+ #:db{:ident       :lang/bg,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Bulgarian"}
+ #:db{:ident       :lang/bh,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Bihari languages"}
+ #:db{:ident       :lang/bi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Bislama"}
+ #:db{:ident       :lang/bm,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Bambara"}
+ #:db{:ident       :lang/bn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Bengali"}
+ #:db{:ident       :lang/bo,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tibetan"}
+ #:db{:ident       :lang/br,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Breton"}
+ #:db{:ident       :lang/bs,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Bosnian"}
+ #:db{:ident       :lang/ca,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Catalan"}
+ #:db{:ident       :lang/ce,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Chechen"}
+ #:db{:ident       :lang/ch,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Chamorro"}
+ #:db{:ident       :lang/co,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Corsican"}
+ #:db{:ident       :lang/cr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Cree"}
+ #:db{:ident       :lang/cs,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Czech"}
+ #:db{:ident       :lang/cu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Church Slavic"}
+ #:db{:ident       :lang/cv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Chuvash"}
+ #:db{:ident       :lang/cy,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Welsh"}
+ #:db{:ident       :lang/da,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Danish"}
+ #:db{:ident       :lang/de,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "German"}
+ #:db{:ident       :lang/dv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Divehi"}
+ #:db{:ident       :lang/dz,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Dzongkha"}
+ #:db{:ident       :lang/ee,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Ewe"}
+ #:db{:ident       :lang/el,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Greek"}
+ #:db{:ident       :lang/en,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "English"}
+ #:db{:ident       :lang/eo,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Esperanto"}
+ #:db{:ident       :lang/es,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Spanish"}
+ #:db{:ident       :lang/et,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Estonian"}
+ #:db{:ident       :lang/eu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Basque"}
+ #:db{:ident       :lang/fa,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Persian"}
+ #:db{:ident       :lang/ff,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Fulah"}
+ #:db{:ident       :lang/fi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Finnish"}
+ #:db{:ident       :lang/fj,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Fijian"}
+ #:db{:ident       :lang/fl,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Filipino"}
+ #:db{:ident       :lang/fo,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Faroese"}
+ #:db{:ident       :lang/fr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "French"}
+ #:db{:ident       :lang/fy,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Western Frisian"}
+ #:db{:ident       :lang/ga,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Irish"}
+ #:db{:ident       :lang/gd,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Gaelic"}
+ #:db{:ident       :lang/gl,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Galician"}
+ #:db{:ident       :lang/gn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Guaraní"}
+ #:db{:ident       :lang/gu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Gujarati"}
+ #:db{:ident       :lang/gv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Manx"}
+ #:db{:ident       :lang/ha,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Hausa"}
+ #:db{:ident       :lang/he,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Hebrew"}
+ #:db{:ident       :lang/hi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Hindi"}
+ #:db{:ident       :lang/ho,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Hiri Motu"}
+ #:db{:ident       :lang/hr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Croatian"}
+ #:db{:ident       :lang/ht,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Haitian"}
+ #:db{:ident       :lang/hu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Hungarian"}
+ #:db{:ident       :lang/hy,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Armenian"}
+ #:db{:ident       :lang/hz,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Herero"}
+ #:db{:ident       :lang/ia,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Interlingua"}
+ #:db{:ident       :lang/id,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Indonesian"}
+ #:db{:ident       :lang/ie,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Interlingue"}
+ #:db{:ident       :lang/ig,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Igbo"}
+ #:db{:ident       :lang/ii,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Sichuan Yi"}
+ #:db{:ident       :lang/ik,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Inupiaq"}
+ #:db{:ident       :lang/io,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Ido"}
+ #:db{:ident       :lang/is,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Icelandic"}
+ #:db{:ident       :lang/it,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Italian"}
+ #:db{:ident       :lang/iu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Inuktitut"}
+ #:db{:ident       :lang/ja,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Japanese"}
+ #:db{:ident       :lang/jv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Javanese"}
+ #:db{:ident       :lang/ka,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Georgian"}
+ #:db{:ident       :lang/kg,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kongo"}
+ #:db{:ident       :lang/ki,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kikuyu"}
+ #:db{:ident       :lang/kj,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kuanyama"}
+ #:db{:ident       :lang/kk,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kazakh"}
+ #:db{:ident       :lang/kl,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kalaallisut"}
+ #:db{:ident       :lang/km,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Central Khmer"}
+ #:db{:ident       :lang/kn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kannada"}
+ #:db{:ident       :lang/ko,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Korean"}
+ #:db{:ident       :lang/kr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kanuri"}
+ #:db{:ident       :lang/ks,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kashmiri"}
+ #:db{:ident       :lang/ku,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kurdish"}
+ #:db{:ident       :lang/kv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Komi"}
+ #:db{:ident       :lang/kw,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Cornish"}
+ #:db{:ident       :lang/ky,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kirghiz"}
+ #:db{:ident       :lang/la,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Latin"}
+ #:db{:ident       :lang/lb,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Luxembourgish"}
+ #:db{:ident       :lang/lg,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Ganda"}
+ #:db{:ident       :lang/li,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Limburgan"}
+ #:db{:ident       :lang/ln,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Lingala"}
+ #:db{:ident       :lang/lo,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Lao"}
+ #:db{:ident       :lang/lt,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Lithuanian"}
+ #:db{:ident       :lang/lu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Luba-Katanga"}
+ #:db{:ident       :lang/lv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Latvian"}
+ #:db{:ident       :lang/mg,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Malagasy"}
+ #:db{:ident       :lang/mh,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Marshallese"}
+ #:db{:ident       :lang/mi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Maori"}
+ #:db{:ident       :lang/mk,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Macedonian"}
+ #:db{:ident       :lang/ml,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Malayalam"}
+ #:db{:ident       :lang/mn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Mongolian"}
+ #:db{:ident       :lang/mr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Marathi"}
+ #:db{:ident       :lang/ms,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Malay"}
+ #:db{:ident       :lang/mt,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Maltese"}
+ #:db{:ident       :lang/my,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Burmese"}
+ #:db{:ident       :lang/na,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Nauru"}
+ #:db{:ident       :lang/nb,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Norwegian Bokmål"}
+ #:db{:ident       :lang/nd,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "North Ndebele"}
+ #:db{:ident       :lang/ne,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Nepali"}
+ #:db{:ident       :lang/ng,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Ndonga"}
+ #:db{:ident       :lang/nl,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Dutch"}
+ #:db{:ident       :lang/nn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Norwegian Nynorsk"}
+ #:db{:ident       :lang/no,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Norwegian"}
+ #:db{:ident       :lang/nr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "South Ndebele"}
+ #:db{:ident       :lang/nv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Navajo"}
+ #:db{:ident       :lang/ny,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Chichewa"}
+ #:db{:ident       :lang/oc,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Occitan"}
+ #:db{:ident       :lang/oj,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Ojibwa"}
+ #:db{:ident       :lang/om,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Oromo"}
+ #:db{:ident       :lang/or,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Oriya"}
+ #:db{:ident       :lang/os,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Ossetian"}
+ #:db{:ident       :lang/pa,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Panjabi"}
+ #:db{:ident       :lang/pi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Pali"}
+ #:db{:ident       :lang/pl,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Polish"}
+ #:db{:ident       :lang/ps,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Pashto"}
+ #:db{:ident       :lang/pt,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Portuguese"}
+ #:db{:ident       :lang/qu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Quechua"}
+ #:db{:ident       :lang/rm,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Romansh"}
+ #:db{:ident       :lang/rn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Rundi"}
+ #:db{:ident       :lang/ro,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Romanian"}
+ #:db{:ident       :lang/ru,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Russian"}
+ #:db{:ident       :lang/rw,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Kinyarwanda"}
+ #:db{:ident       :lang/sa,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Sanskrit"}
+ #:db{:ident       :lang/sc,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Sardinian"}
+ #:db{:ident       :lang/sd,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Sindhi"}
+ #:db{:ident       :lang/se,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Northern Sami"}
+ #:db{:ident       :lang/sg,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Sango"}
+ #:db{:ident       :lang/si,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Sinhala"}
+ #:db{:ident       :lang/sk,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Slovak"}
+ #:db{:ident       :lang/sl,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Slovenian"}
+ #:db{:ident       :lang/sm,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Samoan"}
+ #:db{:ident       :lang/sn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Shona"}
+ #:db{:ident       :lang/so,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Somali"}
+ #:db{:ident       :lang/sq,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Albanian"}
+ #:db{:ident       :lang/sr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Serbian"}
+ #:db{:ident       :lang/ss,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Swati"}
+ #:db{:ident       :lang/st,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Southern Sotho"}
+ #:db{:ident       :lang/su,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Sundanese"}
+ #:db{:ident       :lang/sv,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Swedish"}
+ #:db{:ident       :lang/sw,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Swahili"}
+ #:db{:ident       :lang/ta,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tamil"}
+ #:db{:ident       :lang/te,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Telugu"}
+ #:db{:ident       :lang/tg,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tajik"}
+ #:db{:ident       :lang/th,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Thai"}
+ #:db{:ident       :lang/ti,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tigrinya"}
+ #:db{:ident       :lang/tk,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Turkmen"}
+ #:db{:ident       :lang/tl,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tagalog"}
+ #:db{:ident       :lang/tn,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tswana"}
+ #:db{:ident       :lang/to,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tongan"}
+ #:db{:ident       :lang/tr,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Turkish"}
+ #:db{:ident       :lang/ts,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tsonga"}
+ #:db{:ident       :lang/tt,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tatar"}
+ #:db{:ident       :lang/tw,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Twi"}
+ #:db{:ident       :lang/ty,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Tahitian"}
+ #:db{:ident       :lang/ug,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Uighur"}
+ #:db{:ident       :lang/uk,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Ukrainian"}
+ #:db{:ident       :lang/ur,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Urdu"}
+ #:db{:ident       :lang/uz,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Uzbek"}
+ #:db{:ident       :lang/ve,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Venda"}
+ #:db{:ident       :lang/vi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Vietnamese"}
+ #:db{:ident       :lang/vo,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Volapük"}
+ #:db{:ident       :lang/wa,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Walloon"}
+ #:db{:ident       :lang/wo,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Wolof"}
+ #:db{:ident       :lang/xh,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Xhosa"}
+ #:db{:ident       :lang/yi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Yiddish"}
+ #:db{:ident       :lang/yo,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Yoruba"}
+ #:db{:ident       :lang/za,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Zhuang"}
+ #:db{:ident       :lang/zh,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Chinese"}
+ #:db{:ident       :lang/zu,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Zulu"}
+ #:db{:ident       :list/index,
+      :valueType   :db.type/long,
+      :cardinality :db.cardinality/one,
+      :doc         "Index of an item in a list"}
+ #:db{:ident       :media/extension,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/many,
+      :doc         "the media's file extension: svg, mp4 etc"}
+ #:db{:ident       :nav/mode,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A reference to a collection of allowed ML modes"}
+ #:db{:ident :nav.mode/fg}
+ #:db{:ident :nav.mode/lin}
+ #:db{:ident       :node/slides,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "Slides, containing additional information about a subject piece of content"}
+ #:db{:ident       :node/edge,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A node's edges (this node is all those edges' src)"}
+ #:db{:ident       :node/kind,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "The kind of this node"}
+ #:db{:ident       :node/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "A node's uuid"}
+ #:db{:ident       :obr/permissions,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "An entities permissions to access resources"}
+ #:db{:ident       :obr/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "Entity's UUID"}
+ #:db{:ident       :org/allow-signup,
+      :valueType   :db.type/boolean,
+      :cardinality :db.cardinality/one,
+      :doc         "Are new users allowed to register?"}
+ #:db{:ident       :org/brand,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :isComponent true,
+      :doc         "An organisations branding data"}
+ #:db{:ident       :org/name,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "An organisation's name"}
+ #:db{:ident       :org/short-name,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "An organisation's short name (used for URLs)"}
+ #:db{:ident       :org/urls,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "urls owned by this organisation"}
+ #:db{:ident       :paper/doi,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "DOI of a paper"}
+ #:db{:ident       :pass/code,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "The password to redeem the pass"}
+ #:db{:ident       :pass/courses,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :doc         "The courses to which this pass grants access"}
+ #:db{:ident       :pass/description,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "The password to redeem the pass"}
+ #:db{:ident       :pass/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "Pass ID"}
+ #:db{:ident       :pass/valid-from,
+      :valueType   :db.type/instant,
+      :cardinality :db.cardinality/one,
+      :doc         "Pass Expiration Date"}
+ #:db{:ident       :pass/valid-to,
+      :valueType   :db.type/instant,
+      :cardinality :db.cardinality/one,
+      :doc         "Pass Expiration Date"}
+ #:db{:ident       :password/hash,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Hashed password value"}
+ #:db{:ident       :perm/level,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :noHistory   true,
+      :doc         "Level of the permission"}
+ #:db{:ident       :perm/source,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :noHistory   true,
+      :doc         "Source of the permission"}
+ #:db{:ident       :perm/target,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :noHistory   true,
+      :doc         "Target of the permission"}
+ #:db{:ident       :person/active?,
+      :valueType   :db.type/boolean,
+      :cardinality :db.cardinality/one,
+      :doc         "Determine's whether a user's account is active"}
+ #:db{:ident       :person/email,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/value,
+      :noHistory   true,
+      :doc         "Person's email address"}
+ #:db{:ident       :person/first-name,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :noHistory   true,
+      :doc         "Person's first name"}
+ #:db{:ident       :person/last-name,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :noHistory   true,
+      :doc         "Person's last name"}
+ #:db{:ident       :person/orgs,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A person's access level to organizations"}
+ #:db{:ident       :person/password,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :noHistory   true,
+      :doc         "Person's password hash"}
+ #:db{:ident       :person/role,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "A user's global role"}
+ #:db{:ident       :person/tokens,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A relationship to a user's various tokens"}
+ #:db{:ident       :person/uuid,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "Person's UUID"}
+ #:db{:ident       :person/avatar
+      :valueType   :db.type/string
+      :cardinality :db.cardinality/one
+      :doc         "Base 64 image field"}
+ #:db{:ident       :person/is-memorizing
+      :valueType   :db.type/boolean
+      :cardinality :db.cardinality/one
+      :doc         "Is memorizing concept's user"}
+ #:db{:ident       :person/is-mastering
+      :valueType   :db.type/boolean
+      :cardinality :db.cardinality/one
+      :doc         "Is mastering concept's user"}
+ #:db{:ident       :product/id,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity,
+      :doc         "A product ID, e.g. SKU, catalog number"}
+ #:db{:ident       :product/manufacturer,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "A product's manufacturer - an institution"}
+ #:db{:ident       :product/title,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "A product's name"}
+ #:db{:ident       :question/answer,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A question's answers"}
+ #:db{:ident       :response/expected-answer,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :doc         "The expected answer entity of a response"}
+ #:db{:ident       :space/point,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :doc         "space nodes"}
+ #:db{:ident       :space/title,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "space title"}
+ #:db{:ident       :space/intro-summary,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "The summary of a space intro"}
+ #:db{:ident       :space/intro-video,
+      :valueType   :db.type/uuid,
+      :cardinality :db.cardinality/one,
+      :doc         "The intro video uuid of a space"}
+ #:db{:ident       :text/description,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "The description of an entity"}
+ #:db{:ident       :text/learning-outcomes,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "The description of learning outcomes of entity"}
+ #:db{:ident       :text/info,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "The description of info about entity"}
+ #:db{:ident       :text/lang,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "An text's language code"}
+ #:db{:ident       :text/summary,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "The summary of an entity"}
+ #:db{:ident       :text/title,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "The title of an entity"}
+ #:db{:ident       :text/tran,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true,
+      :doc         "Translations map of the text"}
+ #:db{:ident       :text/url,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "Text representing a URL"}
+ #:db{:ident       :time/ms,
+      :valueType   :db.type/bigdec,
+      :cardinality :db.cardinality/one,
+      :doc         "millisecond"}
+ #:db{:ident       :time.start/ms,
+      :valueType   :db.type/bigdec,
+      :cardinality :db.cardinality/one,
+      :doc         "Start time, in milliseconds"}
+ #:db{:ident       :time.end/ms,
+      :valueType   :db.type/bigdec,
+      :cardinality :db.cardinality/one,
+      :doc         "End time, in milliseconds"}
+ #:db{:ident       :token/exp,
+      :valueType   :db.type/instant,
+      :cardinality :db.cardinality/one,
+      :doc         "A token's expiration date"}
+ #:db{:ident       :token/kind,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "A token's kind (refresh, access etc)"}
+ #:db{:ident       :token/value,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "A token's value"}
+ #:db{:ident       :url/domain,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :doc         "domain name and extension (example.com"}
+ #:db{:ident       :video/slide,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true,
+      :doc         "A video's slides"}
+ #:db{:ident       :view/visibility,
+      :valueType   :db.type/keyword,
+      :cardinality :db.cardinality/one,
+      :doc         "The visibility of something"}
+ #:db{:ident       :comment-thread/id,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity}
+ #:db{:ident       :comment-thread/comments,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :doc         "Comments belonging to the thread."}
+ #:db{:ident       :comment/id,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one,
+      :unique      :db.unique/identity}
+ #:db{:ident       :comment/user,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one
+      :doc         "The author of the comment."}
+ #:db{:ident       :comment/content,
+      :valueType   :db.type/string,
+      :cardinality :db.cardinality/one
+      :doc         "Comment's body."}
+ #:db{:ident       :comment/created-at,
+      :valueType   :db.type/instant,
+      :cardinality :db.cardinality/one
+      :doc         "Comment's creation date."}
+ #:db{:ident       :node/comment-threads,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many
+      :doc         "Node's comment threads."}
+ #:db{:ident       :draft/answers,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many,
+      :isComponent true
+      :doc         "List of answers."}
+ #:db{:ident       :draft-answer/mass,
+      :valueType   :db.type/double,
+      :cardinality :db.cardinality/one
+      :doc         "The mass (weight, probability) of this edge."}
+ #:db{:ident       :draft/answer,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one,
+      :isComponent true
+      :doc         "A draft's answers."}
+ #:db{:ident :draft.status/open}
+ #:db{:ident :draft.status/published}
+ #:db{:ident       :draft/status,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one
+      :doc         "One of :draft.status."}
+ #:db{:ident       :draft/published-by,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/one
+      :doc         "The manager who published the draft."}
+ #:db{:ident       :question/flashcard?,
+      :valueType   :db.type/boolean,
+      :cardinality :db.cardinality/one
+      :doc         "Is the question a flashcard?"}
+ #:db{:ident       :question/documents,
+      :valueType   :db.type/ref,
+      :cardinality :db.cardinality/many
+      :doc         "Documents associated with this question."}
+ #:db{:ident       :question/about
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :doc         "Node related to question."}
+ #:db{:ident       :draft/final-ratings
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/many
+      :isComponent true
+      :noHistory   true
+      :doc         "The final ratings of the draft, can only be authored by managers."}
+ #:db{:ident       :draft/originality-ratings
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/many
+      :isComponent true
+      :noHistory   true
+      :doc         "The originality ratings of the draft."}
+ #:db{:ident       :draft/clearness-ratings
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/many
+      :isComponent true
+      :noHistory   true
+      :doc         "The clearness ratings of the draft."}
+ #:db{:ident       :rating/author
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :doc         "The person who authored the rating."}
+ #:db{:ident       :rating/score
+      :valueType   :db.type/double
+      :cardinality :db.cardinality/one
+      :doc         "The draft score, between 0.0 and 5.0."}
+ #:db{:ident       :recall-context/difficulty
+      :valueType   :db.type/double
+      :cardinality :db.cardinality/one
+      :doc         "The question's difficulty."}
+ #:db{:ident       :recall-context/interval
+      :valueType   :db.type/long
+      :cardinality :db.cardinality/one
+      :doc         "Days between recalls."}
+ #:db{:ident       :recall-context/percent-overdue
+      :valueType   :db.type/double
+      :cardinality :db.cardinality/one
+      :doc         "How overdue a flashcard is. It's possible to sort by this field to prevent too many flashcards to be recalled at the same time."}
+ #:db{:ident       :recall-context/due-date
+      :valueType   :db.type/instant
+      :cardinality :db.cardinality/one
+      :doc         "The date the flashcard should be recalled."}
+ #:db{:ident       :graph/recall-context
+      :valueType   :db.type/ref
+      :cardinality :db.cardinality/one
+      :isComponent true
+      :doc         "A learn map belonging to a user and a question/flashcard."}]

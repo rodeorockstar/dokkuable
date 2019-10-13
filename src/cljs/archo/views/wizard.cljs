@@ -14,7 +14,9 @@
   (let [file (subscribe [::mem-upload/stage-file])]
     (fn []
       [:div.container
-       [:h1 "What to do?"]
+
+
+       ;[:h1 "Open PDF"]
        [wiz]
        [:input {:type      "file"
                 :on-change (fn [e]

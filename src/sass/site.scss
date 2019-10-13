@@ -6,10 +6,17 @@ body {
 
 }
 
+
 .document {
     display: flex;
     flex-wrap: wrap;
     .page {
+        // border: 1px solid hotpink;
+        padding: 10px;
 
     }
+}
+
+.test-container {
+    background-color: red;
 }

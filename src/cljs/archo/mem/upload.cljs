@@ -6,6 +6,11 @@
 
 (reg-event-db ::store-stage-file trim-v store-stage-file)
 
+(defn render-page-success [db [num]]
+  (assoc-in db [:stage :pages :rendered num] true))
+
+(reg-event-db ::render-page-success trim-v render-page-success)
+
 (defn stage-file [db]
   (get-in db [:stage :file]))
 

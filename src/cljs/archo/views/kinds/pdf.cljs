@@ -1,26 +1,40 @@
 (ns archo.views.kinds.pdf
   (:require
     [oops.core :refer [ocall]]
-    [re-frame.core :refer [subscribe]]
+    [re-frame.core :refer [dispatch subscribe]]
     ["react-pdf" :as react-pdf :refer [Document Page]]
     [reagent.core :as r]
     [oops.core :refer [oget]]
-    [cljs-bean.core :refer [bean ->clj ->js]]))
+    [archo.mem.upload :as mem-upload]
+    [cljs-bean.core :refer [bean ->clj ->js]]
+    [promesa.core :as p]))
 
 
 (defn page []
   (let [page-number (r/atom nil)]
     (fn [p]
-      [:div.page.border
-       [:h4 "A Page"]
+      [:div ;.page
+       ;[:h4 "A Page"]
        [:> Page
         {:pageNumber            p
-         :renderTextLayer       true
-         :renderAnnotationLayer true
-         :width                200
+         :renderTextLayer       false
+         :renderAnnotationLayer false
+         :width                 200
+         :className             "page"
          :on-click              (fn [] (println @page-number))
          :on-load-success       (fn [e]
-                                  (reset! page-number (aget e "pageNumber")))}]])))
+                                  (reset! page-number (aget e "pageNumber"))
+                                  (p/then (ocall e :getTextContent)
+                                          (fn [x]
+                                            (js/console.log "X" x)))
+
+                                  )
+         :on-render-success     (fn [e]
+
+                                  (dispatch [::mem-upload/render-page-success (aget e "pageNumber")])
+                                  )
+         }]
+       [:div [:i.fal.fa-search-plus]]])))
 
 
 (defn main []

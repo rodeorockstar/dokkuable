@@ -4,7 +4,12 @@
                 [binaryage/oops "0.5.8"]
                 [re-frame "0.10.2"]
                 [re-frisk "0.5.4.1"]
-                [cljs-bean "1.5.0"]]
+                [cljs-bean "1.5.0"]
+                [funcool/promesa "4.0.2"]
+                [cljs-http "0.1.45"]
+                [com.taoensso/timbre "4.10.0"]
+                [metosin/reitit "0.3.10"]
+                [org.clojure/core.async "0.4.474"]]
  ;:deps         true
  :nrepl        {:port 9999}
  :dev-http     {8060 "resources/public"}
