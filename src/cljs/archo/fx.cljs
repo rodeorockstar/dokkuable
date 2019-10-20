@@ -60,8 +60,8 @@
       (let [c (http-fn (str config/api-url uri) (cond-> {:with-credentials? false
                                                          :headers           {"Accept" "application/edn"}}
                                                         ;token (update :headers assoc "Authorization" token)
-                                                        (and params (not= method :get)) (assoc :transit-params params)
-                                                        (and params (= method :get)) (assoc :query-params params)
+                                                        (and params) (assoc :transit-params params)
+                                                        ;(and params (= method :get)) (assoc :query-params params)
                                                         true (assoc :with-credentials? false)))]
         (go
           (let [{:keys [status body success] :as response} (<! c)]

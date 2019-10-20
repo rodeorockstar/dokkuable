@@ -3,8 +3,11 @@
     [re-frame.core :as re-frame :refer [subscribe]]
     [archo.views.home :as home]
     [archo.views.org :as org]
+    [archo.views.space :as space]
     [archo.mem.events :as mem-events]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [archo.views.browser :as browser]
+    ))
 
 (defn activate []
   (fn []
@@ -14,8 +17,10 @@
 (defn- panels [panel-name]
   [:div.container
    (case panel-name
-     :route/home [home/main]
+     ;:route/home [home/main]
+     :route/home [browser/main]
      :route/org [org/main]
+     :route/space [space/main]
      [:div.test-container "404"])])
 
 (defn show-panel []

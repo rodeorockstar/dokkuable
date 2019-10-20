@@ -15,3 +15,14 @@
   (get-in db [:stage :file]))
 
 (reg-sub ::stage-file stage-file)
+
+
+(defn select-page [db [n]]
+  (if (contains? (get-in db [:stage :selected]) n)
+    (update-in db [:stage :selected] (fnil disj #{}) n)
+    (update-in db [:stage :selected] (fnil conj #{}) n)))
+
+(reg-event-db ::select-page trim-v select-page)
+
+(reg-sub ::selected-pages (fn [db]
+                            (apply sorted-set (get-in db [:stage :selected]))))

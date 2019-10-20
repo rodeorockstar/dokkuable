@@ -10,16 +10,35 @@
     [reitit.coercion.spec]
     [archo.client :as client]
     [datomic.client.api :as d]
-    [archo.queries.entities :as queries]))
+    [reitit.coercion.spec]
+    [archo.queries.entities :as queries]
+    [archo.queries.explore :as explore]))
 
 (def routes
-
   [
-   ["/assets"
-    ["/org" {:get {:handler (fn [r]
-                              (let [results (queries/orgs (client/db))]
-                                (resp/ok (zipmap (map :obr/uuid results) results))
-                                ))}}]]
+   ["/assets" {:coercion reitit.coercion.spec/coercion}
+    ["/node/:id"
+     ["/attributes" {:get {:parameters {:path {:id some?}}
+                           :handler    (fn [req]
+                                         (let [id (-> req :parameters :path :id read-string)]
+                                           (resp/ok (into {} (explore/non-reference-values (client/db) id)))))}}]
+     ["/references" {:get {:parameters {:path {:id some?}}
+                           :handler    (fn [req]
+                                         (let [id (-> req :parameters :path :id read-string)]
+                                           (resp/ok (explore/group-values-by-key (explore/reference-values (client/db) id)))))}}]]
+    ["/orgs"
+     ["" {:get {:handler (fn [r]
+                           (resp/ok (queries/orgs (client/db))))}}]
+     ["/{org/short-name}/spaces"
+      ["" {:get {:handler (fn [{{org-short-name :org/short-name} :path-params}]
+                            (resp/ok (queries/spaces (client/db) org-short-name)))}}]
+      ["/{space/uuid}" {:get {
+                              :parameters {:path {:space/uuid uuid?}}
+                              :handler    (fn [req]
+                                            (resp/ok (queries/space-details (client/db) (-> req :parameters :path :space/uuid)))
+
+                                            )}}]
+      ]]]
    ["/plain"
     ["/plus" {:get  {:parameters {:query {:sample string?}}
                      :handler    (fn [r]

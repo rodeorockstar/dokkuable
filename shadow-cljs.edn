@@ -1,5 +1,5 @@
 {:source-paths ["src/cljs"]
- :dependencies [[reagent "0.9.0-rc1"]
+ :dependencies [[reagent "0.9.0-rc2"]
                 [binaryage/devtools "0.9.10"]
                 [binaryage/oops "0.5.8"]
                 [re-frame "0.10.2"]
