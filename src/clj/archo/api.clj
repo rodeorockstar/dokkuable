@@ -18,6 +18,10 @@
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
     ["/node/:id"
+     ["" {:get {:parameters {:path {:id some?}}
+                :handler    (fn [req]
+                              (let [id (-> req :parameters :path :id read-string)]
+                                (resp/ok (explore/entity-without-components (client/db) id))))}}]
      ["/attributes" {:get {:parameters {:path {:id some?}}
                            :handler    (fn [req]
                                          (let [id (-> req :parameters :path :id read-string)]

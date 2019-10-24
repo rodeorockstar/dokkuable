@@ -1,4 +1,4 @@
-(ns archo.mem.graph
+(ns archo.mem.browser
   (:require [archo.fx :as fx]
             [reitit.core :as reitit]
             [archo.mem.events :as mem-events]
@@ -11,7 +11,7 @@
               (fn [_world [id]]
                 {::fx/api {
                            ; match the API endpoint via its stored name in the router
-                           :uri        (str "/assets/node/" id)
+                           :uri        (str "/assets/node/" id "/attributes")
                            :on-success [::store-node id]}}))
 
 (reg-event-db ::store-node trim-v
@@ -23,23 +23,23 @@
 (reg-sub ::links (fn [db]
                    (let [nodes (get-in db [:nodes])]
                      #_(remove nil? (mapcat (fn [[k v]]
-                                         (when-let [references (-> v :reference-attributes)]
-                                           (mapcat (fn [[attribute ids]]
-                                                     (println ids)) references)
-                                           )
-                                         ) nodes))
+                                              (when-let [references (-> v :reference-attributes)]
+                                                (mapcat (fn [[attribute ids]]
+                                                          (println ids)) references)
+                                                )
+                                              ) nodes))
 
                      (mapcat (fn [[k v]]
-                            ;(js/console.log "V" n)
+                               ;(js/console.log "V" n)
 
-                            (when-let [references (-> v :reference-attributes)]
-                              (for [parent [k]
-                                    child  (flatten (vals references))]
-                                {:source parent
-                                 :target child})
-                              )
-                            ;(-> v :reference-attributes vals)
-                            ) nodes)
+                               (when-let [references (-> v :reference-attributes)]
+                                 (for [parent [k]
+                                       child  (flatten (vals references))]
+                                   {:source parent
+                                    :target child})
+                                 )
+                               ;(-> v :reference-attributes vals)
+                               ) nodes)
 
                      )))
 
@@ -67,7 +67,7 @@
               (fn [db [{:keys [nodes links]}]]
                 (-> db
                     (assoc-in [:pos :nodes] (let [nodes (js->clj nodes :keywordize-keys true)]
-                                           (zipmap (map :id nodes) nodes)))
+                                              (zipmap (map :id nodes) nodes)))
                     (assoc-in [:pos :links] (js->clj links :keywordize-keys true)))))
 
 (reg-sub ::node-positions
@@ -77,3 +77,7 @@
 (reg-sub ::link-positions
          (fn [db]
            (get-in db [:pos :links])))
+
+(reg-sub ::schema
+         (fn [db]
+           (get-in db [:datomic :schema])))
