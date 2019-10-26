@@ -16,7 +16,7 @@
 
 (reg-event-db ::store-node trim-v
               (fn [db [id results]]
-                (assoc-in db [:nodes id :local-attributes] (assoc results :id id))))
+                (assoc-in db [:nodes id] results)))
 
 (reg-sub ::nodes (fn [db] (vals (get-in db [:nodes]))))
 

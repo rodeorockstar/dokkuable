@@ -4,7 +4,8 @@
 (reg-event-db
   ::initialize-db
   (fn [_ _]
-    {:deliveries {"A" {:label "Bucket A"
+    {:bignumb    999999999999999999
+     :deliveries {"A" {:label "Bucket A"
                        :id    "A"}
                   "B" {:label "Bucket B"
                        :id    "B"}

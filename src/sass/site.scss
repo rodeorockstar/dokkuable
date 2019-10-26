@@ -2,7 +2,9 @@
 
 @import "./canvas";
 
-body {
+body, html {
+    background-color: #232323;
+    color: hotpink;
 
 }
 
@@ -24,4 +26,10 @@ body {
 .zoomed {
     // zoom: 1.1;
     // background-color: green;
+}
+
+.entity {
+    .attribute {
+
+    }
 }

@@ -7,11 +7,13 @@
     [archo.mem.events :as mem-events]
     [reagent.core :as r]
     [archo.views.browser :as browser]
+    [archo.routes :as routes]
     ))
 
 (defn activate []
   (fn []
     [:div.container.pt-3.w-25
+     [:a.btn.btn-primary {:href (routes/url-for :route/explore {:idtree "abc/xyz/123"})} "Click"]
      [:div.alert.alert-info "Activating"]]))
 
 (defn- panels [panel-name]
@@ -19,8 +21,11 @@
    (case panel-name
      ;:route/home [home/main]
      :route/home [browser/main]
+     ;:route/home [activate]
      :route/org [org/main]
      :route/space [space/main]
+     ;:route/browser-id [activate]
+     :route/explore [activate]
      [:div.test-container "404"])])
 
 (defn show-panel []

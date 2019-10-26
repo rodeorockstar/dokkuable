@@ -9,6 +9,7 @@
     [reitit.coercion.schema :as rsc]
     [archo.mem.events :as mem-events]
     [taoensso.timbre :refer [logf]]
+    [clojure.spec.alpha :as s]
     ;[hubble.subs :as subs]
     [oops.core :refer [oget oset!]]
     [reitit.coercion.schema]
@@ -16,6 +17,8 @@
     [clojure.set :refer [rename-keys]]
     [reagent.core :as r]
     [archo.mem.assets :as mem-assets]
+    [clojure.string :as str]
+    [goog.math.Long :as lo]
     ;[hubble.mem.history :as mem-history]
     ;[hubble.mem.profile :as mem-profile]
     ;[hubble.mem.analytics :as mem-analytics]
@@ -33,6 +36,8 @@
 ;; we could potentially use app-db instead which would be great
 (def url-for rfe/href)
 
+; 999999999999999999
+
 (def routes
   ;; apply Spec coercion to all routes
   ["/" {:coercion    reitit.coercion.spec/coercion
@@ -41,6 +46,18 @@
                        :start    (fn [_]
                                    (dispatch [::mem-assets/fetch-asset :api/orgs nil [:assets :orgs]]))}]}
    ["" {:name :route/home}]
+   ["browse/entity/:id" {:name        :route/browser-id
+                         :parameters  {:path {:id string?}}
+                         :controllers [{:identity identity
+                                        :start    identity}]}]
+   ["explore/{*idtree}" {:name        :route/explore
+                         :parameters  {:path {:idtree string?}}
+                         :controllers [{:identity identity
+                                        :start    (fn [m]
+                                                    (js/console.log "X" (map int (str/split (-> m :parameters :path :idtree) #"/")))
+                                                    (js/console.log "Y" 999999999999999999)
+                                                    (js/console.log "Z" (.toString (lo/fromString "999999999999999999")))
+                                                    )}]}]
    ["o/{org/short-name}"
     ["" {:coercion    reitit.coercion.spec/coercion
          :parameters  {:path {:org/short-name string?}}
@@ -52,7 +69,7 @@
                                                (-> m :parameters :path)
                                                [:assets (-> m :parameters :path :org/short-name) :spaces]]))}]}]
     ["/space/{space/uuid}" {:name        :route/space
-                            :parameters  {:path {:space/uuid uuid?
+                            :parameters  {:path {:space/uuid     uuid?
                                                  :org/short-name string?}}
                             :controllers [{:identity identity
                                            :start    (fn [m]

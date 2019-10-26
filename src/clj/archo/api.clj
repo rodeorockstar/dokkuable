@@ -20,9 +20,10 @@
     ["/node/:id"
      ["" {:get {:parameters {:path {:id some?}}
                 :handler    (fn [req]
+                              (clojure.pprint/pprint (-> req :parameters))
                               (let [id (-> req :parameters :path :id read-string)]
                                 (resp/ok (explore/entity-without-components (client/db) id))))}}]
-     ["/attributes" {:get {:parameters {:path {:id some?}}
+     ["/attributes" {:get {:parameters {:path {:id number?}}
                            :handler    (fn [req]
                                          (let [id (-> req :parameters :path :id read-string)]
                                            (resp/ok (into {} (explore/non-reference-values (client/db) id)))))}}]

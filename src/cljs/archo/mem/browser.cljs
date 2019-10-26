@@ -81,3 +81,13 @@
 (reg-sub ::schema
          (fn [db]
            (get-in db [:datomic :schema])))
+
+(reg-sub ::thenode
+         (fn [db]
+           (into (sorted-map) (get-in db [:nodes "52578646044903633"]))))
+
+(reg-sub ::enhanced
+         :<- [::schema]
+         :<- [::thenode]
+         (fn [[schema thenode]]
+           (into (sorted-map) thenode)))
