@@ -75,3 +75,7 @@
   This should never be memoized!"
   []
   (d/db (get-conn)))
+
+
+(println "getconnectionis" (get-conn))
+(println "dbis" (db))
