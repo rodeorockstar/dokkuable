@@ -46,7 +46,7 @@
                (println "ENVIS" env)
                (try
                  (d/client
-                   {:server-type :ion
+                   {:server-type :cloud
                     :region      "eu-west-1"
                     :system      "cbs-datomic-shelf"
                     :query-group (str "obrio-api-" env)
