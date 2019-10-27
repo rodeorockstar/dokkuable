@@ -43,6 +43,7 @@
              (println "PARAMSARE")
              (clojure.pprint/pprint (get-params))
              (let [env (name (get (ion/get-env) :env :dev))]
+               (println "ENVIS" env)
                (try
                  (d/client
                    {:server-type :ion
@@ -59,14 +60,14 @@
   Tip: you probably want to use the memoized get-conn fn below.
   "
   []
-  (println "DBNAME" (get-param "db-name"))
+  (println "GETCONNDBNAME" (get-param "db-name"))
   (d/connect (get-client) {:db-name
                            ;"joshdb"
                            (get-param "db-name")
                            }))
 
 ; Get a memoized connection to a database. Accepts no arguments or a kw to choose which database
-(def get-conn (memoize get-connection*))
+(def get-conn get-connection* #_(memoize get-connection*))
 
 (defn db
   "Returns the most recent database from the connection.
