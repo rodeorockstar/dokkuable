@@ -11,18 +11,20 @@
     [archo.client :as client]
     [datomic.client.api :as d]
     [reitit.coercion.spec]
+    [reitit.ring :as ring]
     [archo.queries.entities :as queries]
     [archo.queries.explore :as explore]))
 
 (def routes
   [
+   ["" (ring/create-resource-handler)]
    ["/assets" {:coercion reitit.coercion.spec/coercion}
     ["/node/:id"
      ["" {:get {:parameters {:path {:id some?}}
                 :handler    (fn [req]
                               (clojure.pprint/pprint (-> req :parameters))
                               (let [id (-> req :parameters :path :id read-string)]
-                                (resp/ok (explore/entity-without-components (client/db) id))))}}]
+                                (resp/ok (explore/entity-without-components2 (client/db) id))))}}]
      ["/attributes" {:get {:parameters {:path {:id number?}}
                            :handler    (fn [req]
                                          (let [id (-> req :parameters :path :id read-string)]

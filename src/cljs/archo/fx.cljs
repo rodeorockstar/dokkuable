@@ -58,7 +58,7 @@
     (go
       (when delay (<! (timeout (max delay 0))))
       (let [c (http-fn (str config/api-url uri) (cond-> {:with-credentials? false
-                                                         :headers           {"Accept" "application/edn"}}
+                                                         :headers           {"Accept" "application/transit+json"}}
                                                         ;token (update :headers assoc "Authorization" token)
                                                         (and params) (assoc :transit-params params)
                                                         ;(and params (= method :get)) (assoc :query-params params)

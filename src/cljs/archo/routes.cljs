@@ -46,15 +46,20 @@
                        :start    (fn [_]
                                    (dispatch [::mem-assets/fetch-asset :api/orgs nil [:assets :orgs]]))}]}
    ["" {:name :route/home}]
-   ["browse/entity/:id" {:name        :route/browser-id
-                         :parameters  {:path {:id string?}}
+   ["browse/entity/{*id-tree}" {:name        :route/browser-id
+                         :parameters  {:path {:id-tree string?}}
                          :controllers [{:identity identity
-                                        :start    identity}]}]
+                                        :start    (fn [m]
+                                                    (js/console.log "X" (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/")))
+                                                    )}]}]
+
+
+
    ["explore/{*idtree}" {:name        :route/explore
                          :parameters  {:path {:idtree string?}}
                          :controllers [{:identity identity
                                         :start    (fn [m]
-                                                    (js/console.log "X" (map int (str/split (-> m :parameters :path :idtree) #"/")))
+                                                    (js/console.log "X" (map lo/fromString (str/split (-> m :parameters :path :idtree) #"/")))
                                                     (js/console.log "Y" 999999999999999999)
                                                     (js/console.log "Z" (.toString (lo/fromString "999999999999999999")))
                                                     )}]}]

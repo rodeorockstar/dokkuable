@@ -14,40 +14,50 @@
 (defn is-ref? [schema attribute]
   (= :db.type/ref (get-in schema [attribute :db/valueType :db/ident])))
 
-(defn entry []
-  (fn [{schema :schema
-        [k value] :data}]
-    [:div.d-flex.align-items-baseline
-     [:div.flex-grow-0.m-1 (if (is-many? schema k)
-                             [:i.fas.fa-chevron-right.fa-fw.mr-2]
-                             [:i.fas.fa-fw.mr-2]) (str k)]
+(declare anode)
 
-     (cond
-       (and (is-ref? schema k)
-            (is-many? schema k)) [:div.badge.badge-dark [:i.fas.fa-layer-group.mr-1] (count value)]
-       (is-ref? schema k) [:div.badge.badge-dark [:i.fas.fa-square]]
-       :else [:div.text-light (str value)])
-     ]))
+(defn datom-view []
+  (fn [[e a v t]]
+    (let [r         @(subscribe [::mem-browser/node v])
+          attribute @(subscribe [::mem-browser/schema-attribute a])]
+      ;(js/console.log "A" attribute)
+      (if r
+        [anode {:details r}]
+        [:div [:span
+               {:class (when (= :db.type/ref (-> attribute :db/valueType :db/ident))
+                         "badge badge-dark")
+                :on-click (fn []
+                                                   (dispatch [::mem-graph/load-node (str v)]))}
+               (str v)]]))))
+
+(defn grouping []
+  (fn [[att-id datoms]]
+    (let [attr-details @(subscribe [::mem-browser/schema-attribute att-id])]
+      [:div.row
+       [:div.col-sm-2 (-> attr-details :db/ident str)]
+       (into [:div.col]
+             (map (fn [d] [datom-view d]) datoms))])))
 
 (defn anode []
   (fn [{:keys [details schema]}]
-    (js/console.log "D" schema)
-    (into [:span.entity.d-flex.flex-column]
+    (js/console.log "D" details)
+    (into [:span.aentity.d-flex.flex-column.m-2]
           (map (fn [e]
-                 [entry {:schema schema
-                         :data e}]) details))))
+                 [grouping e])
+               (group-by second details)))))
 
 (defn main []
-  (let [schema (subscribe [::mem-browser/schema])
-        thenode (subscribe [::mem-browser/thenode])]
+  (let [schema  (subscribe [::mem-browser/schema])
+        in-view (subscribe [::mem-browser/in-view])]
     (fn []
-     [:div.text-monospace
-      [:button.btn.btn-dark {:on-click (fn []
-                            ;(dispatch [::mem-graph/fetch-node 3078632563232929])
-                            ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
-                            (dispatch [::mem-graph/fetch-node "52578646044903633"])
-                            ;(dispatch [::mem-graph/fetch-node (lo/fromString "999999999999999999")])
+      [:div.text-monospace
+       [:button.btn.btn-dark {:on-click (fn []
+                                          ;(dispatch [::mem-graph/fetch-node 3078632563232929])
+                                          ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
+                                          ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
+                                          (dispatch [::mem-graph/fetch-node "34159627256401032"])
+                                          ;(dispatch [::mem-graph/fetch-node (lo/fromString "999999999999999999")])
 
-                            )} "load node"]
-      ;[entity @schema]
-      [anode {:details @thenode :schema @schema}]])))
+                                          )} "load node"]
+       [anode {:details @in-view :schema @schema}]])))
+

@@ -4,6 +4,7 @@
             [archo.mem.events :as mem-events]
             [reitit.coercion.spec]
             [reitit.coercion :as coercion]
+            [goog.math.Long :as lo]
             [re-frame.core :refer [reg-sub reg-event-db reg-event-fx reg-sub trim-v]]))
 
 
@@ -78,16 +79,43 @@
          (fn [db]
            (get-in db [:pos :links])))
 
+(reg-sub ::in-view
+         (fn [db]
+           (get-in db [:nodes (get db :in-view)])))
+
 (reg-sub ::schema
          (fn [db]
            (get-in db [:datomic :schema])))
 
 (reg-sub ::thenode
          (fn [db]
-           (into (sorted-map) (get-in db [:nodes "52578646044903633"]))))
+           (get-in db [:nodes (lo/fromString "34159627256401032")])
+           ))
 
+; 34159627256401032
 (reg-sub ::enhanced
          :<- [::schema]
          :<- [::thenode]
          (fn [[schema thenode]]
            (into (sorted-map) thenode)))
+
+(reg-sub ::nodes
+         (fn [db]
+           (get db :nodes)))
+
+(reg-sub ::node
+         (fn [db [_ id]]
+           (get-in db [:nodes id])))
+
+(reg-sub ::deets
+         :<- [::schema]
+         :<- [::nodes]
+         (fn [[schema nodes] [_ _ x ]]
+           (js/console.log "x" x)
+           true)
+         )
+
+(reg-sub ::schema-attribute
+         :<- [::schema]
+         (fn [schema [_ attribute-id]]
+           (get schema attribute-id)))
