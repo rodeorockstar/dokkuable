@@ -74,7 +74,7 @@
   that way we can see historical data using d/as-of in one place
   This should never be memoized!"
   []
-  (printlng "INCOMMING")
+  (println "INCOMMING")
   (println "getconnectionis" (get-conn))
   ;(println "dbis" (db))
 
