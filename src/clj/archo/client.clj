@@ -51,7 +51,7 @@
                     :system      "cbs-datomic-shelf"
                     :query-group (str "obrio-api-" env)
                     :endpoint    (str "http://entry.obrio-api-" env ".eu-west-1.datomic.net:8182/")
-                    :proxy-port  8182
+                    ;:proxy-port  8182
                     })
                  (catch Exception e (println (ex-data e))))))))
 
