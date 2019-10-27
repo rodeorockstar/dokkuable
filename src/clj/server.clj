@@ -42,6 +42,7 @@
     (ring/router
       [api-routes/routes]
       {
+       :conflicts (constantly nil)
        :data {:muuntaja   m/instance
               :coercion   reitit.coercion.spec/coercion
               :middleware [params/wrap-params
@@ -51,7 +52,7 @@
                            coercion/coerce-response-middleware
                            [wrap-cors identity]]}})
     (ring/routes
-      (ring/create-resource-handler {:path "/"})
+      ;(ring/create-resource-handler {:path "/"})
       (ring/create-default-handler))))
 
 (defn -main

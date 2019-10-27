@@ -34,8 +34,8 @@
   (fn [[att-id datoms]]
     (let [attr-details @(subscribe [::mem-browser/schema-attribute att-id])]
       [:div.row
-       [:div.col-sm-2 (-> attr-details :db/ident str)]
-       (into [:div.col]
+       [:div.col (-> attr-details :db/ident str)]
+       (into [:div.col ]
              (map (fn [d] [datom-view d]) datoms))])))
 
 (defn anode []

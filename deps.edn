@@ -27,9 +27,9 @@
                                     ring/ring-defaults {:mvn/version "0.3.2"}
                                     }}
 
-             :depstar {:extra-deps {clj-time                {:mvn/version "0.15.2"}
-                                    compojure               {:mvn/version "1.6.1"}
-                                    ring                    {:mvn/version "1.7.1"}
-                                    ring/ring-defaults      {:mvn/version "0.3.2"}
-                                    com.healthfinch/depstar {:git/url "https://github.com/healthfinch/depstar.git"
-                                                             :sha     "4aa7b35189693feebc7d7e4a180b8af0326c9164"}}}}}
+             :depstar {:extra-deps {clj-time             {:mvn/version "0.15.2"}
+                                    compojure            {:mvn/version "1.6.1"}
+                                    ring                 {:mvn/version "1.7.1"}
+                                    ring/ring-defaults   {:mvn/version "0.3.2"}
+                                    http-kit           {:mvn/version "2.3.0"}
+                                    seancorfield/depstar {:mvn/version "0.3.4"}}}}}

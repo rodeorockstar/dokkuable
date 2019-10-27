@@ -15,9 +15,15 @@
     [archo.queries.entities :as queries]
     [archo.queries.explore :as explore]))
 
+(def handler
+  (fn [request]
+    (or (resp/resource-response (:uri request) {:root "public"})
+        (-> (resp/resource-response "index.html" {:root "public"})
+          (resp/content-type "text/html")))))
+
 (def routes
   [
-   ["" (ring/create-resource-handler)]
+   ;["" (ring/create-resource-handler)]
    ["/assets" {:coercion reitit.coercion.spec/coercion}
     ["/node/:id"
      ["" {:get {:parameters {:path {:id some?}}
@@ -46,10 +52,15 @@
 
                                             )}}]
       ]]]
+
    ["/plain"
     ["/plus" {:get  {:parameters {:query {:sample string?}}
                      :handler    (fn [r]
                                    (resp/ok "thanks2"))}
               :post (fn [{{:keys [x y]} :body-params}]
                       {:status 200
-                       :body   {:total (+ x y)}})}]]])
+                       :body   {:total (+ x y)}})}]]
+   ;["/*" (ring/create-resource-handler)]
+   ["/*" handler]
+   ])
+
