@@ -34,7 +34,7 @@
   (fn [[att-id datoms]]
     (let [attr-details @(subscribe [::mem-browser/schema-attribute att-id])]
       [:div.row
-       [:div.col (-> attr-details :db/ident str)]
+       [:div.col.col-auto (-> attr-details :db/ident str)]
        (into [:div.col ]
              (map (fn [d] [datom-view d]) datoms))])))
 
@@ -50,7 +50,12 @@
   (let [schema  (subscribe [::mem-browser/schema])
         in-view (subscribe [::mem-browser/in-view])]
     (fn []
-      [:div.text-monospace
+      [:div.text-monospace.small
+
+       #_[:div.agrid
+        [:div "test"]
+        [:div "test2"]]
+
        [:button.btn.btn-dark {:on-click (fn []
                                           ;(dispatch [::mem-graph/fetch-node 3078632563232929])
                                           ;(dispatch [::mem-graph/fetch-node "52578646044903633"])

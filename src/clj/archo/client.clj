@@ -51,7 +51,7 @@
                     :system      "cbs-datomic-shelf"
                     :query-group (str "obrio-api-" env)
                     :endpoint    (str "http://entry.obrio-api-" env ".eu-west-1.datomic.net:8182/")
-                    ;:proxy-port  8182
+                    :proxy-port  8182
                     })
                  (catch Exception e (println (ex-data e))))))))
 
@@ -67,7 +67,7 @@
                            }))
 
 ; Get a memoized connection to a database. Accepts no arguments or a kw to choose which database
-(def get-conn get-connection* #_(memoize get-connection*))
+(def get-conn (memoize get-connection*))
 
 (defn db
   "Returns the most recent database from the connection.
