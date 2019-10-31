@@ -53,7 +53,6 @@
 
 (reg-event-db ::store-references trim-v
               (fn [db [id results]]
-                (js/console.log "results" results (flatten (vals results)))
                 (-> db
                     (update-in [:nodes id :reference-attributes] merge results)
                     (update-in [:nodes] merge (reduce (fn [total next]
@@ -81,7 +80,7 @@
 
 (reg-sub ::in-view
          (fn [db]
-           (get-in db [:nodes (get db :in-view)])))
+           (get-in db [:nodes (str (get db :in-view))])))
 
 (reg-sub ::schema
          (fn [db]
@@ -111,7 +110,6 @@
          :<- [::schema]
          :<- [::nodes]
          (fn [[schema nodes] [_ _ x ]]
-           (js/console.log "x" x)
            true)
          )
 

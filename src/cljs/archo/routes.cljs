@@ -19,6 +19,7 @@
     [archo.mem.assets :as mem-assets]
     [clojure.string :as str]
     [goog.math.Long :as lo]
+    [archo.mem.graph :as mem-graph]
     ;[hubble.mem.history :as mem-history]
     ;[hubble.mem.profile :as mem-profile]
     ;[hubble.mem.analytics :as mem-analytics]
@@ -46,46 +47,18 @@
                        :start    (fn [_]
                                    (dispatch [::mem-assets/fetch-asset :api/orgs nil [:assets :orgs]]))}]}
    ["" {:name :route/home}]
-   ["browse/entity/{*id-tree}" {:name        :route/browser-id
-                         :parameters  {:path {:id-tree string?}}
-                         :controllers [{:identity identity
-                                        :start    (fn [m]
-                                                    (js/console.log "X" (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/")))
-                                                    )}]}]
+   ["explore"
+    ["/{*id-tree}" {:name        :route/browser-id
+                    :parameters  {:path {:id-tree string?}}
+                    :controllers [{:identity identity
+                                   :start    (fn [m]
+                                               ;(js/console.log "B" (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/")))))
+                                               (js/console.log "MATCH22")
+                                               (dispatch [::mem-graph/fetch-node (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))])
+                                               ;(js/console.log "X" (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))
+                                               )}]}]]
 
-
-
-   ["explore/{*idtree}" {:name        :route/explore
-                         :parameters  {:path {:idtree string?}}
-                         :controllers [{:identity identity
-                                        :start    (fn [m]
-                                                    (js/console.log "X" (map lo/fromString (str/split (-> m :parameters :path :idtree) #"/")))
-                                                    (js/console.log "Y" 999999999999999999)
-                                                    (js/console.log "Z" (.toString (lo/fromString "999999999999999999")))
-                                                    )}]}]
-   ["o/{org/short-name}"
-    ["" {:coercion    reitit.coercion.spec/coercion
-         :parameters  {:path {:org/short-name string?}}
-         :name        :route/org
-         :controllers [{:identity identity
-                        :start    (fn [m]
-                                    (dispatch [::mem-assets/fetch-asset
-                                               :api/spaces
-                                               (-> m :parameters :path)
-                                               [:assets (-> m :parameters :path :org/short-name) :spaces]]))}]}]
-    ["/space/{space/uuid}" {:name        :route/space
-                            :parameters  {:path {:space/uuid     uuid?
-                                                 :org/short-name string?}}
-                            :controllers [{:identity identity
-                                           :start    (fn [m]
-                                                       (js/console.log "Mmm" m)
-                                                       #_(dispatch [::mem-assets/fetch-asset
-                                                                    :api/space
-                                                                    (-> m :parameters :path)
-                                                                    [:assets (-> m :parameters :path :org/short-name) :space]])
-
-                                                       (dispatch [::mem-assets/fetch-spaces :api/space (-> m :parameters :path)])
-                                                       )}]}]]])
+   ])
 
 ; def the reitit router which can later be referenced by reitit.core/match-by-name
 (defonce router (rf/router routes {:conflicts nil}))

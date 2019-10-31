@@ -11,6 +11,7 @@
 
 (reg-event-fx ::fetch-node trim-v
               (fn [{db :db} [id]]
+                (js/console.log "calling fetch node" id)
                 {:db      (assoc db :in-view (lo/fromString id))
                  ::fx/api {
                            ; match the API endpoint via its stored name in the router

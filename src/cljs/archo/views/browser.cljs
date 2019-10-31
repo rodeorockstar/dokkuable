@@ -51,11 +51,6 @@
         in-view (subscribe [::mem-browser/in-view])]
     (fn []
       [:div.text-monospace.small
-
-       #_[:div.agrid
-        [:div "test"]
-        [:div "test2"]]
-
        [:button.btn.btn-dark {:on-click (fn []
                                           ;(dispatch [::mem-graph/fetch-node 3078632563232929])
                                           ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
@@ -63,6 +58,6 @@
                                           (dispatch [::mem-graph/fetch-node "34159627256401032"])
                                           ;(dispatch [::mem-graph/fetch-node (lo/fromString "999999999999999999")])
 
-                                          )} "load node"]
+                                          )} "load node2"]
        [anode {:details @in-view :schema @schema}]])))
 
