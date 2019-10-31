@@ -1,12 +1,13 @@
 (ns archo.views.browser
   (:require [re-frame.core :refer [dispatch subscribe]]
             [oops.core :refer [oget]]
-            [archo.mem.assets :as mem-assets]
-            [archo.views.kinds.pdf :as pdf]
-            [archo.mem.graph :as mem-graph]
-            [archo.views.wizard :as wizard]
+            ;[archo.mem.assets :as mem-assets]
+            ;[archo.views.kinds.pdf :as pdf]
+            ;[archo.mem.graph :as mem-graph]
+            ;[archo.views.wizard :as wizard]
             [archo.mem.browser :as mem-browser]
-            [goog.math.Long :as lo]))
+            ;[goog.math.Long :as lo]
+            ))
 
 (defn is-many? [schema attribute]
   (= :db.cardinality/many (get-in schema [attribute :db/cardinality :db/ident])))
@@ -27,7 +28,7 @@
                {:class (when (= :db.type/ref (-> attribute :db/valueType :db/ident))
                          "badge badge-dark")
                 :on-click (fn []
-                                                   (dispatch [::mem-graph/load-node (str v)]))}
+                                                   (dispatch [::mem-browser/load-node (str v)]))}
                (str v)]]))))
 
 (defn grouping []
@@ -51,11 +52,11 @@
         in-view (subscribe [::mem-browser/in-view])]
     (fn []
       [:div.text-monospace.small
-       [:button.btn.btn-dark {:on-click (fn []
+       #_[:button.btn.btn-dark {:on-click (fn []
                                           ;(dispatch [::mem-graph/fetch-node 3078632563232929])
                                           ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
                                           ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
-                                          (dispatch [::mem-graph/fetch-node "34159627256401032"])
+                                          (dispatch [::mem-browser/fetch-node "34159627256401032"])
                                           ;(dispatch [::mem-graph/fetch-node (lo/fromString "999999999999999999")])
 
                                           )} "load node2"]

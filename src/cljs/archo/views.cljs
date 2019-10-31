@@ -1,9 +1,9 @@
 (ns archo.views
   (:require
     [re-frame.core :as re-frame :refer [subscribe]]
-    [archo.views.home :as home]
-    [archo.views.org :as org]
-    [archo.views.space :as space]
+    ;[archo.views.home :as home]
+    ;[archo.views.org :as org]
+    ;[archo.views.space :as space]
     [archo.mem.events :as mem-events]
     [reagent.core :as r]
     [archo.views.browser :as browser]
@@ -23,10 +23,10 @@
      ;:route/home [browser/main]
      :route/browser-id [browser/main]
      ;:route/home [activate]
-     :route/org [org/main]
-     :route/space [space/main]
+     ;:route/org [org/main]
+     ;:route/space [space/main]
      ;:route/browser-id [activate]
-     :route/explore [activate]
+     ;:route/explore [activate]
      [:div.test-container "404"])])
 
 (defn show-panel []

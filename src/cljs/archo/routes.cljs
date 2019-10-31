@@ -16,10 +16,11 @@
     [spec-tools.data-spec :as ds]
     [clojure.set :refer [rename-keys]]
     [reagent.core :as r]
-    [archo.mem.assets :as mem-assets]
+    ;[archo.mem.assets :as mem-assets]
     [clojure.string :as str]
     [goog.math.Long :as lo]
-    [archo.mem.graph :as mem-graph]
+    ;[archo.mem.graph :as mem-graph]
+    [archo.mem.browser :as mem-browser]
     ;[hubble.mem.history :as mem-history]
     ;[hubble.mem.profile :as mem-profile]
     ;[hubble.mem.analytics :as mem-analytics]
@@ -41,12 +42,8 @@
 
 (def routes
   ;; apply Spec coercion to all routes
-  ["/" {:coercion    reitit.coercion.spec/coercion
-        ; fetch orgs on any route match
-        :controllers [{:identity identity
-                       :start    (fn [_]
-                                   (dispatch [::mem-assets/fetch-asset :api/orgs nil [:assets :orgs]]))}]}
-   ["" {:name :route/home}]
+  ["/"
+   ;["" {:name :route/home}]
    ["explore"
     ["/{*id-tree}" {:name        :route/browser-id
                     :parameters  {:path {:id-tree string?}}
@@ -54,7 +51,7 @@
                                    :start    (fn [m]
                                                ;(js/console.log "B" (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/")))))
                                                (js/console.log "MATCH22")
-                                               (dispatch [::mem-graph/fetch-node (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))])
+                                               (dispatch [::mem-browser/fetch-node (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))])
                                                ;(js/console.log "X" (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))
                                                )}]}]]
 
