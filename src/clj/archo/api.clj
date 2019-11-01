@@ -12,6 +12,7 @@
     [datomic.client.api :as d]
     [reitit.coercion.spec]
     [reitit.ring :as ring]
+    [clojure.spec.alpha :as spec]
     [archo.queries.entities :as queries]
     [archo.queries.explore :as explore]))
 
@@ -20,6 +21,9 @@
     (or (resp/resource-response (:uri request) {:root "public"})
         (-> (resp/resource-response "index.html" {:root "public"})
           (resp/content-type "text/html")))))
+
+(spec/def ::is-long (fn [n] (Long/parseLong n)))
+
 
 (def routes
   [
@@ -31,6 +35,19 @@
                               (clojure.pprint/pprint (-> req :parameters))
                               (let [id (-> req :parameters :path :id read-string)]
                                 (resp/ok (explore/entity-without-components2 (client/db) id))))}}]
+     ["/attributes" {:get {:parameters {:path {:id number?}}
+                           :handler    (fn [req]
+                                         (let [id (-> req :parameters :path :id read-string)]
+                                           (resp/ok (into {} (explore/non-reference-values (client/db) id)))))}}]
+     ["/references" {:get {:parameters {:path {:id some?}}
+                           :handler    (fn [req]
+                                         (let [id (-> req :parameters :path :id read-string)]
+                                           (resp/ok (explore/group-values-by-key (explore/reference-values (client/db) id)))))}}]]
+    ["/nodes"
+     ["" {:get {:parameters {:query {:ids (spec/coll-of nat-int?)}}
+                :handler    (fn [req]
+
+                              (resp/ok (explore/entities-without-components (client/db) (-> req :parameters :query :ids))))}}]
      ["/attributes" {:get {:parameters {:path {:id number?}}
                            :handler    (fn [req]
                                          (let [id (-> req :parameters :path :id read-string)]

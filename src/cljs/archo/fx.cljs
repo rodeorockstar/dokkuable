@@ -43,6 +43,7 @@
                    on-error
                    is-retry?
                    track-id
+                   query-params
                    delay] :as req}]
   (let [
         ;token    (-> @(subscribe [:hubble.mem.ident/data]) :person/tokens :access :token/value)
@@ -61,6 +62,7 @@
                                                          :headers           {"Accept" "application/transit+json"}}
                                                         ;token (update :headers assoc "Authorization" token)
                                                         (and params) (assoc :transit-params params)
+                                                        query-params (assoc :query-params query-params)
                                                         ;(and params (= method :get)) (assoc :query-params params)
                                                         true (assoc :with-credentials? false)))]
         (go

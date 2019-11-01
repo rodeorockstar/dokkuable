@@ -103,3 +103,12 @@
                   [?attr :db/cardinality ?cardinality]
                   [?cardinality :db/ident ?cardinality-ident]]}
         db id)))
+
+(defn entities-without-components [db ids]
+    (group-by first (d/q '{:find  [?id ?attr ?v ?t]
+                           :in    [$ [?id ...]]
+                           :where [[?id ?attr ?v ?t]
+                                   [?attr :db/ident ?attr-ident]
+                                   [?attr :db/cardinality ?cardinality]
+                                   [?cardinality :db/ident ?cardinality-ident]]}
+                         (client/db) ids)))

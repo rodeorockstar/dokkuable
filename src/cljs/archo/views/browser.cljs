@@ -41,7 +41,7 @@
 
 (defn anode []
   (fn [{:keys [details schema]}]
-    (js/console.log "D" details)
+    ;(js/console.log "D" details)
     (into [:span.aentity.d-flex.flex-column.m-2]
           (map (fn [e]
                  [grouping e])
@@ -49,8 +49,11 @@
 
 (defn main []
   (let [schema  (subscribe [::mem-browser/schema])
-        in-view (subscribe [::mem-browser/in-view])]
+        in-view (subscribe [::mem-browser/in-view])
+        root (subscribe [::mem-browser/root])]
     (fn []
+      (js/console.log "root" @root)
+      (js/console.log "invew" @in-view)
       [:div.text-monospace.small
        #_[:button.btn.btn-dark {:on-click (fn []
                                           ;(dispatch [::mem-graph/fetch-node 3078632563232929])

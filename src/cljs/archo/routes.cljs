@@ -10,26 +10,14 @@
     [archo.mem.events :as mem-events]
     [taoensso.timbre :refer [logf]]
     [clojure.spec.alpha :as s]
-    ;[hubble.subs :as subs]
     [oops.core :refer [oget oset!]]
     [reitit.coercion.schema]
     [spec-tools.data-spec :as ds]
     [clojure.set :refer [rename-keys]]
     [reagent.core :as r]
-    ;[archo.mem.assets :as mem-assets]
     [clojure.string :as str]
     [goog.math.Long :as lo]
-    ;[archo.mem.graph :as mem-graph]
     [archo.mem.browser :as mem-browser]
-    ;[hubble.mem.history :as mem-history]
-    ;[hubble.mem.profile :as mem-profile]
-    ;[hubble.mem.analytics :as mem-analytics]
-    ;[hubble.mem.org :as mem-org]
-    ;[hubble.mem.admin :as mem-admin]
-    ;[hubble.mem.profile :as mem-cert]
-    ;[hubble.breadcrumb.name.subscription :as bc-name-sub]
-    ;[hubble.subs :as subs]
-    ;[breaking-point.core :as bp]
     ))
 
 ;; another binding for reitit's href fn so that view namespaces already requiring this route namespace
@@ -49,9 +37,10 @@
                     :parameters  {:path {:id-tree string?}}
                     :controllers [{:identity identity
                                    :start    (fn [m]
+                                               ; http://localhost:5000/explore/34159627256401032/34159627256424799/8039629026978018
                                                ;(js/console.log "B" (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/")))))
-                                               (js/console.log "MATCH22")
-                                               (dispatch [::mem-browser/fetch-node (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))])
+                                               ;(dispatch [::mem-browser/fetch-node (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))])
+                                               (dispatch [::mem-browser/fetch-nodes (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))])
                                                ;(js/console.log "X" (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))
                                                )}]}]]
 

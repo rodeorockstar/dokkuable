@@ -9,6 +9,21 @@
                  ::fx/api {:uri        (str "/assets/node/" id)
                            :on-success [::store-node id]}}))
 
+(reg-event-fx ::fetch-nodes trim-v
+              (fn [{db :db} [[root :as ids]]]
+                {
+                 :db      (-> db
+                            (assoc  :in-view root)
+                            (assoc  :view ids))
+                 ::fx/api {:uri          (str "/assets/nodes")
+                           :method       :get
+                           :query-params {:ids ids}
+                           :on-success   [::store-nodes]}}))
+
+(reg-event-db ::store-nodes trim-v
+              (fn [db [results]]
+                (update db :nodes merge results)))
+
 (reg-event-fx ::load-node trim-v
               (fn [_ [id]]
                 {::fx/api {:uri        (str "/assets/node/" id)
@@ -38,3 +53,7 @@
          :<- [::schema]
          (fn [schema [_ attribute-id]]
            (get schema attribute-id)))
+
+(reg-sub ::root
+         (fn [db]
+           (-> db :view first)))
