@@ -47,13 +47,51 @@
                  [grouping e])
                (group-by second details)))))
 
+
+(defn entity3 []
+  (fn [datoms]
+    (js/console.log "DD" (group-by second datoms))
+    (into [:div.alert.alert-info.container]
+          (map (fn [[e a v t]]
+                 [:div.row
+                  [:div.col (str e)]
+                  [:div.col (str a)]
+                  [:div.col (str v)]
+                  [:div.col (str t)]
+                  ]
+                 ) datoms))
+    ))
+
+(defn entity []
+  (fn [attribute-map]
+    [:div.bg-white.m-4
+     [:span "Test"]
+
+     [:table.table (into [:tbody]
+                         (map (fn [[attr-id datoms]]
+                                [:tr
+                                 [:td (str attr-id)]
+                                 [:td [:i.fas.fa-times]]
+                                 (into [:td]
+                                       (map (fn [[e a v t]]
+                                              [:div (str v)]) datoms))])
+                              attribute-map))]]
+    ))
+
+
 (defn main []
   (let [schema  (subscribe [::mem-browser/schema])
         in-view (subscribe [::mem-browser/in-view])
-        root (subscribe [::mem-browser/root])]
+        root (subscribe [::mem-browser/root])
+        cursor (subscribe [::mem-browser/cursor])
+        all-items (subscribe [::mem-browser/all-items])
+        ]
     (fn []
-      (js/console.log "root" @root)
-      (js/console.log "invew" @in-view)
+      ;(js/console.log "root" @root)
+      ;(js/console.log "cursor" @cursor)
+      ;(js/console.log "invew" @in-view)
+      ;(js/console.log "invew" @in-view)
+      (js/console.log "all-items" @all-items)
       [:div.text-monospace.small
        #_[:button.btn.btn-dark {:on-click (fn []
                                           ;(dispatch [::mem-graph/fetch-node 3078632563232929])
@@ -63,5 +101,9 @@
                                           ;(dispatch [::mem-graph/fetch-node (lo/fromString "999999999999999999")])
 
                                           )} "load node2"]
-       [anode {:details @in-view :schema @schema}]])))
+       ;[anode {:details @in-view :schema @schema}]
+       (into [:div.d-flex]
+             (map (fn [item]
+                    [entity item])) @all-items)
+       ])))
 

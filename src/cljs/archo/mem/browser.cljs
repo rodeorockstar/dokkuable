@@ -57,3 +57,19 @@
 (reg-sub ::root
          (fn [db]
            (-> db :view first)))
+
+(reg-sub ::cursor
+         (fn [db]
+           (-> db :view)))
+
+(reg-sub ::all-items
+         :<- [::nodes]
+         :<- [::cursor]
+         (fn [[nodes cursor]]
+           (map (partial group-by second) (map (partial get nodes) cursor))
+           ))
+
+(reg-sub ::as-entity
+         (fn [db [_ datoms]]
+           (js/console.log "datoms" datoms)
+           (group-by second datoms)))
