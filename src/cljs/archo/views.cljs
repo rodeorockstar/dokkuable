@@ -17,7 +17,7 @@
      [:div.alert.alert-info "Activating"]]))
 
 (defn- panels [panel-name]
-  [:div.container
+  [:div.p-4
    (case panel-name
      ;:route/home [home/main]
      ;:route/home [browser/main]

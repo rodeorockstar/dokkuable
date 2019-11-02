@@ -13,8 +13,8 @@
               (fn [{db :db} [[root :as ids]]]
                 {
                  :db      (-> db
-                            (assoc  :in-view root)
-                            (assoc  :view ids))
+                              (assoc :in-view root)
+                              (assoc :view ids))
                  ::fx/api {:uri          (str "/assets/nodes")
                            :method       :get
                            :query-params {:ids ids}
@@ -65,9 +65,15 @@
 (reg-sub ::all-items
          :<- [::nodes]
          :<- [::cursor]
-         (fn [[nodes cursor]]
-           (map (partial group-by second) (map (partial get nodes) cursor))
-           ))
+         :<- [::schema]
+         (fn [[nodes cursor schema]]
+           (reduce (fn [total db-id]
+                     (conj total
+                           {:id     db-id
+                            :trail  (vec (conj (:trail (last total)) db-id))
+                            :entity (clojure.set/rename-keys (group-by second (get nodes db-id)) schema)}))
+                   []
+                   cursor)))
 
 (reg-sub ::as-entity
          (fn [db [_ datoms]]

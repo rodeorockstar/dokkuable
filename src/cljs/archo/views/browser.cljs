@@ -6,6 +6,7 @@
             ;[archo.mem.graph :as mem-graph]
             ;[archo.views.wizard :as wizard]
             [archo.mem.browser :as mem-browser]
+    [archo.routes :as routes]
             ;[goog.math.Long :as lo]
             ))
 
@@ -15,67 +16,41 @@
 (defn is-ref? [schema attribute]
   (= :db.type/ref (get-in schema [attribute :db/valueType :db/ident])))
 
-(declare anode)
-
-(defn datom-view []
-  (fn [[e a v t]]
-    (let [r         @(subscribe [::mem-browser/node v])
-          attribute @(subscribe [::mem-browser/schema-attribute a])]
-      ;(js/console.log "A" attribute)
-      (if r
-        [anode {:details r}]
-        [:div [:span
-               {:class (when (= :db.type/ref (-> attribute :db/valueType :db/ident))
-                         "badge badge-dark")
-                :on-click (fn []
-                                                   (dispatch [::mem-browser/load-node (str v)]))}
-               (str v)]]))))
-
-(defn grouping []
-  (fn [[att-id datoms]]
-    (let [attr-details @(subscribe [::mem-browser/schema-attribute att-id])]
-      [:div.row
-       [:div.col.col-auto (-> attr-details :db/ident str)]
-       (into [:div.col ]
-             (map (fn [d] [datom-view d]) datoms))])))
-
-(defn anode []
-  (fn [{:keys [details schema]}]
-    ;(js/console.log "D" details)
-    (into [:span.aentity.d-flex.flex-column.m-2]
-          (map (fn [e]
-                 [grouping e])
-               (group-by second details)))))
 
 
-(defn entity3 []
-  (fn [datoms]
-    (js/console.log "DD" (group-by second datoms))
-    (into [:div.alert.alert-info.container]
-          (map (fn [[e a v t]]
-                 [:div.row
-                  [:div.col (str e)]
-                  [:div.col (str a)]
-                  [:div.col (str v)]
-                  [:div.col (str t)]
-                  ]
-                 ) datoms))
-    ))
+
+
+(def icon-map
+  {
+   :db.type/ref [:i.fad.fa-share]
+   :db.type/uuid [:i.fad.fa-globe-africa]
+   :db.type/string [:i.fad.fa-text]
+   :db.type/keyword [:div "kw"]
+   })
+
+(defn attr->icon [attr]
+  (get icon-map (-> attr :db/valueType :db/ident) [:i.fad.fa-question]))
 
 (defn entity []
-  (fn [attribute-map]
-    [:div.bg-white.m-4
-     [:span "Test"]
-
+  (fn [{:keys [id trail entity]}]
+    [:div.mr-3
+     [:div.d-flex.justify-content-start [:div.top-label.p-1 (str id)]]
+     ;[:div.d-flex.justify-content-end [:div (str trail)]]
      [:table.table (into [:tbody]
-                         (map (fn [[attr-id datoms]]
+                         (map (fn [[attribute datoms]]
+                                ;(js/console.log "attribute" attribute)
                                 [:tr
-                                 [:td (str attr-id)]
-                                 [:td [:i.fas.fa-times]]
+                                 [:td (str (:db/ident attribute))]
+                                 [:td (attr->icon attribute)]
                                  (into [:td]
                                        (map (fn [[e a v t]]
-                                              [:div (str v)]) datoms))])
-                              attribute-map))]]
+                                              [:div
+
+                                               (case (-> attribute :db/valueType :db/ident)
+                                                 :db.type/ref [:a {:href (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "/" (conj (mapv str trail) v)))})} (str v)]
+                                                 [:div (str v)])])
+                                            datoms))])
+                              (into (sorted-map-by :db/ident) entity)))]]
     ))
 
 
@@ -102,7 +77,7 @@
 
                                           )} "load node2"]
        ;[anode {:details @in-view :schema @schema}]
-       (into [:div.d-flex]
+       (into [:div.d-flex.align-items-start]
              (map (fn [item]
                     [entity item])) @all-items)
        ])))
