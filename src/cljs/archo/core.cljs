@@ -6,6 +6,7 @@
     [archo.mem.boot :as mem-boot]
     [archo.routes :as routes]
     [archo.views :as views]
+    [archo.mem.browser :as mem-browser]
     ))
 
 
@@ -20,5 +21,6 @@
 (defn ^:export init []
   (enable-console-print!)
   (re-frame/dispatch-sync [::mem-boot/initialize-db])
+  (re-frame/dispatch [::mem-browser/fetch-schema])
   (routes/init!)
   (mount-root))

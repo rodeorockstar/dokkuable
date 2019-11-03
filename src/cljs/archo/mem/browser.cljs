@@ -24,6 +24,17 @@
               (fn [db [results]]
                 (update db :nodes merge results)))
 
+(reg-event-fx ::fetch-schema trim-v
+              (fn [{db :db} []]
+                {
+                 ::fx/api {:uri          (str "/assets/schema")
+                           :method       :get
+                           :on-success   [::store-schema]}}))
+
+(reg-event-db ::store-schema trim-v
+              (fn [db [results]]
+                (assoc-in db [:datomic :schema] results)))
+
 (reg-event-fx ::load-node trim-v
               (fn [_ [id]]
                 {::fx/api {:uri        (str "/assets/node/" id)

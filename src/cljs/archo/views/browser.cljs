@@ -34,9 +34,17 @@
   (get icon-map (-> attr :db/valueType :db/ident) [:i.fad.fa-question]))
 
 (defn entity []
-  (fn [{:keys [id trail entity]}]
+  (fn [{:keys [id trail entity cursor]}]
+    ;(js/console.log "cursor" (str id) (first (drop (count trail) cursor)))
     [:div.box.is-family-monospace.entity-card
-     [:div.is-inline-block (str id)]
+     [:div.tag.is-medium
+      (str id)]
+     [:a.delete.is-large.is-pulled-right
+      {:href (if-let [t (not-empty (butlast trail))]
+               (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" t))})
+               (routes/url-for :route/search))}
+
+      ]
      [:table.table.is-narrow
       (into [:tbody]
             (map (fn [[attribute datoms]]
@@ -47,9 +55,9 @@
                     (into [:td]
                           (map (fn [[e a v t]]
                                  [:div
-
                                   (case (-> attribute :db/valueType :db/ident)
-                                    :db.type/ref [:a {:href (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" (conj (mapv str trail) v)))})} (str v)]
+                                    :db.type/ref [:a {:href (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" (conj (mapv str trail) v)))})
+                                                      :class (when (= v (first (drop (count trail) cursor))) "has-background-link has-text-dark")} (str v)]
                                     [:div (str v)])])
                                (sort-by
                                  (fn [[e a v t]]
@@ -64,36 +72,32 @@
   (let [id (r/atom nil)]
     (fn []
      ; 34159627256401032
-     [:div.container.is-fullwidth
-      [:div.columns.is-centered
-       [:div.column.is-half
-        [:form
-         {:on-submit (fn [e]
-                       ; prevent the form from submitting the page
-                       (ocall e :preventDefault)
-                       ; and route the user to the explorer
-                       (routes/redirect! {:name        :route/browser-id
-                                          :path-params {:id-tree @id}})
-                       )}
-         [:div.field
-          [:div.control
-           [:input.input.is-medium.has-background-dark.is-family-monospace {:type  "text"
-                                                        :value @id
-                                                        :placeholder "34159627256401032"
-                                                        :on-change (fn [d]
-                                                                     (reset! id (oget d :target :value)))}]]]]]]])))
+      [:section.hero.is-transparent
+       [:div.hero-body
+        [:div.container.is-fullwidth
+         [:div.columns.is-centered
+          [:div.column.is-half
+           [:form
+            {:on-submit (fn [e]
+                          ; prevent the form from submitting the page
+                          (ocall e :preventDefault)
+                          ; and route the user to the explorer
+                          (routes/redirect! {:name        :route/browser-id
+                                             :path-params {:id-tree @id}})
+                          )}
+            [:div.field
+             ;[:label.label ":db/id"]
+             [:div.control
+              [:input.input.is-large.has-background-dark.is-family-monospace {:type        "text"
+                                                                              :value       @id
+                                                                              :placeholder "34159627256401032"
+                                                                              :on-change   (fn [d]
+                                                                                             (reset! id (oget d :target :value)))}]]]
+            [:div.field.is-pulled-right
+             [:div.control
+              [:button.button.is-link.is-medium {:type "submit"} "Explore"]]]]]]]]])))
 
-#_(defn app []
-  (let [items-ref (reagent/atom (into [] (range 10)))]
-    (fn [props]
-      [:div
-       [:> FlipMove {}
-        (for [item @items-ref]
-          ^{:key item}
-          [:div
-           {:on-click
-            #(swap! items-ref shuffle)}
-           (str "item #" item)])]])))
+
 
 (defn main []
   (let [schema    (subscribe [::mem-browser/schema])
@@ -106,18 +110,19 @@
 
       (into [:div.tree-browser.is-family-monospace]
             (map (fn [item]
-                   (js/console.log "item" (-> item :id str))
+                   (js/console.log "item" (-> item :id str) (map str (-> item :trail)))
                    [entity item])) @all-items)
 
-      [:div
-       [:> FlipMove {:class "tree-browser2"
-                     :enter-animation "fade"
-                     :appear-animation "fade"
-                     :leave-animation "fade"
-                     }
-        (for [item @all-items]
-          ^{:key (-> item :id str)}
-          [entity item])]]
+      [:> FlipMove {:class            "tree-browser2 table-container"
+                    :enter-animation  "fade"
+                    :appear-animation "fade"
+                    :leave-animation  "fade"
+                    }
+       (for [item @all-items]
+         ^{:key (-> item :id str)}
+         [entity (assoc item :cursor @cursor)])]
 
       )))
+
+; http://localhost:5000/explore/34159627256401032-34159627256423753-34841324465644688-34841324465644715-37291036372329644-37291036372329650-34062870230265719
 

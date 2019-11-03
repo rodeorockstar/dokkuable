@@ -79,6 +79,7 @@ body, html {
 
 .tree-browser {
     display: flex;
+    align-items: flex-start;
  }
 
  .tree-browser2 {
@@ -89,4 +90,10 @@ body, html {
     margin: 5px;
     display: inline-block;
 
+ }
+
+ .hero {
+    &.is-transparent {
+        background-color: transparent;
+    }
  }
