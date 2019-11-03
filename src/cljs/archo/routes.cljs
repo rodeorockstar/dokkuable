@@ -33,6 +33,7 @@
   ["/"
    ;["" {:name :route/home}]
    ["explore"
+    ["" {:name :route/search}]
     ["/{*id-tree}" {:name        :route/browser-id
                     :parameters  {:path {:id-tree string?}}
                     :controllers [{:identity identity
@@ -40,7 +41,7 @@
                                                ; http://localhost:5000/explore/34159627256401032/34159627256424799/8039629026978018
                                                ;(js/console.log "B" (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/")))))
                                                ;(dispatch [::mem-browser/fetch-node (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))])
-                                               (dispatch [::mem-browser/fetch-nodes (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))])
+                                               (dispatch [::mem-browser/fetch-nodes (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"-"))])
                                                ;(js/console.log "X" (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))
                                                )}]}]]
 
@@ -125,3 +126,6 @@
 
 ;;   Setting "key" to page identity will ensure previous page to be unmounted and new mounted,
 ;;   launching all lifecycle methods and dropping scroll state
+
+
+; http://localhost:5000/explore/34159627256401032-34159627256423756-21787922420688057-21787922420688059

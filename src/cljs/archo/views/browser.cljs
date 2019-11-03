@@ -1,13 +1,15 @@
 (ns archo.views.browser
   (:require [re-frame.core :refer [dispatch subscribe]]
-            [oops.core :refer [oget]]
-            ;[archo.mem.assets :as mem-assets]
-            ;[archo.views.kinds.pdf :as pdf]
-            ;[archo.mem.graph :as mem-graph]
-            ;[archo.views.wizard :as wizard]
+            [oops.core :refer [ocall oget]]
+    ;[archo.mem.assets :as mem-assets]
+    ;[archo.views.kinds.pdf :as pdf]
+    ;[archo.mem.graph :as mem-graph]
+    ;[archo.views.wizard :as wizard]
             [archo.mem.browser :as mem-browser]
-    [archo.routes :as routes]
-            ;[goog.math.Long :as lo]
+            [archo.routes :as routes]
+            [reagent.core :as r]
+            ["react-flip-move" :as FlipMove]
+    ;[goog.math.Long :as lo]
             ))
 
 (defn is-many? [schema attribute]
@@ -22,9 +24,9 @@
 
 (def icon-map
   {
-   :db.type/ref [:i.fad.fa-share]
-   :db.type/uuid [:i.fad.fa-globe-africa]
-   :db.type/string [:i.fad.fa-text]
+   :db.type/ref     [:i.fad.fa-share]
+   :db.type/uuid    [:i.fad.fa-globe-africa]
+   :db.type/string  [:i.fad.fa-text]
    :db.type/keyword [:div "kw"]
    })
 
@@ -33,52 +35,89 @@
 
 (defn entity []
   (fn [{:keys [id trail entity]}]
-    [:div.mr-3
-     [:div.d-flex.justify-content-start [:div.top-label.p-1 (str id)]]
-     ;[:div.d-flex.justify-content-end [:div (str trail)]]
-     [:table.table (into [:tbody]
-                         (map (fn [[attribute datoms]]
-                                ;(js/console.log "attribute" attribute)
-                                [:tr
-                                 [:td (str (:db/ident attribute))]
-                                 [:td (attr->icon attribute)]
-                                 (into [:td]
-                                       (map (fn [[e a v t]]
-                                              [:div
+    [:div.box.is-family-monospace.entity-card
+     [:div.is-inline-block (str id)]
+     [:table.table.is-narrow
+      (into [:tbody]
+            (map (fn [[attribute datoms]]
+                   ;(js/console.log "attribute" attribute)
+                   [:tr
+                    [:td (str (:db/ident attribute))]
+                    [:td (attr->icon attribute)]
+                    (into [:td]
+                          (map (fn [[e a v t]]
+                                 [:div
 
-                                               (case (-> attribute :db/valueType :db/ident)
-                                                 :db.type/ref [:a {:href (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "/" (conj (mapv str trail) v)))})} (str v)]
-                                                 [:div (str v)])])
-                                            datoms))])
-                              (into (sorted-map-by :db/ident) entity)))]]
+                                  (case (-> attribute :db/valueType :db/ident)
+                                    :db.type/ref [:a {:href (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" (conj (mapv str trail) v)))})} (str v)]
+                                    [:div (str v)])])
+                               (sort-by
+                                 (fn [[e a v t]]
+                                   (str v)
+                                   )
+                                 datoms)))])
+                 (into (sorted-map-by :db/ident) entity)))]]
     ))
 
 
+(defn selector []
+  (let [id (r/atom nil)]
+    (fn []
+     ; 34159627256401032
+     [:div.container.is-fullwidth
+      [:div.columns.is-centered
+       [:div.column.is-half
+        [:form
+         {:on-submit (fn [e]
+                       ; prevent the form from submitting the page
+                       (ocall e :preventDefault)
+                       ; and route the user to the explorer
+                       (routes/redirect! {:name        :route/browser-id
+                                          :path-params {:id-tree @id}})
+                       )}
+         [:div.field
+          [:div.control
+           [:input.input.is-medium.has-background-dark.is-family-monospace {:type  "text"
+                                                        :value @id
+                                                        :placeholder "34159627256401032"
+                                                        :on-change (fn [d]
+                                                                     (reset! id (oget d :target :value)))}]]]]]]])))
+
+#_(defn app []
+  (let [items-ref (reagent/atom (into [] (range 10)))]
+    (fn [props]
+      [:div
+       [:> FlipMove {}
+        (for [item @items-ref]
+          ^{:key item}
+          [:div
+           {:on-click
+            #(swap! items-ref shuffle)}
+           (str "item #" item)])]])))
+
 (defn main []
-  (let [schema  (subscribe [::mem-browser/schema])
-        in-view (subscribe [::mem-browser/in-view])
-        root (subscribe [::mem-browser/root])
-        cursor (subscribe [::mem-browser/cursor])
+  (let [schema    (subscribe [::mem-browser/schema])
+        in-view   (subscribe [::mem-browser/in-view])
+        root      (subscribe [::mem-browser/root])
+        cursor    (subscribe [::mem-browser/cursor])
         all-items (subscribe [::mem-browser/all-items])
         ]
     (fn []
-      ;(js/console.log "root" @root)
-      ;(js/console.log "cursor" @cursor)
-      ;(js/console.log "invew" @in-view)
-      ;(js/console.log "invew" @in-view)
-      (js/console.log "all-items" @all-items)
-      [:div.text-monospace.small
-       #_[:button.btn.btn-dark {:on-click (fn []
-                                          ;(dispatch [::mem-graph/fetch-node 3078632563232929])
-                                          ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
-                                          ;(dispatch [::mem-graph/fetch-node "52578646044903633"])
-                                          (dispatch [::mem-browser/fetch-node "34159627256401032"])
-                                          ;(dispatch [::mem-graph/fetch-node (lo/fromString "999999999999999999")])
 
-                                          )} "load node2"]
-       ;[anode {:details @in-view :schema @schema}]
-       (into [:div.d-flex.align-items-start]
-             (map (fn [item]
-                    [entity item])) @all-items)
-       ])))
+      (into [:div.tree-browser.is-family-monospace]
+            (map (fn [item]
+                   (js/console.log "item" (-> item :id str))
+                   [entity item])) @all-items)
+
+      [:div
+       [:> FlipMove {:class "tree-browser2"
+                     :enter-animation "fade"
+                     :appear-animation "fade"
+                     :leave-animation "fade"
+                     }
+        (for [item @all-items]
+          ^{:key (-> item :id str)}
+          [entity item])]]
+
+      )))
 

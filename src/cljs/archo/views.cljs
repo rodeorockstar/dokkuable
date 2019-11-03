@@ -22,6 +22,7 @@
      ;:route/home [home/main]
      ;:route/home [browser/main]
      :route/browser-id [browser/main]
+     :route/search [browser/selector]
      ;:route/home [activate]
      ;:route/org [org/main]
      ;:route/space [space/main]

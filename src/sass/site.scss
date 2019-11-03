@@ -1,10 +1,17 @@
-@import "../../node_modules/bootstrap/scss/bootstrap";
+// @import "../../node_modules/bootstrap/scss/bootstrap";
+@import "../../node_modules/bulmaswatch/darkly/_variables.scss";
+@import "../../node_modules/bulma/bulma";
+
+@import "../../node_modules/bulmaswatch/darkly/_overrides.scss";
+
 
 @import "./canvas";
 
 body, html {
-    background-color: #232323;
-    color: hotpink;
+    // background-color: #232323;
+    // color: hotpink;
+    overflow: auto;
+    height: 100vh;
 
 }
 
@@ -69,3 +76,17 @@ body, html {
     border-top-right-radius: 5px;
     background-color: white;
 }
+
+.tree-browser {
+    display: flex;
+ }
+
+ .tree-browser2 {
+    overflow-x: scroll;
+ }
+
+ .entity-card {
+    margin: 5px;
+    display: inline-block;
+
+ }

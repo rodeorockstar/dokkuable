@@ -7,14 +7,18 @@
     [compojure.route :refer [resources]]
     [ring.util.response :refer [resource-response content-type]]
     [ring.util.http-response :as resp]
-    [reitit.coercion.spec]
+    ;[reitit.coercion.spec]
     [archo.client :as client]
     [datomic.client.api :as d]
-    [reitit.coercion.spec]
+    ;[reitit.coercion.spec]
     [reitit.ring :as ring]
     [clojure.spec.alpha :as spec]
     [archo.queries.entities :as queries]
-    [archo.queries.explore :as explore]))
+    [archo.queries.explore :as explore]
+    [spec-tools.data-spec :as ds]
+    [reitit.coercion.spec :as spec-coercion]
+
+    ))
 
 (def handler
   (fn [request]
@@ -23,6 +27,15 @@
           (resp/content-type "text/html")))))
 
 (spec/def ::is-long (fn [n] (Long/parseLong n)))
+
+;(spec/def ::ids (spec/or
+;                  nat-int?
+;                  (spec/coll-of nat-int?)))
+
+(spec/def ::ids (spec/or :ids (spec/coll-of nat-int?)
+                         :id nat-int?))
+
+(spec/def ::id nat-int?)
 
 
 (def routes
@@ -34,49 +47,22 @@
                 :handler    (fn [req]
                               (clojure.pprint/pprint (-> req :parameters))
                               (let [id (-> req :parameters :path :id read-string)]
-                                (resp/ok (explore/entity-without-components2 (client/db) id))))}}]
-     ["/attributes" {:get {:parameters {:path {:id number?}}
-                           :handler    (fn [req]
-                                         (let [id (-> req :parameters :path :id read-string)]
-                                           (resp/ok (into {} (explore/non-reference-values (client/db) id)))))}}]
-     ["/references" {:get {:parameters {:path {:id some?}}
-                           :handler    (fn [req]
-                                         (let [id (-> req :parameters :path :id read-string)]
-                                           (resp/ok (explore/group-values-by-key (explore/reference-values (client/db) id)))))}}]]
+                                (resp/ok (explore/entity-without-components2 (client/db) id))))}}]]
     ["/nodes"
-     ["" {:get {:parameters {:query {:ids (spec/coll-of nat-int?)}}
+     ["" {:get {:parameters {:query {:ids ::ids}}
+                :coercion   spec-coercion/coercion
                 :handler    (fn [req]
+                              (clojure.pprint/pprint req)
 
-                              (resp/ok (explore/entities-without-components (client/db) (-> req :parameters :query :ids))))}}]
-     ["/attributes" {:get {:parameters {:path {:id number?}}
-                           :handler    (fn [req]
-                                         (let [id (-> req :parameters :path :id read-string)]
-                                           (resp/ok (into {} (explore/non-reference-values (client/db) id)))))}}]
-     ["/references" {:get {:parameters {:path {:id some?}}
-                           :handler    (fn [req]
-                                         (let [id (-> req :parameters :path :id read-string)]
-                                           (resp/ok (explore/group-values-by-key (explore/reference-values (client/db) id)))))}}]]
-    ["/orgs"
-     ["" {:get {:handler (fn [r]
-                           (resp/ok (queries/orgs (client/db))))}}]
-     ["/{org/short-name}/spaces"
-      ["" {:get {:handler (fn [{{org-short-name :org/short-name} :path-params}]
-                            (resp/ok (queries/spaces (client/db) org-short-name)))}}]
-      ["/{space/uuid}" {:get {
-                              :parameters {:path {:space/uuid uuid?}}
-                              :handler    (fn [req]
-                                            (resp/ok (queries/space-details (client/db) (-> req :parameters :path :space/uuid)))
+                              (let [ids-input (-> req :parameters :query :ids)]
+                                (resp/ok (explore/entities-without-components (client/db)
+                                                                              (cond->
+                                                                                ids-input
+                                                                                (not (coll? ids-input)) vector)))))}}]
 
-                                            )}}]
-      ]]]
+     ]
+    ]
 
-   ["/plain"
-    ["/plus" {:get  {:parameters {:query {:sample string?}}
-                     :handler    (fn [r]
-                                   (resp/ok "thanks2"))}
-              :post (fn [{{:keys [x y]} :body-params}]
-                      {:status 200
-                       :body   {:total (+ x y)}})}]]
    ;["/*" (ring/create-resource-handler)]
    ["/*" handler]
    ])

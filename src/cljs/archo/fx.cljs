@@ -74,7 +74,7 @@
               ; If the request was unsuccessful, retry it once more.
               ; This is to circumvent a bug in the API Gateway that spontaneously
               ; throws 500 errors "Connection reset by peer"
-              (if-not is-retry?
+              #_(if-not is-retry?
                 (js/setTimeout #(api (merge req {:is-retry? true
                                                  :track-id  track-id}))
                                1000)
