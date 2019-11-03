@@ -28,7 +28,8 @@
      ;:route/space [space/main]
      ;:route/browser-id [activate]
      ;:route/explore [activate]
-     [:div.test-container "404"])])
+     ;[:div.test-container "404"]
+     [:div])])
 
 (defn show-panel []
   (fn [active-route]

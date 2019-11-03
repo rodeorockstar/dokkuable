@@ -36,10 +36,10 @@
 (defn entity []
   (fn [{:keys [id trail entity cursor]}]
     ;(js/console.log "cursor" (str id) (first (drop (count trail) cursor)))
-    [:div.box.is-family-monospace.entity-card
-     [:div.tag.is-medium
+    [:div.box.is-family-monospace.entity-card.is-small.content
+     [:div.tag;.tag.is-medium
       (str id)]
-     [:a.delete.is-large.is-pulled-right
+     [:a.delete.is-medium.is-pulled-right.is-link
       {:href (if-let [t (not-empty (butlast trail))]
                (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" t))})
                (routes/url-for :route/search))}
@@ -108,9 +108,10 @@
         ]
     (fn []
 
+      (js/console.log "allitems" @all-items)
+
       (into [:div.tree-browser.is-family-monospace]
             (map (fn [item]
-                   (js/console.log "item" (-> item :id str) (map str (-> item :trail)))
                    [entity item])) @all-items)
 
       [:> FlipMove {:class            "tree-browser2 table-container"
