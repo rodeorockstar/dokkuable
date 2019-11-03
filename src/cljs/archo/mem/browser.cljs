@@ -23,7 +23,10 @@
 (reg-event-db ::store-nodes trim-v
               (fn [db [results]]
                 ;(js/console.log "RESULTS" (reduce (fn [total next]) results))
-                (update db :nodes merge results)))
+                (let [r (reduce (fn [total [k v]]
+                                (assoc total (lo/fromString (str k)) v)
+                                ) {} results)]
+                  (update db :nodes merge r))))
 
 (reg-event-fx ::fetch-schema trim-v
               (fn [{db :db} []]
@@ -80,8 +83,10 @@
          :<- [::schema]
          (fn [[nodes cursor schema]]
 
-           ;(js/console.log "Getting" (get nodes 64))
+
            (reduce (fn [total db-id]
+                     
+
                      (conj total
                            {:id     db-id
                             :trail  (vec (conj (:trail (last total)) db-id))

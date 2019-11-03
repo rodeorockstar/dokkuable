@@ -110,18 +110,17 @@
 
       ;(js/console.log "allitems" @all-items)
 
-      (into [:div.tree-browser.is-family-monospace]
-            (map (fn [item]
-                   [entity item])) @all-items)
 
-      [:> FlipMove {:class            "tree-browser2 table-container"
-                    :enter-animation  "fade"
-                    :appear-animation "fade"
-                    :leave-animation  "fade"
-                    }
-       (for [item @all-items]
-         ^{:key (-> item :id str)}
-         [entity (assoc item :cursor @cursor)])]
+
+      (let [c @cursor]
+        [:> FlipMove {:class            "tree-browser table-container"
+                     :enter-animation  "fade"
+                     :appear-animation "fade"
+                     :leave-animation  "fade"
+                     }
+        (for [item @all-items]
+          ^{:key (-> item :id str)}
+          [entity (assoc item :cursor c)])])
 
       )))
 
