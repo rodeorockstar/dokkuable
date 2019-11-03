@@ -108,7 +108,8 @@
         ]
     (fn []
 
-      ;(js/console.log "allitems" @all-items)
+
+      (js/console.log "S" (filter (fn [[id details]] (-> details :db/unique)) @schema))
 
 
 

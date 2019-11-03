@@ -32,8 +32,9 @@
   ;; apply Spec coercion to all routes
   ["/"
    ;["" {:name :route/home}]
+   ["" {:name :route/search}]
    ["explore"
-    ["" {:name :route/search}]
+
     ["/{*id-tree}" {:name        :route/browser-id
                     :parameters  {:path {:id-tree string?}}
                     :controllers [{:identity identity
