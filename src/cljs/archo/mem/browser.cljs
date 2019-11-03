@@ -85,7 +85,7 @@
 
 
            (reduce (fn [total db-id]
-                     
+
 
                      (conj total
                            {:id     db-id
