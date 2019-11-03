@@ -108,7 +108,7 @@
         ]
     (fn []
 
-      (js/console.log "allitems" @all-items)
+      ;(js/console.log "allitems" @all-items)
 
       (into [:div.tree-browser.is-family-monospace]
             (map (fn [item]

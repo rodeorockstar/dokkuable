@@ -80,7 +80,7 @@
          :<- [::schema]
          (fn [[nodes cursor schema]]
 
-           (js/console.log "Getting" (get nodes 64))
+           ;(js/console.log "Getting" (get nodes 64))
            (reduce (fn [total db-id]
                      (conj total
                            {:id     db-id
@@ -91,5 +91,5 @@
 
 (reg-sub ::as-entity
          (fn [db [_ datoms]]
-           (js/console.log "datoms" datoms)
+           ;(js/console.log "datoms" datoms)
            (group-by second datoms)))
