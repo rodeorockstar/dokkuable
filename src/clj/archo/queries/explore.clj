@@ -95,17 +95,9 @@
 
 
 
-(defn entity-without-components2 [db id]
-  (group-by first (d/q '{:find  [?id ?attr ?v ?t]
-                         :in    [$ ?id]
-                         :where [[?id ?attr ?v ?t]
-                                 [?attr :db/ident ?attr-ident]
-                                 [?attr :db/cardinality ?cardinality]
-                                 [?cardinality :db/ident ?cardinality-ident]]}
-                       db id)))
+
 
 (defn entities-without-components [db ids]
-  (println "INCOMINGIDS" ids)
   (group-by first (d/q '{:find  [?id ?attr ?v ?t]
                          :in    [$ [?id ...]]
                          :where [[?id ?attr ?v ?t]
@@ -113,3 +105,10 @@
                                  [?attr :db/cardinality ?cardinality]
                                  [?cardinality :db/ident ?cardinality-ident]]}
                        db ids)))
+
+(defn find-id [db a v]
+  (println "finding" a (type a) v (type v))
+  (entities-without-components db (first (d/q '{:find  [?e]
+                                                :in    [$ ?a ?v]
+                                                :where [[?e ?a ?v]]}
+                                              db a v))))

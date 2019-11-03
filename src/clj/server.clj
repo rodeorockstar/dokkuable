@@ -16,6 +16,7 @@
             [muuntaja.core :as m]
             [reitit.ring.coercion :as coercion]
             [reitit.ring :as ring]
+            [archo.client :as client]
     ;[example.plain]
     ;[example.dspec]
     ;[example.schema]
@@ -43,14 +44,14 @@
       [api-routes/routes]
       {
        :conflicts (constantly nil)
-       :data {:muuntaja   m/instance
-              :coercion   reitit.coercion.spec/coercion
-              :middleware [params/wrap-params
-                           muuntaja/format-middleware
-                           coercion/coerce-exceptions-middleware
-                           coercion/coerce-request-middleware
-                           coercion/coerce-response-middleware
-                           [wrap-cors identity]]}})
+       :data      {:muuntaja   m/instance
+                   :coercion   reitit.coercion.spec/coercion
+                   :middleware [params/wrap-params
+                                muuntaja/format-middleware
+                                coercion/coerce-exceptions-middleware
+                                coercion/coerce-request-middleware
+                                coercion/coerce-response-middleware
+                                [wrap-cors identity]]}})
     (ring/routes
       ;(ring/create-resource-handler {:path "/"})
       (ring/create-default-handler))))
@@ -60,4 +61,5 @@
   []
   (let [port 5000]
     (println "Web server starting on port" port)
+    (println "using db" (client/db))
     (kit/run-server app {:port port})))

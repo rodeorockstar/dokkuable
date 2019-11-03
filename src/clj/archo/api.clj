@@ -45,11 +45,21 @@
     ["/schema"
      ["" {:get {:handler (fn [req]
                            (resp/ok (explore/wind :db/id (map first (explore/schema (client/db))))))}}]]
+    ["/search"
+     ["" {:post {:parameters {:body {:attribute keyword?
+                                     :value     some?}}
+                 :handler    (fn [req]
+                               (println "PARAMSARE" (-> req :parameters))
+                               (println "values" (vals (-> req :parameters :body)))
+                               (println "types" (map type (vals (-> req :parameters :body))))
+                               (resp/ok (explore/find-id (client/db) (-> req :parameters :body :attribute) (-> req :parameters :body :value)))
+                               ;(resp/ok (explore/wind :db/id (map first (explore/schema (client/db)))))
+                               )}}]]
     ["/nodes"
      ["" {:get {:parameters {:query {:ids ::ids}}
                 :coercion   spec-coercion/coercion
                 :handler    (fn [req]
-                              (clojure.pprint/pprint req)
+                              ;(clojure.pprint/pprint req)
 
                               (let [ids-input (-> req :parameters :query :ids)]
                                 (resp/ok (explore/entities-without-components (client/db)

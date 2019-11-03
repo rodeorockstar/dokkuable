@@ -40,10 +40,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def get-client
   (memoize (fn []
-             (println "PARAMSARE")
-             (clojure.pprint/pprint (get-params))
+             ;(println "PARAMSARE")
+             ;(clojure.pprint/pprint (get-params))
              (let [env (name (get (ion/get-env) :env :dev))]
-               (println "ENVIS" env)
+               ;(println "ENVIS" env)
                (try
                  (d/client
                    {:server-type :cloud
@@ -60,7 +60,7 @@
   Tip: you probably want to use the memoized get-conn fn below.
   "
   []
-  (println "GETCONNDBNAME" (get-param "db-name"))
+  ;(println "GETCONNDBNAME" (get-param "db-name"))
   (d/connect (get-client) {:db-name
                            ;"joshdb"
                            (get-param "db-name")

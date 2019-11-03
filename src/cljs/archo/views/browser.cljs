@@ -9,7 +9,8 @@
             [archo.routes :as routes]
             [reagent.core :as r]
             ["react-flip-move" :as FlipMove]
-    ;[goog.math.Long :as lo]
+
+            [goog.math.Long :as lo]
             ))
 
 (defn is-many? [schema attribute]
@@ -27,6 +28,7 @@
    :db.type/ref     [:i.fad.fa-share]
    :db.type/uuid    [:i.fad.fa-globe-africa]
    :db.type/string  [:i.fad.fa-text]
+   :db.type/boolean [:i.fad.fa-toggle-on]
    :db.type/keyword [:div "kw"]
    })
 
@@ -37,7 +39,7 @@
   (fn [{:keys [id trail entity cursor]}]
     ;(js/console.log "cursor" (str id) (first (drop (count trail) cursor)))
     [:div.box.is-family-monospace.entity-card.is-small.content
-     [:div.tag;.tag.is-medium
+     [:div.is-pulled-left.has-text-link ;.tag.is-medium
       (str id)]
      [:a.delete.is-medium.is-pulled-right.is-link
       {:href (if-let [t (not-empty (butlast trail))]
@@ -54,10 +56,12 @@
                     [:td (attr->icon attribute)]
                     (into [:td]
                           (map (fn [[e a v t]]
-                                 [:div
+                                 [:span
                                   (case (-> attribute :db/valueType :db/ident)
-                                    :db.type/ref [:a {:href (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" (conj (mapv str trail) v)))})
-                                                      :class (when (= v (first (drop (count trail) cursor))) "has-background-link has-text-dark")} (str v)]
+                                    :db.type/ref [:a.tag {:href  (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" (conj (mapv str trail) v)))})
+                                                          :class (when (= (lo/fromString (str v)) (first (drop (count trail) cursor))) "is-link")
+                                                          }
+                                                  (str v)]
                                     [:div (str v)])])
                                (sort-by
                                  (fn [[e a v t]]
@@ -69,10 +73,11 @@
 
 
 (defn selector []
-  (let [id (r/atom nil)]
+  (let [id     (r/atom nil)
+        unique (subscribe [::mem-browser/unique-idents])]
     (fn []
-     ; 34159627256401032
-      [:section.hero.is-transparent
+      ; 34159627256401032
+      [:section.hero.is-transparent.is-family-monospace
        [:div.hero-body
         [:div.container.is-fullwidth
          [:div.columns.is-centered
@@ -93,6 +98,9 @@
                                                                               :placeholder "34159627256401032"
                                                                               :on-change   (fn [d]
                                                                                              (reset! id (oget d :target :value)))}]]]
+            #_[:div.select.is-family-monospace
+             (into [:select.has-background-dark.is-family-monospace]
+                   (map (fn [o] [:option (-> o :db/ident str)]) @unique))]
             [:div.field.is-pulled-right
              [:div.control
               [:button.button.is-link.is-medium {:type "submit"} "Explore"]]]]]]]]])))
@@ -107,21 +115,19 @@
         all-items (subscribe [::mem-browser/all-items])
         ]
     (fn []
-
-
-      (js/console.log "S" (filter (fn [[id details]] (-> details :db/unique)) @schema))
-
-
-
-      (let [c @cursor]
-        [:> FlipMove {:class            "tree-browser table-container"
-                     :enter-animation  "fade"
-                     :appear-animation "fade"
-                     :leave-animation  "fade"
-                     }
-        (for [item @all-items]
-          ^{:key (-> item :id str)}
-          [entity (assoc item :cursor c)])])
+      [:div
+       #_[:button.button
+        {:on-click (fn [] (dispatch [::mem-browser/search]))}
+        "Search"]
+       (let [c @cursor]
+         [:> FlipMove {:class            "tree-browser table-container"
+                       :enter-animation  "fade"
+                       :appear-animation "fade"
+                       :leave-animation  "fade"
+                       }
+          (for [item @all-items]
+            ^{:key (-> item :id str)}
+            [entity (assoc item :cursor c)])])]
 
       )))
 

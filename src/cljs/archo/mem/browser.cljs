@@ -24,16 +24,16 @@
               (fn [db [results]]
                 ;(js/console.log "RESULTS" (reduce (fn [total next]) results))
                 (let [r (reduce (fn [total [k v]]
-                                (assoc total (lo/fromString (str k)) v)
-                                ) {} results)]
+                                  (assoc total (lo/fromString (str k)) v)
+                                  ) {} results)]
                   (update db :nodes merge r))))
 
 (reg-event-fx ::fetch-schema trim-v
               (fn [{db :db} []]
                 {
-                 ::fx/api {:uri          (str "/assets/schema")
-                           :method       :get
-                           :on-success   [::store-schema]}}))
+                 ::fx/api {:uri        (str "/assets/schema")
+                           :method     :get
+                           :on-success [::store-schema]}}))
 
 (reg-event-db ::store-schema trim-v
               (fn [db [results]]
@@ -98,3 +98,28 @@
          (fn [db [_ datoms]]
            ;(js/console.log "datoms" datoms)
            (group-by second datoms)))
+
+
+(reg-sub ::unique-idents
+         :<- [::schema]
+         (fn [schema]
+           (sort-by :db/ident (filter (fn [attribute]
+                                        (-> attribute :db/unique)
+                                        ) (vals schema)))))
+
+
+
+(reg-event-fx ::search trim-v
+              (fn [{db :db} [{:keys [attribute value]}]]
+                (let [kw :node/uuid]
+                  {
+                   ::fx/api {:uri        (str "/assets/search")
+                             :method     :post
+                             :params     {:attribute kw
+                                          :value     #uuid"1b84708c-79d2-4159-8829-666ea050eaf9"}
+                             :on-success [::store-nodes]}})))
+
+(reg-event-db ::store-search trim-v
+              (fn [db [results]]
+                (js/console.log "storing search results" results)
+                db))
