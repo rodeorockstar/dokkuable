@@ -91,39 +91,49 @@
                                                                                  ))
                                                     }]
 
-                                    [:div.modal {:class (when @confirm? "is-active")}
-                                     [:div.modal-background
-                                      {:on-click (fn [] (dispatch [::mem-browser/toggle-modal false]))}]
-                                     [:div.modal-content
-                                      [:div.box
+                                    [:> FlipMove {:class            ""
+                                                  :enter-animation  "fade"
+                                                  :appear-animation "fade"
+                                                  :leave-animation  "fade"
+                                                  }
+                                     ^{:key (str "modal" a v)}
 
-                                       [:article.media
-                                        [:div.media-left
-                                         [:figure
-                                          [:i.fad.fa-exclamation-triangle.fa-4x.has-text-warning]]]
-                                        [:div.media-content
-                                         [:div.content
-                                          [:p.is-size-5 "You are about to change a value in the database."]
-                                          [:p "Do you want to continue?"]
-                                          [:div.field.is-grouped
-                                           [:div.control
-                                            [:button.button.is-warning
-                                             {:on-click (fn []
-                                                          (dispatch [::mem-browser/edit e a @temp-value])
-                                                          (reset! confirm? false)
-                                                          )}
-                                             "Transact"]]
-                                           [:div.control
-                                            [:button.button.is-link.is-light
-                                             {:on-click (fn []
-                                                          (reset! confirm? false)
-                                                          (reset! okey (gensym))
-                                                          (reset! temp-value @original-value)
-                                                          )}
-                                             "Cancel"]]]]]]
+                                     [:div.modal {:class (when @confirm? "is-active")}
+                                      [:div.modal-background
+                                       {:on-click (fn [] (dispatch [::mem-browser/toggle-modal false]))}]
+                                      [:div.modal-content
+                                       [:div.box
 
-                                       ]]
-                                     [:button.modal-close.is-large {:aria-label "close"}]]
+                                        [:article.media
+                                         [:div.media-left
+                                          [:figure
+                                           [:i.fad.fa-exclamation-triangle.fa-4x.has-text-warning]]]
+                                         [:div.media-content
+                                          [:div.content
+                                           [:p.is-size-5 "You are about to change a value in the database."]
+                                           [:p "Do you want to continue?"]
+                                           [:div.field.is-grouped
+                                            [:div.control
+                                             [:button.button.is-warning
+                                              {:on-click (fn []
+                                                           (dispatch [::mem-browser/edit e a @temp-value])
+                                                           (reset! confirm? false)
+                                                           )}
+                                              "Transact"]]
+                                            [:div.control
+                                             [:button.button.is-link.is-light
+                                              {:on-click (fn []
+                                                           (reset! confirm? false)
+                                                           (reset! okey (gensym))
+                                                           (reset! temp-value @original-value)
+                                                           )}
+                                              "Cancel"]]]]]]
+
+                                        ]]
+                                      [:button.modal-close.is-large {:aria-label "close"}]]
+                                     ]
+
+
 
                                     #_[:div.controls.has-background-info {:style {:position "relative"
                                                                                   ;:bottom   "-30px"
@@ -152,7 +162,7 @@
 (defn entity []
   (fn [{:keys [id trail entity cursor]}]
     ;(js/console.log "cursor" (str id) (first (drop (count trail) cursor)))
-    [:div.box.is-family-monospace.entity-card.is-small.content
+    [:div.box.is-family-monospace.entity-card ;.is-small.content
      [:div.is-pulled-left.has-text-link ;.tag.is-medium
       (str id)]
      [:a.delete.is-medium.is-pulled-right.is-link
