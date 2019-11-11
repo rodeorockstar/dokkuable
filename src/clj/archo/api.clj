@@ -37,11 +37,34 @@
 
 (spec/def ::id nat-int?)
 
+(spec/def ::someval (spec/or
+                      :iskw keyword?
+                      :isnum number?
+                      ))
+
+
 
 (def routes
   [
    ;["" (ring/create-resource-handler)]
    ["/assets" {:coercion reitit.coercion.spec/coercion}
+
+    ["/c"
+     ["" {:get {:parameters {:query {:val ::someval}}
+                :handler    (fn [req]
+                              (println (-> req :parameters))
+                              (resp/ok {:success true}))}}]]
+
+    ["/edit"
+     ["" {:post {:parameters {:body {:entity    some?
+                                     :attribute some?
+                                     :value     some?}}
+                 :handler    (fn [req]
+                               (println (-> req :parameters))
+                               (let [{e :entity a :attribute v :value} (-> req :parameters :body)]
+                                 (resp/ok (explore/edit (client/db) e a v))))}}]]
+
+
     ["/schema"
      ["" {:get {:handler (fn [req]
                            (resp/ok (explore/wind :db/id (map first (explore/schema (client/db))))))}}]]
@@ -49,9 +72,9 @@
      ["" {:post {:parameters {:body {:attribute keyword?
                                      :value     some?}}
                  :handler    (fn [req]
-                               (println "PARAMSARE" (-> req :parameters))
-                               (println "values" (vals (-> req :parameters :body)))
-                               (println "types" (map type (vals (-> req :parameters :body))))
+                               ;(println "PARAMSARE" (-> req :parameters))
+                               ;(println "values" (vals (-> req :parameters :body)))
+                               ;(println "types" (map type (vals (-> req :parameters :body))))
                                (resp/ok (explore/find-id (client/db) (-> req :parameters :body :attribute) (-> req :parameters :body :value)))
                                ;(resp/ok (explore/wind :db/id (map first (explore/schema (client/db)))))
                                )}}]]

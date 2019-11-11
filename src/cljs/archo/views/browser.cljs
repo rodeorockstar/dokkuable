@@ -21,7 +21,43 @@
 
 
 
-
+(defn editable []
+  (let [el        (r/atom nil)
+        state     (r/atom nil)
+        new-state (r/atom nil)
+        editable? (r/atom true)]
+    (r/create-class
+      {:reagent-render (fn [entity attribute value]
+                         [:div.can-edit {:style {:position "relative"}}
+                          [:div.editable {
+                                          :contentEditable         @editable?
+                                          ;:class (when @editable? "is-editing has-background-info")
+                                          :ref                     (fn [e] (reset! el e))
+                                          :dangerouslySetInnerHTML {:__html value}
+                                          :on-focus                (fn [e] (reset! state (oget e :target :innerText)))
+                                          :on-blur                 (fn [e]
+                                                                     (when (not= @state (oget e :target :innerText)) (dispatch [::mem-browser/edit entity attribute (oget e :target :innerText)]))
+                                                                     ;(reset! editable? false)
+                                                                     )
+                                          :on-key-up               (fn [e] (if (= 13 (oget e :keyCode)) (-> e (oget :target) (ocall :blur))))
+                                          :on-key-down             (fn [e]
+                                                                     (when (= 13 (oget e :keyCode))
+                                                                       (do
+                                                                         (ocall e :preventDefault)
+                                                                         (ocall e :stopPropagation)
+                                                                         (-> e (oget :target) (ocall :blur)))))
+                                          }]
+                          #_[:div.controls.has-background-info {:style {:position "relative"
+                                                                      ;:bottom   "-30px"
+                                                                      :width    "100%"
+                                                                      :padding "10px"
+                                                                      }}
+                           [:i.fad.fa-pencil
+                            {:on-click (fn []
+                                         (swap! editable? not)
+                                         (js/setTimeout
+                                           (fn [] (ocall @el :focus))
+                                           1))}]]])})))
 
 (def icon-map
   {
@@ -58,11 +94,14 @@
                           (map (fn [[e a v t]]
                                  [:span
                                   (case (-> attribute :db/valueType :db/ident)
-                                    :db.type/ref [:a.tag {:href  (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" (conj (mapv str trail) v)))})
+                                    :db.type/ref [:a.tag {
+                                                          :href  (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" (conj (mapv str trail) v)))})
                                                           :class (when (= (lo/fromString (str v)) (first (drop (count trail) cursor))) "is-link")
                                                           }
                                                   (str v)]
-                                    [:div (str v)])])
+                                    ;[:div {:contentEditable true} (str v)]
+                                    [editable e a v]
+                                    )])
                                (sort-by
                                  (fn [[e a v t]]
                                    (str v)
@@ -87,8 +126,10 @@
                           ; prevent the form from submitting the page
                           (ocall e :preventDefault)
                           ; and route the user to the explorer
-                          (routes/redirect! {:name        :route/browser-id
-                                             :path-params {:id-tree @id}})
+                          #_(routes/redirect! {:name        :route/browser-id
+                                               :path-params {:id-tree @id}})
+                          (dispatch [::mem-browser/search])
+
                           )}
             [:div.field
              ;[:label.label ":db/id"]
@@ -98,7 +139,7 @@
                                                                               :placeholder "34159627256401032"
                                                                               :on-change   (fn [d]
                                                                                              (reset! id (oget d :target :value)))}]]]
-            #_[:div.select.is-family-monospace
+            [:div.select.is-family-monospace
              (into [:select.has-background-dark.is-family-monospace]
                    (map (fn [o] [:option (-> o :db/ident str)]) @unique))]
             [:div.field.is-pulled-right
@@ -116,9 +157,11 @@
         ]
     (fn []
       [:div
+       #_[:div.notification.is-link
+        [:h4 "hi"]]
        #_[:button.button
-        {:on-click (fn [] (dispatch [::mem-browser/search]))}
-        "Search"]
+          {:on-click (fn [] (dispatch [::mem-browser/search]))}
+          "Search"]
        (let [c @cursor]
          [:> FlipMove {:class            "tree-browser table-container"
                        :enter-animation  "fade"
@@ -132,4 +175,9 @@
       )))
 
 ; http://localhost:5000/explore/34159627256401032-34159627256423753-34841324465644688-34841324465644715-37291036372329644-37291036372329650-34062870230265719
+
+
+; http://localhost:5000/explore/34159627256401032-34159627256401033
+
+; http://localhost:5000/explore/17376681767001057
 

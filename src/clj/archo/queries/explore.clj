@@ -112,3 +112,49 @@
                                                 :in    [$ ?a ?v]
                                                 :where [[?e ?a ?v]]}
                                               db a v))))
+
+(def db-types #{:db.type/keyword :db.type/string :db.type/boolean
+                :db.type/long :db.type/bigint :db.type/float
+                :db.type/double :db.type/bigdec :db.type/ref
+                :db.type/instant :db.type/uuid :db.type/uri
+                :db.type/bytes})
+
+(defn str->boolean [s] (Boolean/valueOf s))
+(defn str->long [s] (Long/parseLong s))
+(defn str->uuid [s] (java.util.UUID/fromString s))
+
+(def to-type
+  {:db.type/keyword keyword
+   :db.type/string  str
+   :db.type/boolean str->boolean
+   :db.type/long    str->long
+   :db.type/uuid    str->uuid})
+
+
+;{:entity 34159627256401033, :attribute 373, :value "What is used to guide the grodwth of cerebral organoids?"}
+
+(def somes2 [34159627256401033 373 "What is used to guide the grodwth of cerebral organoids?"])
+(def somes [17376681767001057 118 "04474585-a75d-49b4-aec4-ae467ade2dd1"])
+
+(defn edit [db e a v]
+  (println "finding" a (type a) v (type v))
+  (let [[attr-ident value-type] (first (d/q '{:find  [?attr-ident ?value-type-ident]
+                                              :in    [$ ?a]
+                                              :where [
+                                                      [?a :db/ident ?attr-ident]
+                                                      [?a :db/valueType ?value-type]
+                                                      [?value-type :db/ident ?value-type-ident]
+                                                      ]}
+                                            (client/db) a))
+        coercion-fn (get to-type value-type read-string)]
+    (let [coerced-value (coercion-fn v)]
+      (println "coerced" e a v coercion-fn)
+      ;[attr-ident coerced-value]
+      (let [tx-result (d/transact (client/get-conn)
+                                  {:tx-data [
+                                             [:db/add e a coerced-value]
+                                             ]}
+                                  )]
+        (println "R" tx-result)
+        {:success false})
+      )))

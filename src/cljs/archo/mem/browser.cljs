@@ -123,3 +123,25 @@
               (fn [db [results]]
                 (js/console.log "storing search results" results)
                 db))
+
+
+(reg-event-fx ::edit trim-v
+              (fn [{db :db} [e a v]]
+                (js/console.log "EE" e a v)
+
+                {::fx/api {:uri "/assets/edit"
+                           :method :post
+                           :params {:entity e
+                                    :attribute a
+                                    :value v}
+                           :on-success [::store-edit]}}
+                ))
+
+(reg-event-db ::store-edit trim-v
+              (fn [db [results]]
+                (js/console.log "results" results)
+                db))
+
+
+
+
