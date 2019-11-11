@@ -19,45 +19,123 @@
 (defn is-ref? [schema attribute]
   (= :db.type/ref (get-in schema [attribute :db/valueType :db/ident])))
 
-
+(defn modal []
+  (let [show? (subscribe [::mem-browser/modal-status])]
+    (fn []
+      [:div.modal {:class (when @show? "is-active")}
+       [:div.modal-background
+        {:on-click (fn [] (dispatch [::mem-browser/toggle-modal false]))}]
+       [:div.modal-content
+        [:div.box
+         [:article.media
+          [:div.media-left
+           [:figure
+            [:i.fad.fa-globe-africa]]]
+          [:div.media-content
+           [:div.content
+            [:p "You are about to change a value in the database. Do you want to continue?"]]]]]]
+       ])))
 
 (defn editable []
-  (let [el        (r/atom nil)
-        state     (r/atom nil)
-        new-state (r/atom nil)
-        editable? (r/atom true)]
+  (let [el             (r/atom nil)
+        state          (r/atom nil)
+        new-state      (r/atom nil)
+        editable?      (r/atom true)
+        temp-value     (r/atom nil)
+        confirm?       (r/atom false)
+        original-value (r/atom nil)
+        okey           (r/atom (gensym))]
     (r/create-class
-      {:reagent-render (fn [entity attribute value]
-                         [:div.can-edit {:style {:position "relative"}}
-                          [:div.editable {
-                                          :contentEditable         @editable?
-                                          ;:class (when @editable? "is-editing has-background-info")
-                                          :ref                     (fn [e] (reset! el e))
-                                          :dangerouslySetInnerHTML {:__html value}
-                                          :on-focus                (fn [e] (reset! state (oget e :target :innerText)))
-                                          :on-blur                 (fn [e]
-                                                                     (when (not= @state (oget e :target :innerText)) (dispatch [::mem-browser/edit entity attribute (oget e :target :innerText)]))
-                                                                     ;(reset! editable? false)
-                                                                     )
-                                          :on-key-up               (fn [e] (if (= 13 (oget e :keyCode)) (-> e (oget :target) (ocall :blur))))
-                                          :on-key-down             (fn [e]
-                                                                     (when (= 13 (oget e :keyCode))
-                                                                       (do
-                                                                         (ocall e :preventDefault)
-                                                                         (ocall e :stopPropagation)
-                                                                         (-> e (oget :target) (ocall :blur)))))
-                                          }]
-                          #_[:div.controls.has-background-info {:style {:position "relative"
-                                                                      ;:bottom   "-30px"
-                                                                      :width    "100%"
-                                                                      :padding "10px"
-                                                                      }}
-                           [:i.fad.fa-pencil
-                            {:on-click (fn []
-                                         (swap! editable? not)
-                                         (js/setTimeout
-                                           (fn [] (ocall @el :focus))
-                                           1))}]]])})))
+      {:component-did-mount     (fn [this]
+                                  (reset! original-value (:v (r/props this)))
+                                  (reset! temp-value (:v (r/props this)))
+                                  )
+       :should-component-update (fn [this]
+                                  ;(r/force-update this)
+                                  true
+                                  )
+       :reagent-render          (fn [{:keys [e a v]}]
+                                  [:div
+                                   ;[:div.has-background-info (str @okey)]
+                                   ;[:div.has-background-info (str @original-value)]
+                                   ;[:div.has-background-warning (str @temp-value)]
+                                   [:div.can-edit {:style {:position "relative"}}
+
+                                     ^{:key @okey} [:div.editable {
+                                                    :contentEditable         @editable?
+                                                    ;:class (when @editable? "is-editing has-background-info")
+                                                    :ref                     (fn [dom-node] (reset! el dom-node))
+                                                    :dangerouslySetInnerHTML {:__html @original-value}
+                                                    :on-focus                (fn [evt]
+                                                                               (reset! state (oget evt :target :innerText))
+                                                                               ;(dispatch [::mem-browser/toggle-modal true])
+                                                                               )
+                                                    :on-blur                 (fn [evt]
+                                                                               (when (not= @state (oget evt :target :innerText))
+                                                                                 #_(dispatch [::mem-browser/edit entity a (oget el :target :innerText)])
+                                                                                 (reset! confirm? true)
+                                                                                 )
+                                                                               ;(reset! editable? false)
+                                                                               )
+                                                    :on-key-up               (fn [evt] (if (= 13 (oget evt :keyCode))
+                                                                                         (-> evt
+                                                                                             (oget :target)
+                                                                                             (ocall :blur))
+                                                                                         (reset! temp-value (oget evt :target :innerText))))
+                                                    :on-key-down             (fn [evt]
+                                                                               (if (= 13 (oget evt :keyCode))
+                                                                                 (do
+                                                                                   (ocall evt :preventDefault)
+                                                                                   (ocall evt :stopPropagation)
+                                                                                   (-> evt (oget :target) (ocall :blur)))
+                                                                                 ))
+                                                    }]
+
+                                    [:div.modal {:class (when @confirm? "is-active")}
+                                     [:div.modal-background
+                                      {:on-click (fn [] (dispatch [::mem-browser/toggle-modal false]))}]
+                                     [:div.modal-content
+                                      [:div.box
+
+                                       [:article.media
+                                        [:div.media-left
+                                         [:figure
+                                          [:i.fad.fa-exclamation-triangle.fa-4x.has-text-warning]]]
+                                        [:div.media-content
+                                         [:div.content
+                                          [:p.is-size-5 "You are about to change a value in the database."]
+                                          [:p "Do you want to continue?"]
+                                          [:div.field.is-grouped
+                                           [:div.control
+                                            [:button.button.is-warning
+                                             {:on-click (fn []
+                                                          (dispatch [::mem-browser/edit e a @temp-value])
+                                                          (reset! confirm? false)
+                                                          )}
+                                             "Transact"]]
+                                           [:div.control
+                                            [:button.button.is-link.is-light
+                                             {:on-click (fn []
+                                                          (reset! confirm? false)
+                                                          (reset! okey (gensym))
+                                                          (reset! temp-value @original-value)
+                                                          )}
+                                             "Cancel"]]]]]]
+
+                                       ]]
+                                     [:button.modal-close.is-large {:aria-label "close"}]]
+
+                                    #_[:div.controls.has-background-info {:style {:position "relative"
+                                                                                  ;:bottom   "-30px"
+                                                                                  :width    "100%"
+                                                                                  :padding  "10px"
+                                                                                  }}
+                                       [:i.fad.fa-pencil
+                                        {:on-click (fn []
+                                                     (swap! editable? not)
+                                                     (js/setTimeout
+                                                       (fn [] (ocall @el :focus))
+                                                       1))}]]]])})))
 
 (def icon-map
   {
@@ -100,7 +178,7 @@
                                                           }
                                                   (str v)]
                                     ;[:div {:contentEditable true} (str v)]
-                                    [editable e a v]
+                                    ^{:key (str a e)} [editable {:e e :a a :v v}]
                                     )])
                                (sort-by
                                  (fn [[e a v t]]
@@ -158,7 +236,7 @@
     (fn []
       [:div
        #_[:div.notification.is-link
-        [:h4 "hi"]]
+          [:h4 "hi"]]
        #_[:button.button
           {:on-click (fn [] (dispatch [::mem-browser/search]))}
           "Search"]
@@ -170,7 +248,8 @@
                        }
           (for [item @all-items]
             ^{:key (-> item :id str)}
-            [entity (assoc item :cursor c)])])]
+            [entity (assoc item :cursor c)])])
+       [modal]]
 
       )))
 

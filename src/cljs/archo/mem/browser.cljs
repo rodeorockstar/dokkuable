@@ -121,13 +121,13 @@
 
 (reg-event-db ::store-search trim-v
               (fn [db [results]]
-                (js/console.log "storing search results" results)
+                ;(js/console.log "storing search results" results)
                 db))
 
 
 (reg-event-fx ::edit trim-v
               (fn [{db :db} [e a v]]
-                (js/console.log "EE" e a v)
+                ;(js/console.log "EE" e a v)
 
                 {::fx/api {:uri "/assets/edit"
                            :method :post
@@ -139,8 +139,17 @@
 
 (reg-event-db ::store-edit trim-v
               (fn [db [results]]
-                (js/console.log "results" results)
+                ;(js/console.log "results" results)
                 db))
+
+(reg-event-db ::toggle-modal trim-v
+              (fn [db [val]]
+                (assoc db :show-modal? val)
+                ))
+
+(reg-sub ::modal-status
+         (fn [db]
+           (get db :show-modal?)))
 
 
 
