@@ -163,7 +163,7 @@
 (defn entity []
   (fn [{:keys [id trail entity cursor]}]
     ;(js/console.log "cursor" (str id) (first (drop (count trail) cursor)))
-    [:div.box.is-family-monospace.entity-card ;.is-small.content
+    [:div.box.is-family-monospace.entity-card.content.is-small
      [:div.is-pulled-left.has-text-link ;.tag.is-medium
       (str id)]
      [:a.delete.is-medium.is-pulled-right.is-link
@@ -172,7 +172,7 @@
                (routes/url-for :route/search))}
 
       ]
-     [:table.table.is-narrow
+     [:table.table.is-narrow.is-small-content
       (into [:tbody]
             (map (fn [[attribute datoms]]
                    ;(js/console.log "attribute" attribute)
@@ -193,7 +193,7 @@
                                     )])
                                (sort-by
                                  (fn [[e a v t]]
-                                   (str v)
+                                   v
                                    )
                                  datoms)))])
                  (into (sorted-map-by :db/ident) entity)))]]
