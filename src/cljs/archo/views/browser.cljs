@@ -193,7 +193,7 @@
                                     )])
                                (sort-by
                                  (fn [[e a v t]]
-                                   v
+                                   (str v)
                                    )
                                  datoms)))])
                  (into (sorted-map-by :db/ident) entity)))]]
