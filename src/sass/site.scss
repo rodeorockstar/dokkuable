@@ -98,7 +98,8 @@ body, html {
  .entity-card {
     margin: 5px;
     display: inline-block;
-    max-width: 400px;
+    // max-width: 400px;
+    flex: 0 0;
 
  }
 
@@ -149,4 +150,12 @@ body, html {
 
 	max-width: 20em;
 	font: 100%/1.6 Baskerville, Palatino, serif;
+}
+
+.modal-background {
+    background-color: rgba(0, 0, 0, 0.86);
+}
+
+.select select, .textarea, .input {
+    // color: black;
 }

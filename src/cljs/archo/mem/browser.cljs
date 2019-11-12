@@ -1,6 +1,8 @@
 (ns archo.mem.browser
   (:require [archo.fx :as fx]
             [goog.math.Long :as lo]
+            [archo.routes :as routes]
+            [cuerdas.core :as c]
             [re-frame.core :refer [reg-sub reg-event-db reg-event-fx reg-sub trim-v]]))
 
 (reg-event-fx ::fetch-node trim-v
@@ -110,19 +112,25 @@
 
 
 (reg-event-fx ::search trim-v
-              (fn [{db :db} [{:keys [attribute value]}]]
+              (fn [{db :db} [attribute value]]
                 (let [kw :node/uuid]
                   {
                    ::fx/api {:uri        (str "/assets/search")
                              :method     :post
-                             :params     {:attribute kw
-                                          :value     #uuid"1b84708c-79d2-4159-8829-666ea050eaf9"}
-                             :on-success [::store-nodes]}})))
+                             :params     {
+                                          ;:attribute kw
+                                          :attribute attribute
+                                          ;:value     #uuid"1b84708c-79d2-4159-8829-666ea050eaf9"
+                                          :value     value
+                                          }
+                             :on-success [::store-search attribute value]}})))
 
-(reg-event-db ::store-search trim-v
-              (fn [db [results]]
-                ;(js/console.log "storing search results" results)
-                db))
+(reg-event-fx ::store-search trim-v
+              (fn [db [attribute value results]]
+                ;(archo.routes/redirect!)
+                (routes/redirect! {:name :route/browser-id
+                                         :path-params {:id-tree (str (ffirst results))} })
+                {:dispatch [::store-nodes results]}))
 
 
 (reg-event-fx ::edit trim-v

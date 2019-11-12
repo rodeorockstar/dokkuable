@@ -9,7 +9,9 @@
                 [cljs-http "0.1.45"]
                 [com.taoensso/timbre "4.10.0"]
                 [metosin/reitit "0.3.10"]
-                [org.clojure/core.async "0.4.474"]]
+                [org.clojure/core.async "0.4.474"]
+                [funcool/cuerdas "2.2.0"]
+                ]
  ;:deps         true
  :nrepl        {:port 9999}
  :dev-http     {8060 "resources/public"}

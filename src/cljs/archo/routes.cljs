@@ -17,7 +17,7 @@
     [reagent.core :as r]
     [clojure.string :as str]
     [goog.math.Long :as lo]
-    [archo.mem.browser :as mem-browser]
+    ;[archo.mem.browser :as mem-browser]
     ))
 
 ;; another binding for reitit's href fn so that view namespaces already requiring this route namespace
@@ -42,7 +42,7 @@
                                                ; http://localhost:5000/explore/34159627256401032/34159627256424799/8039629026978018
                                                ;(js/console.log "B" (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/")))))
                                                ;(dispatch [::mem-browser/fetch-node (str (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))])
-                                               (dispatch [::mem-browser/fetch-nodes (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"-"))])
+                                               (dispatch [:archo.mem.browser/fetch-nodes (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"-"))])
                                                ;(js/console.log "X" (first (map lo/fromString (str/split (-> m :parameters :path :id-tree) #"/"))))
                                                )}]}]]
 
@@ -92,6 +92,8 @@
   "Given a URL, build a reitit Match and then load it."
   [url]
   (load-route! (assoc (rf/match-by-path router url) :replace true)))
+
+
 
 (defn dispatch-load-route!
   "A coeffect to dispatch the load-route! effect."

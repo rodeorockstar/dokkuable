@@ -2,6 +2,24 @@
   (:require [datomic.client.api :as d]
             [archo.client :as client]))
 
+
+(def db-types #{:db.type/keyword :db.type/string :db.type/boolean
+                :db.type/long :db.type/bigint :db.type/float
+                :db.type/double :db.type/bigdec :db.type/ref
+                :db.type/instant :db.type/uuid :db.type/uri
+                :db.type/bytes})
+
+(defn str->boolean [s] (Boolean/valueOf s))
+(defn str->long [s] (Long/parseLong s))
+(defn str->uuid [s] (java.util.UUID/fromString s))
+
+(def to-type
+  {:db.type/keyword keyword
+   :db.type/string  str
+   :db.type/boolean str->boolean
+   :db.type/long    str->long
+   :db.type/uuid    str->uuid})
+
 (defn describe
   "Return the attributes of an entity in Datomic"
   [db id]
@@ -108,27 +126,45 @@
 
 (defn find-id [db a v]
   (println "finding" a (type a) v (type v))
-  (entities-without-components db (first (d/q '{:find  [?e]
-                                                :in    [$ ?a ?v]
-                                                :where [[?e ?a ?v]]}
-                                              db a v))))
 
-(def db-types #{:db.type/keyword :db.type/string :db.type/boolean
-                :db.type/long :db.type/bigint :db.type/float
-                :db.type/double :db.type/bigdec :db.type/ref
-                :db.type/instant :db.type/uuid :db.type/uri
-                :db.type/bytes})
+  (let [[attr-ident value-type] (first (d/q '{:find  [?attr-ident ?value-type-ident]
+                                              :in    [$ ?a]
+                                              :where [
+                                                      [?a :db/ident ?attr-ident]
+                                                      [?a :db/valueType ?value-type]
+                                                      [?value-type :db/ident ?value-type-ident]
+                                                      ]}
+                                            (client/db) a))
+        coercion-fn (get to-type value-type read-string)]
+    (let [v (coercion-fn v)]
+      ;(println "COERCEDVAL" coerced-value)
+      #_(println "COERCEDVAL" coerced-value)
+      ;[attr-ident coerced-value]
+      #_(let [tx-result (d/transact (client/get-conn)
+                                  {:tx-data [
+                                             [:db/add e a coerced-value]
+                                             ]}
+                                  )]
+        (println "R" tx-result)
+        {:success false})
 
-(defn str->boolean [s] (Boolean/valueOf s))
-(defn str->long [s] (Long/parseLong s))
-(defn str->uuid [s] (java.util.UUID/fromString s))
+      (entities-without-components db (first (d/q '{:find  [?e]
+                                                    :in    [$ ?a ?v]
+                                                    :where [[?e ?a ?v]]}
+                                                  db a v)))
+      ))
 
-(def to-type
-  {:db.type/keyword keyword
-   :db.type/string  str
-   :db.type/boolean str->boolean
-   :db.type/long    str->long
-   :db.type/uuid    str->uuid})
+
+
+
+
+
+
+
+
+  )
+
+
 
 
 ;{:entity 34159627256401033, :attribute 373, :value "What is used to guide the grodwth of cerebral organoids?"}

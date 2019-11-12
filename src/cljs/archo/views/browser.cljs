@@ -8,6 +8,7 @@
             [archo.mem.browser :as mem-browser]
             [archo.routes :as routes]
             [reagent.core :as r]
+            [cuerdas.core :as str]
             ["react-flip-move" :as FlipMove]
 
             [goog.math.Long :as lo]
@@ -61,35 +62,35 @@
                                    ;[:div.has-background-warning (str @temp-value)]
                                    [:div.can-edit {:style {:position "relative"}}
 
-                                     ^{:key @okey} [:div.editable {
-                                                    :contentEditable         @editable?
-                                                    ;:class (when @editable? "is-editing has-background-info")
-                                                    :ref                     (fn [dom-node] (reset! el dom-node))
-                                                    :dangerouslySetInnerHTML {:__html @original-value}
-                                                    :on-focus                (fn [evt]
-                                                                               (reset! state (oget evt :target :innerText))
-                                                                               ;(dispatch [::mem-browser/toggle-modal true])
-                                                                               )
-                                                    :on-blur                 (fn [evt]
-                                                                               (when (not= @state (oget evt :target :innerText))
-                                                                                 #_(dispatch [::mem-browser/edit entity a (oget el :target :innerText)])
-                                                                                 (reset! confirm? true)
-                                                                                 )
-                                                                               ;(reset! editable? false)
-                                                                               )
-                                                    :on-key-up               (fn [evt] (if (= 13 (oget evt :keyCode))
-                                                                                         (-> evt
-                                                                                             (oget :target)
-                                                                                             (ocall :blur))
-                                                                                         (reset! temp-value (oget evt :target :innerText))))
-                                                    :on-key-down             (fn [evt]
-                                                                               (if (= 13 (oget evt :keyCode))
-                                                                                 (do
-                                                                                   (ocall evt :preventDefault)
-                                                                                   (ocall evt :stopPropagation)
-                                                                                   (-> evt (oget :target) (ocall :blur)))
-                                                                                 ))
-                                                    }]
+                                    ^{:key @okey} [:div.editable {
+                                                                  :contentEditable         @editable?
+                                                                  ;:class (when @editable? "is-editing has-background-info")
+                                                                  :ref                     (fn [dom-node] (reset! el dom-node))
+                                                                  :dangerouslySetInnerHTML {:__html @original-value}
+                                                                  :on-focus                (fn [evt]
+                                                                                             (reset! state (oget evt :target :innerText))
+                                                                                             ;(dispatch [::mem-browser/toggle-modal true])
+                                                                                             )
+                                                                  :on-blur                 (fn [evt]
+                                                                                             (when (not= @state (oget evt :target :innerText))
+                                                                                               #_(dispatch [::mem-browser/edit entity a (oget el :target :innerText)])
+                                                                                               (reset! confirm? true)
+                                                                                               )
+                                                                                             ;(reset! editable? false)
+                                                                                             )
+                                                                  :on-key-up               (fn [evt] (if (= 13 (oget evt :keyCode))
+                                                                                                       (-> evt
+                                                                                                           (oget :target)
+                                                                                                           (ocall :blur))
+                                                                                                       (reset! temp-value (oget evt :target :innerText))))
+                                                                  :on-key-down             (fn [evt]
+                                                                                             (if (= 13 (oget evt :keyCode))
+                                                                                               (do
+                                                                                                 (ocall evt :preventDefault)
+                                                                                                 (ocall evt :stopPropagation)
+                                                                                                 (-> evt (oget :target) (ocall :blur)))
+                                                                                               ))
+                                                                  }]
 
                                     [:> FlipMove {:class            ""
                                                   :enter-animation  "fade"
@@ -200,8 +201,9 @@
 
 
 (defn selector []
-  (let [id     (r/atom nil)
-        unique (subscribe [::mem-browser/unique-idents])]
+  (let [id                 (r/atom nil)
+        unique             (subscribe [::mem-browser/unique-idents])
+        selected-attribute (r/atom nil)]
     (fn []
       ; 34159627256401032
       [:section.hero.is-transparent.is-family-monospace
@@ -214,25 +216,37 @@
                           ; prevent the form from submitting the page
                           (ocall e :preventDefault)
                           ; and route the user to the explorer
-                          #_(routes/redirect! {:name        :route/browser-id
-                                               :path-params {:id-tree @id}})
-                          (dispatch [::mem-browser/search])
+                          (if (and @selected-attribute (not= @selected-attribute :db/id))
+                            (dispatch [::mem-browser/search (or @selected-attribute :db/id) @id])
+
+                            (routes/redirect! {:name        :route/browser-id
+                                               :path-params {:id-tree @id}}))
 
                           )}
+
             [:div.field
-             ;[:label.label ":db/id"]
+             [:div.label "Attribute"]
              [:div.control
-              [:input.input.is-large.has-background-dark.is-family-monospace {:type        "text"
-                                                                              :value       @id
-                                                                              :placeholder "34159627256401032"
-                                                                              :on-change   (fn [d]
-                                                                                             (reset! id (oget d :target :value)))}]]]
-            [:div.select.is-family-monospace
-             (into [:select.has-background-dark.is-family-monospace]
-                   (map (fn [o] [:option (-> o :db/ident str)]) @unique))]
+              [:div.select.is-family-monospace.is-fullwidth
+               (into [:select.is-family-monospace ;.has-background-dark
+                      {:on-change (fn [e]
+                                    (reset! selected-attribute (keyword (str/ltrim (oget e :target :value) ":"))))}
+                      ]
+                     (conj (map (fn [o] [:option (-> o :db/ident str)]) @unique) [:option (str :db/id)]))]]
+             ]
+            [:div.field
+             [:div.label "Value"]
+             [:div.control.is-expanded
+              [:input.input.is-family-monospace.is-fullwidth ;.has-background-dark
+               {:type        "text"
+                :value       @id
+                :placeholder "34159627256401032"
+                :on-change   (fn [d]
+                               (reset! id (oget d :target :value)))}]]]
+
             [:div.field.is-pulled-right
              [:div.control
-              [:button.button.is-link.is-medium {:type "submit"} "Explore"]]]]]]]]])))
+              [:button.button.is-link.is-medium {:type "submit"} "Search"]]]]]]]]])))
 
 
 
