@@ -124,6 +124,15 @@
                                  [?cardinality :db/ident ?cardinality-ident]]}
                        db ids)))
 
+(defn inbound-references [db id]
+  (group-by first (d/q '{:find  [?id ?attr ?v ?t]
+                         :in    [$ [?id ...]]
+                         :where [[?id ?attr ?v ?t]
+                                 [?attr :db/ident ?attr-ident]
+                                 [?attr :db/cardinality ?cardinality]
+                                 [?cardinality :db/ident ?cardinality-ident]]}
+                       db ids)))
+
 (defn find-id [db a v]
   (println "finding" a (type a) v (type v))
 

@@ -51,7 +51,7 @@
                     :system      "cbs-datomic-shelf"
                     :query-group (str "obrio-api-" env)
                     :endpoint    (str "http://entry.obrio-api-" env ".eu-west-1.datomic.net:8182/")
-                    ;:proxy-port  8182
+                    :proxy-port  8182
                     })
                  (catch Exception e (println (ex-data e))))))))
 
@@ -63,6 +63,7 @@
   ;(println "GETCONNDBNAME" (get-param "db-name"))
   (d/connect (get-client) {:db-name
                            ;"joshdb"
+                           ;"test-db-c23f8776-7274-491c-878f-302b5558477c"
                            (get-param "db-name")
                            }))
 
