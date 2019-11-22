@@ -29,6 +29,7 @@
     "react-dom": "^16.8.6",
     "react-flip-move": "^3.0.4",
     "react-force-graph": "^1.26.4",
+    "react-graph-vis": "^1.0.5",
     "react-pdf": "^4.1.0",
     "webpack": "^4.41.0",
     "xregexp": "^4.2.4"

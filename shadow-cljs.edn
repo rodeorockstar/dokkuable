@@ -11,6 +11,7 @@
                 [metosin/reitit "0.3.10"]
                 [org.clojure/core.async "0.4.474"]
                 [funcool/cuerdas "2.2.0"]
+                [aysylu/loom "1.0.2"]
                 ]
  ;:deps         true
  :nrepl        {:port 9999}

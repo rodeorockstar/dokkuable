@@ -10,8 +10,10 @@
             [reagent.core :as r]
             [cuerdas.core :as str]
             ["react-flip-move" :as FlipMove]
+            ["react-graph-vis" :default Graph]
 
             [goog.math.Long :as lo]
+            [loom.graph :as g]
             ))
 
 (defn is-many? [schema attribute]
@@ -164,8 +166,11 @@
   (fn [{:keys [id trail entity cursor]}]
     ;(js/console.log "cursor" (str id) (first (drop (count trail) cursor)))
     [:div.box.is-family-monospace.entity-card.content.is-small
+
      [:div.is-pulled-left.has-text-link ;.tag.is-medium
+      [:button.button [:i.fad.fa-arrow-left {:style {:margin-right "10px"}}]]
       (str id)]
+
      [:a.delete.is-medium.is-pulled-right.is-link
       {:href (if-let [t (not-empty (butlast trail))]
                (routes/url-for :route/browser-id {:id-tree (clojure.string/join "" (interpose "-" t))})
@@ -249,6 +254,36 @@
               [:button.button.is-link.is-medium {:type "submit"} "Search"]]]]]]]]])))
 
 
+(def gr (g/digraph [1 2] [1 9] [2 3] {3 [4] 5 [6 7]} 7 8 9))
+
+(def gdata {
+            :nodes [
+                    {:id 1 :label "Node 1" :title "tooltip"}
+                    {:id 2 :label "Node 1" :title "tooltip"}
+                    {:id 3 :label "Node 1" :title "tooltip"}
+                    {:id 4 :label "Node 1" :title "tooltip"}
+                    {:id 5 :label "Node 1" :title "tooltip"}
+                    ]
+            :edges [
+                    {:from 1 :to 2}
+                    {:from 1 :to 3}
+                    {:from 2 :to 4}
+                    {:from 2 :to 5}
+                    ]
+            })
+
+(def goptions {
+               ;:layout {:hierarchical true}
+               :nodes {:shape "dot"}
+               })
+
+(defn agraph []
+  (fn []
+    [:div
+     {:style {:width 600
+              :height 600}}
+     [:> Graph {:graph   gdata
+                :options goptions}]]))
 
 (defn main []
   (let [schema    (subscribe [::mem-browser/schema])
@@ -258,7 +293,12 @@
         all-items (subscribe [::mem-browser/all-items])
         ]
     (fn []
+
+      ;(js/console.log "T" (g/out-edges gr 1 ))
+      ;(js/console.log "S" Graph)
+
       [:div
+       ;[agraph]
        #_[:div.notification.is-link
           [:h4 "hi"]]
        #_[:button.button
