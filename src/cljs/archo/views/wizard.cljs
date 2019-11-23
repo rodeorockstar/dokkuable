@@ -5,19 +5,12 @@
             [archo.mem.upload :as mem-upload]
             [archo.views.kinds.pdf :as pdf]))
 
-(defn wiz []
-  (fn []
-    [:div
-     [:i.fas.fa-circle]]))
+
 
 (defn main []
   (let [file (subscribe [::mem-upload/stage-file])]
     (fn []
-      [:div.container
-
-
-       ;[:h1 "Open PDF"]
-       [wiz]
+      [:div.mb-2.border-bottom
        [:input {:type      "file"
                 :on-change (fn [e]
 

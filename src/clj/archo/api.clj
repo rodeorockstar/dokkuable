@@ -10,16 +10,25 @@
     [reitit.coercion.spec]
     [archo.client :as client]
     [datomic.client.api :as d]
+    [reitit.coercion.spec]
     [archo.queries.entities :as queries]))
 
 (def routes
-
   [
-   ["/assets"
-    ["/org" {:get {:handler (fn [r]
-                              (let [results (queries/orgs (client/db))]
-                                (resp/ok (zipmap (map :obr/uuid results) results))
-                                ))}}]]
+   ["/assets" {:coercion reitit.coercion.spec/coercion}
+    ["/orgs"
+     ["" {:get {:handler (fn [r]
+                           (resp/ok (queries/orgs (client/db))))}}]
+     ["/{org/short-name}/spaces"
+      ["" {:get {:handler (fn [{{org-short-name :org/short-name} :path-params}]
+                            (resp/ok (queries/spaces (client/db) org-short-name)))}}]
+      ["/{space/uuid}" {:get {
+                              :parameters {:path {:space/uuid uuid?}}
+                              :handler    (fn [req]
+                                            (resp/ok (queries/space-details (client/db) (-> req :parameters :path :space/uuid)))
+
+                                            )}}]
+      ]]]
    ["/plain"
     ["/plus" {:get  {:parameters {:query {:sample string?}}
                      :handler    (fn [r]

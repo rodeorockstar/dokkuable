@@ -14,6 +14,8 @@
     [reitit.coercion.schema]
     [spec-tools.data-spec :as ds]
     [clojure.set :refer [rename-keys]]
+    [reagent.core :as r]
+    [archo.mem.assets :as mem-assets]
     ;[hubble.mem.history :as mem-history]
     ;[hubble.mem.profile :as mem-profile]
     ;[hubble.mem.analytics :as mem-analytics]
@@ -33,32 +35,49 @@
 
 (def routes
   ;; apply Spec coercion to all routes
-  [["/" {:coercion reitit.coercion.spec/coercion}
-    ["" {:name        :route/home
+  ["/" {:coercion    reitit.coercion.spec/coercion
+        ; fetch orgs on any route match
+        :controllers [{:identity identity
+                       :start    (fn [_]
+                                   (dispatch [::mem-assets/fetch-asset :api/orgs nil [:assets :orgs]]))}]}
+   ["" {:name :route/home}]
+   ["o/{org/short-name}"
+    ["" {:coercion    reitit.coercion.spec/coercion
+         :parameters  {:path {:org/short-name string?}}
+         :name        :route/org
          :controllers [{:identity identity
                         :start    (fn [m]
-                                    (js/console.log "m" m))}]}]
-    ["o/:org-name" {:coercion   reitit.coercion.spec/coercion
-                     :parameters {:path {:org-name string?}}
-                     :name       :route/org}]
+                                    (dispatch [::mem-assets/fetch-asset
+                                               :api/spaces
+                                               (-> m :parameters :path)
+                                               [:assets (-> m :parameters :path :org/short-name) :spaces]]))}]}]
+    ["/space/{space/uuid}" {:name        :route/space
+                            :parameters  {:path {:space/uuid uuid?
+                                                 :org/short-name string?}}
+                            :controllers [{:identity identity
+                                           :start    (fn [m]
+                                                       (js/console.log "Mmm" m)
+                                                       #_(dispatch [::mem-assets/fetch-asset
+                                                                    :api/space
+                                                                    (-> m :parameters :path)
+                                                                    [:assets (-> m :parameters :path :org/short-name) :space]])
 
-    ]])
+                                                       (dispatch [::mem-assets/fetch-spaces :api/space (-> m :parameters :path)])
+                                                       )}]}]]])
 
 ; def the reitit router which can later be referenced by reitit.core/match-by-name
 (defonce router (rf/router routes {:conflicts nil}))
 
+(defonce match (r/atom nil))
+
 (defn init! []
   (rfe/start!
     router
-    (fn [route]
-      (let [
-            ;authenticated? @(subscribe [:hubble.mem.ident/authenticated?])
-            ;old-route      @(subscribe [::subs/active-route])
-            ]
-        (println "ROUTING" route)
-        (dispatch [::mem-events/set-active-route route
-                   ;;If a route is private and a user is not authenticated, don't apply controllers
-                   ])))
+    (fn [new-match]
+      (swap! match (fn [old-match]
+                     (if new-match
+                       (assoc new-match :controllers (rfc/apply-controllers (:controllers old-match) new-match)))))
+      (dispatch [::mem-events/set-active-route new-match]))
     ;; set to false to enable HistoryAPI
     {:use-fragment false}))
 

@@ -3,6 +3,7 @@
     [re-frame.core :as re-frame :refer [subscribe]]
     [archo.views.home :as home]
     [archo.views.org :as org]
+    [archo.views.space :as space]
     [archo.mem.events :as mem-events]
     [reagent.core :as r]))
 
@@ -16,6 +17,7 @@
    (case panel-name
      :route/home [home/main]
      :route/org [org/main]
+     :route/space [space/main]
      [:div.test-container "404"])])
 
 (defn show-panel []
