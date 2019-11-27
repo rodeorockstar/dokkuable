@@ -123,15 +123,10 @@
                                (.save d (str idx ".pdf"))))))
 
 
-    (println "g" (map (fn [page-group]
-                        (create-node :db s3-key page-group)
-                        ) page-groups))
+
 
     )
-  #_(let [document (PDDocument/load (:Body (get-s3-object "cms-sandbox.obrizum" s3-key)))]
 
-
-      (println "G" (map-indexed (fn [idx d] (.save d (str idx ".pdf"))) (map (partial keep-pages document) page-groups))))
   (resp/ok {:success true})
   )
 
@@ -193,5 +188,5 @@
   )
 
 (defn nodes-created-from-pages-handler [{{{s3-bucket :s3/bucket s3-key :s3/key} :path} :parameters}]
-  ;(clojure.pprint/pprint req)
+
   (r/ok (node-queries/nodes-created-from-pages2 (client/db) s3-bucket s3-key)))

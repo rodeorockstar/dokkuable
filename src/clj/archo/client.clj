@@ -50,7 +50,7 @@
                     :endpoint    (str "http://entry.obrio-api-" env ".eu-west-1.datomic.net:8182/")
                     ;:proxy-port  8182
                     })
-                 (catch Exception e (println (ex-data e))))))))
+                 (catch Exception e identity))))))
 
 (defn get-connection*
   "Get a new connection to a database associated with a keyword.
