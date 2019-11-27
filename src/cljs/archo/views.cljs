@@ -5,6 +5,7 @@
     [archo.views.org :as org]
     [archo.views.space :as space]
     [archo.mem.events :as mem-events]
+    [archo.views.wizard :as wizard]
     [reagent.core :as r]))
 
 (defn activate []
@@ -15,10 +16,12 @@
 (defn- panels [panel-name]
   [:div.container
    (case panel-name
-     :route/home [home/main]
-     :route/org [org/main]
+     :route/home [wizard/main]
+     :route/org [wizard/main]
      :route/space [space/main]
-     [:div.test-container "404"])])
+     ;[:div.test-container "404"]
+     [wizard/main]
+     )])
 
 (defn show-panel []
   (fn [active-route]

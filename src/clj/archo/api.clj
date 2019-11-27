@@ -11,11 +11,24 @@
     [archo.client :as client]
     [datomic.client.api :as d]
     [reitit.coercion.spec]
-    [archo.queries.entities :as queries]))
+    [archo.handlers.node :as node-handlers]
+    [archo.queries.entities :as queries]
+    [clojure.spec.alpha :as s]))
+
+
+(s/def ::page number?)
+(s/def ::pages (s/coll-of ::page :kind vector?))
+(s/def ::page-groups (s/coll-of ::pages))
 
 (def routes
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
+    ["/origin/{s3/bucket}/{s3/key}" {:get {:parameters {:path {:s3/key    string?
+                                                               :s3/bucket string?}}
+                                           :handler    node-handlers/nodes-created-from-pages-handler}}]
+    ["/split" {:post {:parameters {:body {:s3/key      string?
+                                          :page-groups ::page-groups}}
+                      :handler    node-handlers/make-files-handler}}]
     ["/orgs"
      ["" {:get {:handler (fn [r]
                            (resp/ok (queries/orgs (client/db))))}}]

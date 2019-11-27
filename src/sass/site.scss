@@ -1,5 +1,7 @@
 @import "../../node_modules/bootstrap/scss/bootstrap";
 
+@import "../../node_modules/react-pdf/dist/Page/AnnotationLayer";
+
 @import "./canvas";
 
 body {
@@ -24,4 +26,15 @@ body {
 .zoomed {
     // zoom: 1.1;
     // background-color: green;
+}
+
+.pdf-selected {
+    // background-color: green;
+}
+
+.page {
+    position: relative;
+    .node {
+        position: absolute;
+    }
 }
