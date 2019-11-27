@@ -2,7 +2,8 @@
   (:require
     [datomic.ion :as ion]
     [datomic.client.api :as d]
-    [taoensso.timbre :as timbre :refer [debugf]]))
+    [taoensso.timbre :as timbre :refer [debugf]]
+    [config.core :refer [env]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App params
@@ -43,13 +44,14 @@
              (let [env (name (get (ion/get-env) :env :dev))]
                (try
                  (d/client
-                   {:server-type :ion
-                    :region      "eu-west-1"
-                    :system      "cbs-datomic-shelf"
-                    :query-group (str "obrio-api-" env)
-                    :endpoint    (str "http://entry.obrio-api-" env ".eu-west-1.datomic.net:8182/")
-                    ;:proxy-port  8182
-                    })
+                   (cond->
+                     {:server-type :ion
+                      :region      "eu-west-1"
+                      :system      "cbs-datomic-shelf"
+                      :query-group (str "obrio-api-" env)
+                      :endpoint    (str "http://entry.obrio-api-" env ".eu-west-1.datomic.net:8182/")
+                      }
+                     (not= (-> env :env) "prod") (assoc :proxy-port 8182)))
                  (catch Exception e identity))))))
 
 (defn get-connection*

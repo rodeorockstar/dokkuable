@@ -29,6 +29,7 @@
              com.cognitect.aws/dynamodb         {:mvn/version "726.2.484.0"}
              com.cognitect.aws/batch            {:mvn/version "741.2.505.0"}
              com.cemerick/url                   {:mvn/version "0.1.1"}
+             yogthos/config                     {:mvn/version "1.1.7"}
 
              pdfboxing                          {:sha     "fb538eb290df9bec87e314663db5c3bebbc61583"
                                                  :git/url "https://github.com/joshkh/pdfboxing"}
@@ -43,9 +44,9 @@
                                     ring/ring-defaults {:mvn/version "0.3.2"}
                                     }}
 
-             :depstar {:extra-deps {clj-time                {:mvn/version "0.15.2"}
-                                    compojure               {:mvn/version "1.6.1"}
-                                    ring                    {:mvn/version "1.7.1"}
-                                    ring/ring-defaults      {:mvn/version "0.3.2"}
-                                    http-kit           {:mvn/version "2.3.0"}
+             :depstar {:extra-deps {clj-time             {:mvn/version "0.15.2"}
+                                    compojure            {:mvn/version "1.6.1"}
+                                    ring                 {:mvn/version "1.7.1"}
+                                    ring/ring-defaults   {:mvn/version "0.3.2"}
+                                    http-kit             {:mvn/version "2.3.0"}
                                     seancorfield/depstar {:mvn/version "0.3.4"}}}}}
