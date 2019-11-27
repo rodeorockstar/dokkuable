@@ -8,6 +8,7 @@
             [compojure.route :refer [resources]]
             [ring.util.response :refer [resource-response content-type]]
             [jumblerg.middleware.cors :refer [wrap-cors]]
+            [clojure.pprint :refer [pprint]]
 
 
     ;[ring.adapter.jetty :as jetty]
@@ -16,6 +17,7 @@
             [muuntaja.core :as m]
             [reitit.ring.coercion :as coercion]
             [reitit.ring :as ring]
+            [config.core :refer [env]]
     ;[example.plain]
     ;[example.dspec]
     ;[example.schema]
@@ -59,4 +61,5 @@
   []
   (let [port 5000]
     (println "Web server starting on port" port)
+    (pprint env)
     (kit/run-server app {:port port})))
