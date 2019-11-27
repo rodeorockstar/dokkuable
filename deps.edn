@@ -31,7 +31,7 @@
              com.cemerick/url                   {:mvn/version "0.1.1"}
 
              pdfboxing                          {:sha     "fb538eb290df9bec87e314663db5c3bebbc61583"
-                                                 :git/url "git@github.com:joshkh/pdfboxing.git"}
+                                                 :git/url "https://github.com/joshkh/pdfboxing"}
 
              }
 
