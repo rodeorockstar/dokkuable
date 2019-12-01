@@ -62,3 +62,19 @@
 
 (reg-event-fx ::fetch-spaces trim-v fetch-spaces)
 (reg-event-db ::fetch-spaces-success trim-v fetch-spaces-success)
+
+
+(reg-event-fx ::get-some-api-data
+              trim-v
+              (fn [_world [some-parameter]]
+                {::fx/api {
+                           :uri        "/some/api/call"
+                           :method     :post
+                           :params     {:some-parameter some-parameter}
+                           :on-success [::get-some-data-success "extra-value"]}}))
+
+(reg-event-db ::get-some-data-success
+              trim-v
+              (fn [db [extra-value response]]
+                (js/console.log "response: " extra-value response)
+                db))

@@ -16,7 +16,8 @@
   (:import org.apache.commons.io.FileUtils
            org.apache.pdfbox.io.IOUtils
            org.apache.pdfbox.pdmodel.PDDocument
-           org.apache.pdfbox.pdmodel.common.PDStream))
+           org.apache.pdfbox.pdmodel.common.PDStream
+           (java.net URLEncoder)))
 
 
 (def s3 (aws/client {:api :s3}))
@@ -65,6 +66,9 @@
                                                 (client/db)))])
 
 
+  (println "making node")
+
+
   (d/transact (client/get-conn) {:tx-data [
 
                                            {:db/id           "anode"
@@ -83,10 +87,13 @@
                                             ; store information about the origin of the content
                                             :content/origins [
                                                               {:origin/pages     page-group
-                                                               :origin/s3.object {:s3/bucket      "cms-sandbox.obrizum"
+                                                               :origin/s3.object {
+                                                                                  :s3/bucket      "cms-sandbox.obrizum"
                                                                                   :s3/key         key
                                                                                   :s3/bucket+key  ["cms-sandbox.obrizum" key]
-                                                                                  :media/produced "anode"}
+                                                                                  ;:s3/bucket+key  [[:person/uuid "abc"] key]
+                                                                                  ;:media/produced "anode"
+                                                                                  }
                                                                }
                                                               ]
                                             }
@@ -115,15 +122,18 @@
   ; load the PDF from S3
   (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
 
+    (doall (map (fn [page-group]
+                  (create-node (client/db) s3-key page-group)
+                  ) page-groups))
+
+
+
     ; save pages is a side effect
-    (doall (->> page-groups
+    #_(doall (->> page-groups
                 (map (fn [page-group]
                        (keep-pages doc (map dec page-group))))
                 (map-indexed (fn [idx d]
                                (.save d (str idx ".pdf"))))))
-
-
-
 
     )
 
@@ -190,3 +200,33 @@
 (defn nodes-created-from-pages-handler [{{{s3-bucket :s3/bucket s3-key :s3/key} :path} :parameters}]
 
   (r/ok (node-queries/nodes-created-from-pages2 (client/db) s3-bucket s3-key)))
+
+
+(comment
+  (d/transact (client/get-conn) {:tx-data [
+
+                                           {:db/id           "anode"
+                                            :node/uuid       #uuid"0b3ac126-7fe5-458f-baf1-5897d5fc3a02"
+                                            :node/kind       :document
+                                            :media/extension ["pdf"]
+                                            :text/tran       {:lang/en "delete me text"}
+                                            :text/title      {:lang/en "the title"}
+
+                                            :document/format :application/pdf
+                                            :node/ext-id     "deleteme"
+
+                                            ;; store information about the origin of the content
+                                            :content/origins [
+                                                              {:origin/pages     page-group
+                                                               :origin/s3.object {:s3/bucket      "cms-sandbox.obrizum"
+                                                                                  :s3/key         key
+                                                                                  :s3/bucket+key  ["cms-sandbox.obrizum" key]
+                                                                                  :media/produced "anode"}
+                                                               }
+                                                              ]
+                                            }
+
+                                           ;{:source/object}
+
+                                           ]}))
+

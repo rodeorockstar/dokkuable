@@ -15,6 +15,7 @@
                 :on-change (fn [e]
 
                              (dispatch [::mem-upload/store-stage-file
-                                        (first (array-seq (oget e :target :files)))]))}]
-       (when @file
-         [pdf/main {:file @file}])])))
+                                        (first (array-seq (oget e :target :files)))])
+                             (dispatch [::mem-upload/fetch-nodes-from-object "cms-sandbox.obrizum" (oget (first (array-seq (oget e :target :files))) :name)])
+                             )}]
+       [pdf/main {:file @file}]])))

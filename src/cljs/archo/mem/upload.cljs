@@ -2,6 +2,7 @@
   (:require [re-frame.core :refer [reg-sub reg-event-db trim-v reg-event-fx]]
             [clojure.set :as set]
             [archo.fx :as fx]
+            [oops.core :refer [oget oset!]]
             [cemerick.url :refer (url url-encode)]))
 
 (defn store-stage-file [db [f]]
@@ -30,12 +31,14 @@
 (reg-sub ::selected-pages (fn [db]
                             (apply sorted-set (get-in db [:stage :selected]))))
 
-(defn store-selection [db]
-  (-> db
-      (update-in [:stage :selections] conj (get-in db [:stage :selected]))
-      (update :stage dissoc :selected)))
+(defn store-selection [{db :db} [{s3-key :s3/key}]]
+  (js/console.log "doing with" s3-key)
+  {:db       (-> db
+                 (update-in [:stage :selections] conj (get-in db [:stage :selected]))
+                 (update :stage dissoc :selected))
+   :dispatch [::save-nodes [(get-in db [:stage :selected])] s3-key]})
 
-(reg-event-db ::store-selection trim-v store-selection)
+(reg-event-fx ::store-selection trim-v store-selection)
 
 (defn all-selected-pages [db]
   (apply set/union (get-in db [:stage :selections])))
@@ -48,22 +51,24 @@
 
 ;;;;;
 
-(defn save-nodes [_ [pages]]
+(defn save-nodes [{db :db} [pages s3-key]]
   (js/console.log "pages" pages)
-  {::fx/api {
+  (js/console.log "filename" (-> db :stage :file (oget :name)))
+  {:db (update db :stage dissoc :selections)
+   ::fx/api {
              ; match the API endpoint via its stored name in the router
              :uri        "/assets/split"
              :method     :post
-             :params     {:s3/key      "cms/playground/sample.pdf"
+             :params     {:s3/key      s3-key
                           :page-groups (map vec pages)}
-             :on-success [::save-nodes-success]}})
+             :on-success [::save-nodes-success s3-key]}})
 
-(defn save-nodes-success [db [response]]
+(defn save-nodes-success [world [s3-key response]]
   (js/console.log "RES" response)
-  db)
+  {:dispatch [::fetch-nodes-from-object "cms-sandbox.obrizum" s3-key]})
 
 (reg-event-fx ::save-nodes trim-v save-nodes)
-(reg-event-db ::save-nodes-success trim-v save-nodes-success)
+(reg-event-fx ::save-nodes-success trim-v save-nodes-success)
 
 
 (defn fetch-nodes-from-object [_ [s3-bucket s3-key]]
@@ -80,6 +85,14 @@
 (reg-event-db ::save-nodes-from-object trim-v save-nodes-from-object)
 
 (reg-sub ::page-nodes (fn [db [_ s3-bucket s3-key page-number]]
-                        (println "doing" s3-bucket s3-key page-number)
+                        ;(println "doing" s3-bucket s3-key page-number)
                         (-> db :objects (get s3-bucket) (get s3-key) :pages (get page-number))
                         ))
+
+(reg-event-db ::show-modal trim-v
+              (fn [db [tf]]
+                (assoc db :modal tf)))
+
+(reg-sub ::show-modal?
+              (fn [db]
+                (get db :modal)))
