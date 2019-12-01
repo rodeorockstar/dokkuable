@@ -41,15 +41,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def get-client
   (memoize (fn []
-             (let [env (name (get (ion/get-env) :env :dev))]
+             (let [ions-env (name (get (ion/get-env) :env :dev))]
                (try
+                 (println "IRONENV" (ion/get-env))
+                 (println "CCCC")
+
+                 (clojure.pprint/pprint env)
                  (d/client
                    (cond->
                      {:server-type :ion
                       :region      "eu-west-1"
                       :system      "cbs-datomic-shelf"
-                      :query-group (str "obrio-api-" env)
-                      :endpoint    (str "http://entry.obrio-api-" env ".eu-west-1.datomic.net:8182/")
+                      :query-group (str "obrio-api-" ions-env)
+                      :endpoint    (str "http://entry.obrio-api-" ions-env ".eu-west-1.datomic.net:8182/")
                       }
                      ;(not= (-> env :env) "prod") (assoc :proxy-port 8182)
                      ))
