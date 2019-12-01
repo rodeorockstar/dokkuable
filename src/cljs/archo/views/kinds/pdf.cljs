@@ -10,18 +10,22 @@
     [promesa.core :as p]))
 
 (defn modal []
-  (let [show? (subscribe [::mem-upload/show-modal?])]
+  (let [node-name (r/atom nil)]
     (fn [{:keys [s3/key selected-pages]}]
-      [:div.popup
-       [:div.popup-background
-        [:div.popup-dialog
-         [:div.popup-body
-          [:h1 (str "pu" key)]
-          [:button.btn.btn-primary
-           {:on-click (fn []
-                        (dispatch [::mem-upload/store-selection {:s3/key key}])
-                        )}
-           "Make Node"]]]]])))
+     [:div.popup
+      [:div.popup-background
+       [:div.popup-dialog
+        [:div.popup-body
+         [:h1 (str "pu" key)]
+         [:input {:type      "text"
+                  :value     @node-name
+                  :on-change (fn [e]
+                               (reset! node-name (not-empty (oget e :target :value))))}]
+         [:button.btn.btn-primary
+          {:on-click (fn []
+                       (dispatch [::mem-upload/store-selection {:s3/key key :title @node-name}])
+                       )}
+          "Make Node"]]]]])))
 
 
 (defn page []

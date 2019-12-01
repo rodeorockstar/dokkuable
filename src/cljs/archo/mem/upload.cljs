@@ -31,12 +31,11 @@
 (reg-sub ::selected-pages (fn [db]
                             (apply sorted-set (get-in db [:stage :selected]))))
 
-(defn store-selection [{db :db} [{s3-key :s3/key}]]
+(defn store-selection [{db :db} [{s3-key :s3/key title :title}]]
   (js/console.log "doing with" s3-key)
   {:db       (-> db
-                 (update-in [:stage :selections] conj (get-in db [:stage :selected]))
-                 (update :stage dissoc :selected))
-   :dispatch [::save-nodes [(get-in db [:stage :selected])] s3-key]})
+                 (update-in [:stage :selections] conj (get-in db [:stage :selected])))
+   :dispatch [::save-nodes [(get-in db [:stage :selected])] s3-key title]})
 
 (reg-event-fx ::store-selection trim-v store-selection)
 
@@ -51,21 +50,28 @@
 
 ;;;;;
 
-(defn save-nodes [{db :db} [pages s3-key]]
+(defn save-nodes [{db :db} [pages s3-key title]]
   (js/console.log "pages" pages)
   (js/console.log "filename" (-> db :stage :file (oget :name)))
-  {:db (update db :stage dissoc :selections)
+  (js/console.log "TITLEIS" title)
+  {:db (update db :stage assoc :storing? true)
    ::fx/api {
              ; match the API endpoint via its stored name in the router
              :uri        "/assets/split"
              :method     :post
              :params     {:s3/key      s3-key
-                          :page-groups (map vec pages)}
+                          :page-groups (map vec pages)
+                          :title title}
              :on-success [::save-nodes-success s3-key]}})
 
-(defn save-nodes-success [world [s3-key response]]
+(defn save-nodes-success [{db :db} [s3-key response]]
   (js/console.log "RES" response)
-  {:dispatch [::fetch-nodes-from-object "cms-sandbox.obrizum" s3-key]})
+  {:db         (-> db
+                   (update :stage dissoc :storing?)
+                   (update :stage dissoc :selected))
+   :dispatch-n [
+                [::show-modal false]
+                [::fetch-nodes-from-object "cms-sandbox.obrizum" s3-key]]})
 
 (reg-event-fx ::save-nodes trim-v save-nodes)
 (reg-event-fx ::save-nodes-success trim-v save-nodes-success)

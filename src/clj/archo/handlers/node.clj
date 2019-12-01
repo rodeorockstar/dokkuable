@@ -46,7 +46,7 @@
     (doseq [pd-page (map (partial get-page pd-document) page-numbers)] (add-page new-pddocument pd-page))
     new-pddocument))
 
-(defn create-node [db key page-group]
+(defn create-node [db key title page-group]
   #_{:node/uuid       (java.util.UUID/randomUUID)
      :node/kind       :document
      :media/extension ["pdf"]
@@ -76,7 +76,7 @@
                                             :node/kind       :document
                                             :media/extension ["pdf"]
                                             :text/tran       {:lang/en "delete me text"}
-                                            :text/title      {:lang/en "the title"}
+                                            :text/title      {:lang/en title}
 
                                             :document/format :application/pdf
                                             ;:node/source     {:source/pages  #{1 2 3}
@@ -118,12 +118,13 @@
   - :s3/key the S3 key of the PDF
   - :page-groups a collection of page numbers [[1 2 3] [4 5 6]] each of which become a PDF"
   [{{{s3-key      :s3/key
-      page-groups :page-groups} :body} :parameters}]
+      page-groups :page-groups
+      title :title} :body} :parameters}]
   ; load the PDF from S3
   (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
 
     (doall (map (fn [page-group]
-                  (create-node (client/db) s3-key page-group)
+                  (create-node (client/db) s3-key title page-group)
                   ) page-groups))
 
 
