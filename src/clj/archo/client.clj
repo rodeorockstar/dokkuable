@@ -43,10 +43,10 @@
   (memoize (fn []
              (let [ions-env (name (get (ion/get-env) :env :prod))]
                (try
-                 (println "IRONENV" (ion/get-env))
-                 (println "CCCC")
+                 ;(println "IRONENV" (ion/get-env))
+                 ;(println "CCCC")
 
-                 (clojure.pprint/pprint env)
+                 ;(clojure.pprint/pprint env)
                  (d/client
                    (cond->
                      {:server-type :ion

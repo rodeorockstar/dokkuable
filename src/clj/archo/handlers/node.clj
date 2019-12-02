@@ -142,7 +142,7 @@
       (println "NEWNODE" new-node-uuid)
 
       (let [new-pdf (keep-pages doc (map dec (first page-groups)))]
-        (put-s3-object "cms-sandbox.obrizum" (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
+        (put-s3-object "obr-vod-destination-vpx8y5wsew25" (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
       )
 
 
