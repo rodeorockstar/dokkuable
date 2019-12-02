@@ -53,8 +53,6 @@ body {
 
 overflow: hidden;
 
-
-
     .popup-background {
         background-color: rgba(0,0,0,0.5);
         width: 100vw;
@@ -72,7 +70,7 @@ overflow: hidden;
             padding: 10px;
             width: 100%;
             margin: 100px;
-
+            max-width: 800px;
         }
     }
 

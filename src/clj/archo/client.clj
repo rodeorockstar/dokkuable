@@ -55,7 +55,7 @@
                       :query-group (str "obrio-api-" ions-env)
                       :endpoint    (str "http://entry.obrio-api-" ions-env ".eu-west-1.datomic.net:8182/")
                       }
-                     ;(not= (-> env :env) "prod") (assoc :proxy-port 8182)
+                     (not= (-> env :myenv) "prod") (assoc :proxy-port 8182)
                      ))
                  (catch Exception e (str e)))))))
 

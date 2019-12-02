@@ -11,21 +11,78 @@
 
 (defn modal []
   (let [node-name (r/atom nil)]
-    (fn [{:keys [s3/key selected-pages]}]
+    (fn [{:keys [s3/key selected-pages file]}]
      [:div.popup
       [:div.popup-background
        [:div.popup-dialog
         [:div.popup-body
-         [:h1 (str "pu" key)]
-         [:input {:type      "text"
-                  :value     @node-name
-                  :on-change (fn [e]
-                               (reset! node-name (not-empty (oget e :target :value))))}]
-         [:button.btn.btn-primary
-          {:on-click (fn []
-                       (dispatch [::mem-upload/store-selection {:s3/key key :title @node-name}])
-                       )}
-          "Make Node"]]]]])))
+         ;[:h1 (str "pu" key)]
+
+         [:div.row
+          [:div.col-auto
+           [:> Document
+            {:file            file
+             :className       "document"
+             :rotate          0
+             :on-load-success (fn [e]
+                                (js/console.log "E" (aget e "numPages"))
+                                (js/console.log "D" e)
+                                )}
+            [:> Page
+             {:pageNumber            (first selected-pages)
+              :renderTextLayer       true
+              :renderAnnotationLayer false
+              :width                 200
+              :className             "page"
+
+              :on-load-success       (fn [e]
+                                       ;(reset! page-number (aget e "pageNumber"))
+                                       ;(js/console.log "PAGENU" e)
+                                       (p/then (ocall e :getTextContent)
+                                               (fn [x]
+                                                 ;(js/console.log "X" x)
+                                                 )))
+              :on-render-success     (fn [e]
+
+                                       )
+              }]
+            ]]
+          [:div.col
+
+
+           [:div.form
+            [:div.form-group
+             [:label {:for "formGroupExampleInput"} "Example label"]
+             [:input.form-control {:type      "text"
+                      :value     @node-name
+                      :on-change (fn [e]
+                                   (reset! node-name (not-empty (oget e :target :value))))}]]
+            ]
+
+
+           #_[:div.form
+            [:div.form-group
+             [:label "Example label"]
+             [:input {:type      "text"
+                      :value     @node-name
+                      :on-change (fn [e]
+                                   (reset! node-name (not-empty (oget e :target :value))))}]]]
+
+
+           [:button.btn.btn-outline-secondary
+            {:on-click (fn []
+                         (dispatch [::mem-upload/show-modal false])
+                         )}
+            "Cancel"]
+
+           [:button.btn.btn-primary
+            {:on-click (fn []
+                         (dispatch [::mem-upload/store-selection {:s3/key key :title @node-name}])
+                         )}
+            "Make Node"]
+
+
+           ]]]]]])))
 
 
 (defn page []
@@ -130,6 +187,7 @@
        (when @show-modal?
          [modal
           {:selected-pages @selected-pages
-           :s3/key         (some-> @stage-file (oget :name))}])
+           :s3/key         (some-> @stage-file (oget :name))
+           :file file}])
 
        ])))
