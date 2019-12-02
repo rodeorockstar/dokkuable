@@ -40,7 +40,8 @@
                                        ;(js/console.log "PAGENU" e)
                                        (p/then (ocall e :getTextContent)
                                                (fn [x]
-                                                 ;(js/console.log "X" x)
+                                                 (js/console.log "X" x)
+                                                 (reset! node-name (-> x js->clj first last first (get "str")))
                                                  )))
               :on-render-success     (fn [e]
 
@@ -182,7 +183,7 @@
               ]
              (map (fn [p] [page {:page     p
                                  :s3-key   (some-> @stage-file (oget :name))
-                                 :selected @selected-pages}]) (take 15 (range 1 (inc @page-count)))))
+                                 :selected @selected-pages}]) (take 50 (range 1 (inc @page-count)))))
 
        (when @show-modal?
          [modal
