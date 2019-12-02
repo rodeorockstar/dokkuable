@@ -12,6 +12,7 @@
             [pdfboxing.common :as common]
             [datomic.client.api :as d]
             [ring.util.http-response :as resp]
+            [pdfboxing.text :as text]
             )
   (:import org.apache.commons.io.FileUtils
            org.apache.pdfbox.io.IOUtils
@@ -46,7 +47,7 @@
     (doseq [pd-page (map (partial get-page pd-document) page-numbers)] (add-page new-pddocument pd-page))
     new-pddocument))
 
-(defn create-node [db key title page-group]
+(defn create-node [db key title page-group tran]
   #_{:node/uuid       (java.util.UUID/randomUUID)
      :node/kind       :document
      :media/extension ["pdf"]
@@ -70,6 +71,7 @@
                               :node/kind       :document
                               :media/extension ["pdf"]
                               :text/title      {:lang/en title}
+                              :text/tran       {:lang/en tran}
                               :db/doc          "archo-westcoast"
 
                               :document/format :application/pdf
@@ -96,16 +98,13 @@
 
     (println "TXIS" (d/transact (client/get-conn) {:tx-data [
 
-                                              {:node/uuid   #uuid"fc30fd25-0026-4a98-b3c2-cda3c3e7499d"
-                                               :space/point [node-to-create]}
+                                                             {:node/uuid   #uuid"fc30fd25-0026-4a98-b3c2-cda3c3e7499d"
+                                                              :space/point [node-to-create]}
 
-                                              ]}))
+                                                             ]}))
     node-to-create
 
-
     )
-
-
 
   )
 
@@ -138,28 +137,27 @@
   ; load the PDF from S3
   (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
 
-    (let [{new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups))]
-      (println "NEWNODE" new-node-uuid)
+    (let [new-pdf      (keep-pages doc (map dec (first page-groups)))
+          burnable-pdf (keep-pages doc (map dec (first page-groups)))]
 
-      (let [new-pdf (keep-pages doc (map dec (first page-groups)))]
-        (put-s3-object "obr-vod-destination-vpx8y5wsew25" (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
+      (let [{new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) (text/extract burnable-pdf))]
+
+        (doall (put-s3-object
+                 ;"obr-vod-destination-vpx8y5wsew25"
+                 "cms-sandbox.obrizum"
+                 (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
+
+        (resp/ok {:success true})
+
+        )
+
       )
-
-
-
-    ; save pages is a side effect
-    #_(doall (->> page-groups
-                (map (fn [page-group]
-                       (keep-pages doc (map dec page-group))))
-                (map-indexed (fn [idx d]
-                               (.save d (str idx ".pdf"))))))
 
     )
 
-  (resp/ok {:success true})
   )
 
-(or inc identity)
+
 
 
 
