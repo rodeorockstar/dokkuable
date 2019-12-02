@@ -69,7 +69,6 @@
                               :node/uuid       (java.util.UUID/randomUUID)
                               :node/kind       :document
                               :media/extension ["pdf"]
-                              :text/tran       {:lang/en "delete me text"}
                               :text/title      {:lang/en title}
                               :db/doc          "archo-westcoast"
 
