@@ -17,4 +17,5 @@
                   "F" {:label "Bucket F"
                        :id    "C"}
                   "G" {:label "Bucket G"
-                       :id    "C"}}}))
+                       :id    "C"}}
+     :stage      {:count 50}}))

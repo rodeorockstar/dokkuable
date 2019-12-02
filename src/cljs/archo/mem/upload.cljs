@@ -102,3 +102,14 @@
 (reg-sub ::show-modal?
               (fn [db]
                 (get db :modal)))
+
+(reg-event-db ::clear-selection trim-v (fn [db]
+                                         (update db :stage dissoc :selected)))
+
+(reg-sub ::show-count
+         (fn [db]
+           (get-in db [:stage :count] 50)))
+
+(reg-event-db ::change-show-count trim-v
+              (fn [db [f amount]]
+                (update-in db [:stage :count] f amount)))

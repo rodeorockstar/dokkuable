@@ -71,32 +71,34 @@
 
   (d/transact (client/get-conn) {:tx-data [
 
-                                           {:db/id           "anode"
-                                            :node/uuid       (java.util.UUID/randomUUID)
-                                            :node/kind       :document
-                                            :media/extension ["pdf"]
-                                            :text/tran       {:lang/en "delete me text"}
-                                            :text/title      {:lang/en title}
+                                           {:node/uuid   #uuid"acc046b7-cda6-4328-886f-48aa978035ac"
+                                            :space/point [{:db/id           "anode"
+                                                           :node/uuid       (java.util.UUID/randomUUID)
+                                                           :node/kind       :document
+                                                           :media/extension ["pdf"]
+                                                           :text/tran       {:lang/en "delete me text"}
+                                                           :text/title      {:lang/en title}
+                                                           :db/doc          "created-with-archo"
 
-                                            :document/format :application/pdf
-                                            ;:node/source     {:source/pages  #{1 2 3}
-                                            ;                  :source/object {:s3/key    "cms/playground/aaaaaaaa.pdf"
-                                            ;                                  :s3/bucket "cms-sandbox.obrizum"}}
-                                            :node/ext-id     "deleteme"
+                                                           :document/format :application/pdf
+                                                           ;:node/source     {:source/pages  #{1 2 3}
+                                                           ;                  :source/object {:s3/key    "cms/playground/aaaaaaaa.pdf"
+                                                           ;                                  :s3/bucket "cms-sandbox.obrizum"}}
+                                                           :node/ext-id     "deleteme"
 
-                                            ; store information about the origin of the content
-                                            :content/origins [
-                                                              {:origin/pages     page-group
-                                                               :origin/s3.object {
-                                                                                  :s3/bucket      "cms-sandbox.obrizum"
-                                                                                  :s3/key         key
-                                                                                  :s3/bucket+key  ["cms-sandbox.obrizum" key]
-                                                                                  ;:s3/bucket+key  [[:person/uuid "abc"] key]
-                                                                                  ;:media/produced "anode"
-                                                                                  }
-                                                               }
-                                                              ]
-                                            }
+                                                           ; store information about the origin of the content
+                                                           :content/origins [
+                                                                             {:origin/pages     page-group
+                                                                              :origin/s3.object {
+                                                                                                 :s3/bucket     "cms-sandbox.obrizum"
+                                                                                                 :s3/key        key
+                                                                                                 :s3/bucket+key ["cms-sandbox.obrizum" key]
+                                                                                                 ;:s3/bucket+key  [[:person/uuid "abc"] key]
+                                                                                                 ;:media/produced "anode"
+                                                                                                 }
+                                                                              }
+                                                                             ]
+                                                           }]}
 
                                            ]})
 
@@ -119,7 +121,7 @@
   - :page-groups a collection of page numbers [[1 2 3] [4 5 6]] each of which become a PDF"
   [{{{s3-key      :s3/key
       page-groups :page-groups
-      title :title} :body} :parameters}]
+      title       :title} :body} :parameters}]
   ; load the PDF from S3
   (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
 
@@ -131,10 +133,10 @@
 
     ; save pages is a side effect
     #_(doall (->> page-groups
-                (map (fn [page-group]
-                       (keep-pages doc (map dec page-group))))
-                (map-indexed (fn [idx d]
-                               (.save d (str idx ".pdf"))))))
+                  (map (fn [page-group]
+                         (keep-pages doc (map dec page-group))))
+                  (map-indexed (fn [idx d]
+                                 (.save d (str idx ".pdf"))))))
 
     )
 
