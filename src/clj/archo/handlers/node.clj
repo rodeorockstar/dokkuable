@@ -143,8 +143,8 @@
       (let [{new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) (text/extract burnable-pdf))]
 
         (doall (put-s3-object
-                 ;"obr-vod-destination-vpx8y5wsew25"
-                 "cms-sandbox.obrizum"
+                 "obr-vod-destination-vpx8y5wsew25"
+                 ;"cms-sandbox.obrizum"
                  (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
 
         (resp/ok {:success true})
