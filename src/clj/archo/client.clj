@@ -23,7 +23,7 @@
         ;app (or (get (ion/get-app-info) :app-name) (fail :app-name))
         ;env (or (get (ion/get-env) :env) (fail :env))
         ]
-    ; get stage specific variables, otherwise default to :dev
+    ; get stage specific variables, otherwise default to :prod
     (merge
       ; get "global" parameters
       (ion/get-params {:path (str "/datomic-shared/all/")})
