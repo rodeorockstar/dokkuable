@@ -68,19 +68,35 @@
   "Nodes created from origin"
   [db s3-bucket s3-key]
   (group-by-reduce first last (d/q '{:find  [?pages (pull ?node [:node/uuid :text/title])]
-          :in    [$ ?bucket ?key]
-          :where [[?object :s3/bucket ?bucket]
-                  [?object :s3/key ?key]
+                                     :in    [$ ?bucket ?key]
+                                     :where [[?object :s3/bucket ?bucket]
+                                             [?object :s3/key ?key]
 
-                  [?origin-edge :origin/s3.object ?object]
-                  [?origin-edge :origin/pages ?pages]
+                                             [?origin-edge :origin/s3.object ?object]
+                                             [?origin-edge :origin/pages ?pages]
 
-                  [?node :content/origins ?origin-edge]
-                  [?node :node/uuid ?node-uuid]]}
-        db s3-bucket s3-key)))
+                                             [?node :content/origins ?origin-edge]
+                                             [?node :node/uuid ?node-uuid]]}
+                                   db s3-bucket s3-key)))
 
 
 (comment
   (nodes-created-from-pages2 (client/db) "cms-sandbox.obrizum" "cms/playground/sample.pdf"))
 
 
+(defn doc->section [db bucket key tag-uuid]
+  (let [results (d/q '{:find  [?p (distinct ?pages)]
+                       :in    [$ ?bucket ?key]
+                       :where [
+                               [?p :content/origins ?o]
+                               [?o :origin/pages ?pages]
+                               [?o :origin/s3.object ?n]
+                               [?n :s3/key ?key]
+                               ]}
+                     db bucket key)]
+    (map (fn [[db-id pages]]
+           {:db/id     db-id
+            :node/edge [{:edge/node {:node/uuid tag-uuid}
+                         :edge/kind :tag
+                         :edge/mass (double (apply min pages))}]})
+         (sort-by (comp (partial apply min) second) results))))

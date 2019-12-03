@@ -7,7 +7,8 @@
     [oops.core :refer [oget]]
     [archo.mem.upload :as mem-upload]
     [cljs-bean.core :refer [bean ->clj ->js]]
-    [promesa.core :as p]))
+    [promesa.core :as p]
+    [cljs-bean.core :refer [bean ->clj ->js]]))
 
 (defn modal []
   (let [node-name (r/atom nil)]
@@ -25,8 +26,8 @@
               :className       "document"
               :rotate          0
               :on-load-success (fn [e]
-                                 (js/console.log "E" (aget e "numPages"))
-                                 (js/console.log "D" e)
+                                 ;(js/console.log "E" (aget e "numPages"))
+                                 ;(js/console.log "D" e)
                                  )}
              [:> Page
               {:pageNumber            (first selected-pages)
@@ -40,8 +41,17 @@
                                         ;(js/console.log "PAGENU" e)
                                         (p/then (ocall e :getTextContent)
                                                 (fn [x]
-                                                  (js/console.log "X" x)
-                                                  (reset! node-name (-> x js->clj first last first (get "str")))
+                                                  (js/console.log "SSSSS" (clojure.string/trim "     "))
+                                                  (let [[{font-name :fontName} :as lines] (drop-while
+                                                                                            (fn [s]
+                                                                                              (clojure.string/blank? (-> s :str clojure.string/trim))
+                                                                                              )
+                                                                                            (:items (js->clj x :keywordize-keys true)))
+                                                        maybe-title (clojure.string/join " " (map :str (take-while (fn [s]
+                                                                                                                     (= font-name (:fontName s))
+                                                                                                                     ) lines)))]
+                                                    (reset! node-name maybe-title)
+                                                    )
                                                   )))
                :on-render-success     (fn [e]
 
@@ -49,6 +59,8 @@
                }]
              ]]
            [:div.col
+
+            [:div @node-name]
 
 
             [:div.form
@@ -125,7 +137,6 @@
          (when is-last-selected?
            [:button.btn.btn-secondary
             {:on-click (fn []
-                         (js/console.log "AAA" s3-key)
                          ;(dispatch [::mem-upload/store-selection {:s3/key s3-key}])
                          (dispatch [::mem-upload/show-modal true])
                          )}
@@ -155,21 +166,19 @@
       [:div
 
        #_[:div
-        [:button.btn.btn-primary
-         {:on-click (fn [] (dispatch [::mem-upload/store-selection {:s3/key (some-> @stage-file (oget :name))}]))}
-         (str "Make Node" (some-> @stage-file (oget :name)))]
+          [:button.btn.btn-primary
+           {:on-click (fn [] (dispatch [::mem-upload/store-selection {:s3/key (some-> @stage-file (oget :name))}]))}
+           (str "Make Node" (some-> @stage-file (oget :name)))]
 
-        [:button.button.is-primary
-         {:on-click (fn [] (dispatch [::mem-upload/save-nodes @all-groups]))}
-         "SERVER"]
+          [:button.button.is-primary
+           {:on-click (fn [] (dispatch [::mem-upload/save-nodes @all-groups]))}
+           "SERVER"]
 
-        [:button.button.is-primary
-         {:on-click (fn [] (dispatch [::mem-upload/fetch-nodes-from-object "cms-sandbox.obrizum" "cms/playground/sample.pdf"]))}
-         "ORIGIN"]
+          [:button.button.is-primary
+           {:on-click (fn [] (dispatch [::mem-upload/fetch-nodes-from-object "cms-sandbox.obrizum" "cms/playground/sample.pdf"]))}
+           "ORIGIN"]
 
-
-
-        ]
+          ]
        [:pre (str @selected-pages)]
        [:pre (str @all-groups)]
 

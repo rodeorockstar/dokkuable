@@ -10,6 +10,7 @@
                 [com.taoensso/timbre "4.10.0"]
                 [metosin/reitit "0.3.10"]
                 [com.cemerick/url "0.1.1"]
+                [cljs-bean "1.5.0"]
 
                 [org.clojure/core.async "0.4.474"]]
  ;:deps         true
