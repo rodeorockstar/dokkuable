@@ -135,10 +135,11 @@
       page-groups :page-groups
       title       :title} :body} :parameters}]
   ; load the PDF from S3
-  (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
+  (let [doc  (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
+        doc2 (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
 
     (let [new-pdf      (keep-pages doc (map dec (first page-groups)))
-          burnable-pdf (keep-pages doc (map dec (first page-groups)))]
+          burnable-pdf (keep-pages doc2 (map dec (first page-groups)))]
 
       (let [{new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) (text/extract burnable-pdf))]
 
