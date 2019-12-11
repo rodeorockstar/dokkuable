@@ -8,7 +8,6 @@
             [compojure.route :refer [resources]]
             [ring.util.response :refer [resource-response content-type]]
             [jumblerg.middleware.cors :refer [wrap-cors]]
-            [clojure.pprint :refer [pprint]]
 
 
     ;[ring.adapter.jetty :as jetty]
@@ -17,7 +16,7 @@
             [muuntaja.core :as m]
             [reitit.ring.coercion :as coercion]
             [reitit.ring :as ring]
-            [config.core :refer [env]]
+            [archo.client :as client]
     ;[example.plain]
     ;[example.dspec]
     ;[example.schema]
@@ -44,16 +43,17 @@
     (ring/router
       [api-routes/routes]
       {
-       :data {:muuntaja   m/instance
-              :coercion   reitit.coercion.spec/coercion
-              :middleware [params/wrap-params
-                           muuntaja/format-middleware
-                           coercion/coerce-exceptions-middleware
-                           coercion/coerce-request-middleware
-                           coercion/coerce-response-middleware
-                           [wrap-cors identity]]}})
+       :conflicts (constantly nil)
+       :data      {:muuntaja   m/instance
+                   :coercion   reitit.coercion.spec/coercion
+                   :middleware [params/wrap-params
+                                muuntaja/format-middleware
+                                coercion/coerce-exceptions-middleware
+                                coercion/coerce-request-middleware
+                                coercion/coerce-response-middleware
+                                [wrap-cors identity]]}})
     (ring/routes
-      (ring/create-resource-handler {:path "/"})
+      ;(ring/create-resource-handler {:path "/"})
       (ring/create-default-handler))))
 
 (defn -main
@@ -61,5 +61,5 @@
   []
   (let [port 5000]
     (println "Web server starting on port" port)
-    (pprint env)
+    (println "using db" (client/db))
     (kit/run-server app {:port port})))

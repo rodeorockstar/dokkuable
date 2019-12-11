@@ -39,6 +39,7 @@
         ; fetch orgs on any route match
         :controllers []}
    ["" {:name :route/home}]
+   ["files" {:name :route/files}]
    ])
 
 ; def the reitit router which can later be referenced by reitit.core/match-by-name

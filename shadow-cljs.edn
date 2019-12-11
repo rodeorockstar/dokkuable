@@ -21,5 +21,6 @@
                       :asset-path "/js"
                       :modules    {:main {:entries [archo.core]}}
                       :devtools   {:after-load archo.core/re-render
+                                   :watch-dir "public"
                                    :preloads   [devtools.preload
                                                 re-frisk.preload]}}}}

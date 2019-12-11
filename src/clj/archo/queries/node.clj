@@ -84,6 +84,13 @@
   (nodes-created-from-pages2 (client/db) "cms-sandbox.obrizum" "cms/playground/sample.pdf"))
 
 
+(comment
+  (d/transact (client/get-conn)
+              {:tx-data (doc->section (client/db)
+                                      "cms-sandbox.obrizum"
+                                      "AZURE BACKUP.pdf"
+                                      #uuid"ca565c65-68e9-40bf-b04a-b76b2e06a479")}))
+
 (defn doc->section [db bucket key tag-uuid]
   (let [results (d/q '{:find  [?p (distinct ?pages)]
                        :in    [$ ?bucket ?key]

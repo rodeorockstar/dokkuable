@@ -6,7 +6,12 @@
 
 body {
 
+    background-color: #e9ecef;
+//     background-color: red;
+
 }
+
+
 
 
 .document {
@@ -75,4 +80,18 @@ overflow: hidden;
     }
 
 
+}
+
+
+///// bs
+
+.navbar {
+    // padding: 3rem 1rem 1rem 1rem;
+}
+
+.display-title {
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.2;
+    color: white;
 }

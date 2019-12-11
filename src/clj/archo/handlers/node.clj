@@ -72,7 +72,7 @@
                               :media/extension ["pdf"]
                               :text/title      {:lang/en title}
                               :text/tran       {:lang/en tran}
-                              :db/doc          "archo-westcoast"
+                              :db/doc          "archo-hsbc"
 
                               :document/format :application/pdf
                               ;:node/source     {:source/pages  #{1 2 3}
@@ -98,7 +98,11 @@
 
     (println "TXIS" (d/transact (client/get-conn) {:tx-data [
 
-                                                             {:node/uuid   #uuid"fc30fd25-0026-4a98-b3c2-cda3c3e7499d"
+                                                             {
+                                                              ; westcoast space
+                                                              ;:node/uuid   #uuid"fc30fd25-0026-4a98-b3c2-cda3c3e7499d"
+                                                              ; HSBC space
+                                                              :node/uuid   #uuid"3c9b9086-22b8-4978-961c-001140fcba94"
                                                               :space/point [node-to-create]}
 
                                                              ]}))
@@ -242,3 +246,60 @@
 
                                            ]}))
 
+
+
+(comment
+  "duplicates"
+  (filter (fn [[t n]]
+            (> (count n) 1)) (group-by second (d/q '{:find  [?p ?title-en]
+                                                     :in    [$]
+                                                     :where [
+                                                             [?p :content/origins ?o]
+                                                             [?p :text/title ?title]
+                                                             [?title :lang/en ?title-en]
+                                                             [?o :origin/pages ?pages]
+                                                             [?o :origin/s3.object ?n]
+                                                             [?n :s3/key "AZURE BACKUP.pdf"]
+                                                             ]}
+                                                   (client/db)))))
+
+
+(defn fix-pdf22 [bucket-name pages]
+  (let [doc (->> "AZURE BACKUP.pdf" (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
+
+    (let [new-pdf (keep-pages doc (map dec (sort pages)))]
+
+      (let [new-node-uuid #uuid"0f17a9e9-ce17-41dc-bdcb-bfbaea4f2d7b"]
+
+        (doall (put-s3-object
+                 "obr-vod-destination-vpx8y5wsew25"
+                 ;"cms-sandbox.obrizum"
+                 (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
+
+        (resp/ok {:success true})
+
+        )
+
+      )
+
+    ))
+
+(defn fix-pdf [original-file-name node-uuid pages]
+  (let [doc (->> original-file-name (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
+
+    (let [new-pdf (keep-pages doc (map dec (sort pages)))]
+
+      (let [node-uuid node-uuid]
+
+        (doall (put-s3-object
+                 "obr-vod-destination-vpx8y5wsew25"
+                 ;"cms-sandbox.obrizum"
+                 (str node-uuid "/" node-uuid ".pdf") (pdf->input-stream new-pdf)))
+
+        (resp/ok {:success true})
+
+        )
+
+      )
+
+    ))
