@@ -8,6 +8,7 @@
     [archo.mem.upload :as mem-upload]
     [cljs-bean.core :refer [bean ->clj ->js]]
     [promesa.core :as p]
+    [archo.mem.assets :as mem-assets]
     [cljs-bean.core :refer [bean ->clj ->js]]))
 
 (defn modal []
@@ -164,6 +165,10 @@
     (fn [{:keys [file]}]
 
       [:div
+
+       [:button.btn.btn-outline-secondary
+        {:on-click (fn [] (dispatch [::mem-assets/fetch-orgs]))}
+        "ORGS"]
 
        #_[:div
           [:button.btn.btn-primary

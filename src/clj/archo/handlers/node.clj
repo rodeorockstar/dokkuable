@@ -17,7 +17,9 @@
   (:import org.apache.commons.io.FileUtils
            org.apache.pdfbox.io.IOUtils
            org.apache.pdfbox.pdmodel.PDDocument
+           org.apache.pdfbox.cos.COSDocument
            org.apache.pdfbox.pdmodel.common.PDStream
+           org.apache.pdfbox.text.PDFTextStripper
            (java.net URLEncoder)))
 
 
@@ -37,7 +39,7 @@
   (.getPage doc n))
 
 (defn add-page [doc page]
-  (.addPage doc page))
+  (.addPage doc (.setRotation page 90)))
 
 (defn keep-pages
   "Given a PDDocument and a collection of page numbers,
@@ -102,7 +104,9 @@
                                                               ; westcoast space
                                                               ;:node/uuid   #uuid"fc30fd25-0026-4a98-b3c2-cda3c3e7499d"
                                                               ; HSBC space
-                                                              :node/uuid   #uuid"3c9b9086-22b8-4978-961c-001140fcba94"
+                                                              ;:node/uuid   #uuid"3c9b9086-22b8-4978-961c-001140fcba94"
+                                                              ; Monty space
+                                                              :node/uuid   #uuid"4635dd9e-d1d5-4d2a-8844-ae207f422334"
                                                               :space/point [node-to-create]}
 
                                                              ]}))
@@ -140,9 +144,10 @@
       title       :title} :body} :parameters}]
   ; load the PDF from S3
   (let [doc  (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
-        doc2 (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
+        ;doc2 (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
+        ]
 
-    (let [new-pdf      (keep-pages doc (map dec (first page-groups)))
+    #_(let [new-pdf      (keep-pages doc (map dec (first page-groups)))
           burnable-pdf (keep-pages doc2 (map dec (first page-groups)))]
 
       (let [{new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) (text/extract burnable-pdf))]
@@ -157,6 +162,25 @@
         )
 
       )
+
+    (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
+          stripper (PDFTextStripper.)]
+      (let [pages-to-keep (map dec (first page-groups))
+            page-count (range (.getNumberOfPages doc))
+            pages-to-drop (sort > (clojure.set/difference (set page-count) (set pages-to-keep)))]
+
+        (doseq [p pages-to-drop]
+          (.removePage doc p)))
+
+      (let [extracted-text (.getText stripper doc)
+            {new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) extracted-text)]
+        ;(.save o "tada.pdf")
+        (put-s3-object
+          "obr-vod-destination-vpx8y5wsew25"
+          ;"cms-sandbox.obrizum"
+          (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream doc))
+
+        ))
 
     )
 
@@ -259,7 +283,7 @@
                                                              [?title :lang/en ?title-en]
                                                              [?o :origin/pages ?pages]
                                                              [?o :origin/s3.object ?n]
-                                                             [?n :s3/key "AZURE BACKUP.pdf"]
+                                                             [?n :s3/key "introduction_to_cyber_security__stay_safe_online.pdf"]
                                                              ]}
                                                    (client/db)))))
 
@@ -303,3 +327,10 @@
       )
 
     ))
+
+(comment fix-all
+         (map-indexed (fn [idx [node-id pages]]
+                        (println "Doing " (inc idx) " / " (count doc-pages))
+                        (fix-pdf "introduction_to_cyber_security__stay_safe_online.pdf" node-id pages)
+
+                        ) doc-pages))

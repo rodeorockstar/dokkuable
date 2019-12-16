@@ -54,14 +54,14 @@
   (js/console.log "pages" pages)
   (js/console.log "filename" (-> db :stage :file (oget :name)))
   (js/console.log "TITLEIS" title)
-  {:db (update db :stage assoc :storing? true)
+  {:db      (update db :stage assoc :storing? true)
    ::fx/api {
              ; match the API endpoint via its stored name in the router
              :uri        "/assets/split"
              :method     :post
              :params     {:s3/key      s3-key
-                          :page-groups (map vec pages)
-                          :title title}
+                          :page-groups (map vec (sort pages))
+                          :title       title}
              :on-success [::save-nodes-success s3-key]}})
 
 (defn save-nodes-success [{db :db} [s3-key response]]

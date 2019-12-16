@@ -78,3 +78,23 @@
               (fn [db [extra-value response]]
                 (js/console.log "response: " extra-value response)
                 db))
+
+
+;;;;;;;;;;;;;;;;;;;;
+
+(reg-event-fx ::fetch-orgs
+              trim-v
+              (fn [_]
+                {::fx/api {
+                           :uri        "/api/admin/orgs"
+                           :method     :get
+                           :on-success [::fetch-orgs-success]}}))
+
+(reg-event-db ::fetch-orgs-success
+              trim-v
+              (fn [db [response]]
+                (assoc db :orgs response)))
+
+(reg-sub ::orgs
+         (fn [db]
+           (get db :orgs)))

@@ -51,6 +51,7 @@
   (rfe/start!
     router
     (fn [new-match]
+      (js/console.log "MATCH" new-match)
       (swap! match (fn [old-match]
                      (if new-match
                        (assoc new-match :controllers (rfc/apply-controllers (:controllers old-match) new-match)))))

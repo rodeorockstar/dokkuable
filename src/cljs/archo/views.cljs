@@ -17,8 +17,10 @@
 
 (defn- panels [panel-name]
   [:div.container
+   (js/console.log "panel-name" panel-name)
    (case panel-name
      :route/home [wizard/main]
+     ;:route/home [home/main]
      :route/org [wizard/main]
      :route/space [space/main]
      :route/files [fs/main]

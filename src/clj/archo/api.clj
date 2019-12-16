@@ -2,23 +2,30 @@
   "A simple web server to host a single page web application
   that uses client-side routing without document fragments"
   (:require
-    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-    [compojure.core :refer [GET defroutes]]
-    [compojure.route :refer [resources]]
-    [ring.util.response :refer [resource-response content-type]]
-    [ring.util.http-response :as resp]
+    [reitit.coercion.spec]
     [reitit.coercion.spec]
     [archo.client :as client]
-    [datomic.client.api :as d]
-    [reitit.coercion.spec]
     [archo.handlers.node :as node-handlers]
     [archo.queries.entities :as queries]
-    [clojure.spec.alpha :as s]))
+    [clojure.spec.alpha :as s]
+    [compojure.core :refer [GET defroutes]]
+    [compojure.route :refer [resources]]
+    [datomic.client.api :as d]
+    [reitit.ring :as ring]
+    [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+    [ring.util.http-response :as resp]
+    [ring.util.response :refer [resource-response content-type]]))
 
 
 (s/def ::page number?)
 (s/def ::pages (s/coll-of ::page :kind vector?))
 (s/def ::page-groups (s/coll-of ::pages))
+
+(def handler
+  (fn [request]
+    (or (resp/resource-response (:uri request) {:root "public"})
+        (-> (resp/resource-response "index.html" {:root "public"})
+          (resp/content-type "text/html")))))
 
 (def routes
   [
@@ -48,4 +55,10 @@
                                    (resp/ok "thanks2"))}
               :post (fn [{{:keys [x y]} :body-params}]
                       {:status 200
-                       :body   {:total (+ x y)}})}]]])
+                       :body   {:total (+ x y)}})}]]
+   ["/api"
+    ["/admin/orgs" {:get {:handler (fn [r] (resp/ok (queries/orgs (client/db))))}}]]
+
+   ;["/*" (ring/create-resource-handler)]
+   ["/*" handler]
+   ])
