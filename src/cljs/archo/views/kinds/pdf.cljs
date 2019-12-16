@@ -166,7 +166,7 @@
 
       [:div
 
-       [:button.btn.btn-outline-secondary
+       #_[:button.btn.btn-outline-secondary
         {:on-click (fn [] (dispatch [::mem-assets/fetch-orgs]))}
         "ORGS"]
 
@@ -184,8 +184,8 @@
            "ORIGIN"]
 
           ]
-       [:pre (str @selected-pages)]
-       [:pre (str @all-groups)]
+       ;[:pre (str @selected-pages)]
+       ;[:pre (str @all-groups)]
 
        (into [:> Document
               {:file            file

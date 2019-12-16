@@ -2,9 +2,9 @@
 
 (defn main []
   (fn []
-    [:nav.navbar.navbar-expand-md.navbar-dark.bg-dark.shadow ;.fixed-top
+    [:nav.navbar.navbar-expand-md.navbar-dark.bg-dark.shadow.mb-4 ;.fixed-top
      [:div.container.d-flex
-      [:span.pb-2.ml-md-0.ml-sm-3.ml-0.mr-3.display-title [:i.fa.fa-envelope-o.fa-lg {:aria-hidden "true"}]]
+      #_[:span.pb-2.ml-md-0.ml-sm-3.ml-0.mr-3.display-title [:i.fa.fa-envelope-o.fa-lg {:aria-hidden "true"}]]
       [:button.navbar-toggler.my-2 {:type "button" :data-toggle "collapse" :data-target "#navbarCollapse"}
        [:span.navbar-toggler-icon]]
 

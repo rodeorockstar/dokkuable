@@ -2,7 +2,7 @@
 
 (def debug? ^boolean goog.DEBUG)
 
-(goog-define api-url "http://localhost:5000")
+(goog-define api-url "")
 (goog-define media-url "default-value")
 (goog-define cdn-url "default-value")
 (goog-define version "#DEVELOPMENT_VERSION#")
