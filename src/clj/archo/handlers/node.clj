@@ -106,7 +106,9 @@
                                                               ; HSBC space
                                                               ;:node/uuid   #uuid"3c9b9086-22b8-4978-961c-001140fcba94"
                                                               ; Monty space
-                                                              :node/uuid   #uuid"4635dd9e-d1d5-4d2a-8844-ae207f422334"
+                                                              ;:node/uuid   #uuid"4635dd9e-d1d5-4d2a-8844-ae207f422334"
+                                                              ; RCSI space
+                                                              :node/uuid   #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"
                                                               :space/point [node-to-create]}
 
                                                              ]}))
@@ -143,30 +145,30 @@
       page-groups :page-groups
       title       :title} :body} :parameters}]
   ; load the PDF from S3
-  (let [doc  (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
+  (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
         ;doc2 (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
         ]
 
     #_(let [new-pdf      (keep-pages doc (map dec (first page-groups)))
-          burnable-pdf (keep-pages doc2 (map dec (first page-groups)))]
+            burnable-pdf (keep-pages doc2 (map dec (first page-groups)))]
 
-      (let [{new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) (text/extract burnable-pdf))]
+        (let [{new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) (text/extract burnable-pdf))]
 
-        (doall (put-s3-object
-                 "obr-vod-destination-vpx8y5wsew25"
-                 ;"cms-sandbox.obrizum"
-                 (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
+          (doall (put-s3-object
+                   "obr-vod-destination-vpx8y5wsew25"
+                   ;"cms-sandbox.obrizum"
+                   (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
 
-        (resp/ok {:success true})
+          (resp/ok {:success true})
+
+          )
 
         )
 
-      )
-
-    (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
+    (let [doc      (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
           stripper (PDFTextStripper.)]
       (let [pages-to-keep (map dec (first page-groups))
-            page-count (range (.getNumberOfPages doc))
+            page-count    (range (.getNumberOfPages doc))
             pages-to-drop (sort > (clojure.set/difference (set page-count) (set pages-to-keep)))]
 
         (doseq [p pages-to-drop]
