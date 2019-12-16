@@ -9,7 +9,7 @@
        [:span.navbar-toggler-icon]]
 
       [:div#navbarCollapse.collapse.navbar-collapse.flex-column.align-items-start.ml-lg-2.ml-0
-       [:ul.navbar-nav
+       #_[:ul.navbar-nav
         [:li.nav-item.active
          [:a.nav-link {:href "#"} "Home"]]
         [:li.nav-item
@@ -37,7 +37,7 @@
         [:li.nav-item
          [:a.nav-link.py-0.pr-3 {:href "#"} [:i.fa.fa-archive.mr-2] [:span "Files"]]]
         [:li.nav-item
-         [:a.nav-link.py-0.pr-3 {:href "#"} [:i.fa.fa-twitter]]]]]]]))
+         [:a.nav-link.py-0.pr-3 {:href "#"} ]]]]]]))
 
 
 
