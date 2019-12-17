@@ -74,7 +74,7 @@
                               :media/extension ["pdf"]
                               :text/title      {:lang/en title}
                               :text/tran       {:lang/en tran}
-                              :db/doc          "archo-hsbc"
+                              :db/doc          "archo-rsci"
 
                               :document/format :application/pdf
                               ;:node/source     {:source/pages  #{1 2 3}
