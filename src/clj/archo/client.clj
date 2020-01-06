@@ -23,12 +23,12 @@
         ;app (or (get (ion/get-app-info) :app-name) (fail :app-name))
         ;env (or (get (ion/get-env) :env) (fail :env))
         ]
-    ; get stage specific variables, otherwise default to :prod
+    ; get stage specific variables, otherwise default to :dev
     (merge
       ; get "global" parameters
       (ion/get-params {:path (str "/datomic-shared/all/")})
       ; and any ones specific to the environment (will override conflicting keys from /all)
-      (ion/get-params {:path (str "/datomic-shared/" (name (get (ion/get-env) :env :prod)) "/")}))))
+      (ion/get-params {:path (str "/datomic-shared/" (name (get (ion/get-env) :env :dev)) "/")}))))
 
 (defn get-param
   "Get a parameter from AWS System Manager Parameter Store"
@@ -41,7 +41,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def get-client
   (memoize (fn []
-             (let [ions-env (name (get (ion/get-env) :env :prod))]
+             (let [ions-env (name (get (ion/get-env) :env :dev))]
                (try
                  ;(println "IRONENV" (ion/get-env))
                  ;(println "CCCC")
@@ -65,6 +65,7 @@
   "
   []
   (d/connect (get-client) {:db-name
+                           ;"tupletest8"
                            ;"joshdb"
                            (get-param "db-name")
                            }))

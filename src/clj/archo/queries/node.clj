@@ -3,6 +3,35 @@
             [archo.client :as client]))
 
 
+
+(defn parse-int [s]
+  (Long/parseLong s))
+
+(defn vector-compare [[value1 & rest1] [value2 & rest2]]
+  (let [result (compare value1 value2)]
+    (cond
+      (not (zero? result)) result
+      (nil? value1) 0
+      :else (recur rest1 rest2))))
+
+(defn prepare-string [s]
+  (let [s (or s "")
+        parts (vec (clojure.string/split s #"\d+"))
+        numbers (->> (re-seq #"\d+" s)
+                     (map parse-int)
+                     (vec))]
+    (vec (interleave (conj parts "") (conj numbers "")))))
+
+(defn natural-compare [a b]
+  (vector-compare (prepare-string a)
+                  (prepare-string b)))
+
+(defn xsort [coll] (clojure.core/sort natural-compare coll))
+
+(defn xsort-by [keyfn coll]
+  (clojure.core/sort-by keyfn natural-compare coll))
+
+
 ; org
 (comment
   "org" #uuid"06f588f6-b67e-447c-a9e1-b72bc37f1dd3"
@@ -66,9 +95,9 @@
 
 (defn nodes-created-from-pages2
   "Nodes created from origin"
-  [db s3-bucket s3-key]
+  [db s3-bucket s3-key space-uuid]
   (group-by-reduce first last (d/q '{:find  [?pages (pull ?node [:node/uuid :text/title])]
-                                     :in    [$ ?bucket ?key]
+                                     :in    [$ ?bucket ?key ?space-uuid]
                                      :where [[?object :s3/bucket ?bucket]
                                              [?object :s3/key ?key]
 
@@ -76,8 +105,10 @@
                                              [?origin-edge :origin/pages ?pages]
 
                                              [?node :content/origins ?origin-edge]
-                                             [?node :node/uuid ?node-uuid]]}
-                                   db s3-bucket s3-key)))
+
+                                             [?space :space/point ?node]
+                                             [?space :node/uuid ?space-uuid]]}
+                                   db s3-bucket s3-key space-uuid)))
 
 
 (comment
@@ -107,3 +138,47 @@
                          :edge/kind :tag
                          :edge/mass (double (apply min pages))}]})
          (sort-by (comp (partial apply min) second) results))))
+
+
+
+(defn doc->section2 [db bucket key tag-uuid space-uuid]
+  (let [results (d/q '{:find  [?p (distinct ?pages)]
+                       :in    [$ ?bucket ?key ?space-uuid]
+                       :where [
+                               [?s :node/uuid ?space-uuid]
+                               [?s :space/point ?p]
+                               [?p :content/origins ?o]
+                               [?o :origin/pages ?pages]
+                               [?o :origin/s3.object ?n]
+                               [?n :s3/key ?key]
+                               ]}
+                     db bucket key space-uuid)]
+    results
+    #_(map (fn [[db-id pages]]
+             {:db/id     db-id
+              :node/edge [{:edge/node {:node/uuid tag-uuid}
+                           :edge/kind :tag
+                           :edge/mass (double (apply min pages))}]})
+           (sort-by (comp (partial apply min) second) results))))
+
+
+
+
+(comment "SORTED"
+
+         "Lecture 1 - Cancer: Prevention and Control"
+         "Lecture 2 - An Introduction to Cancer"
+         "Lecture 3 - Mutagens, carcinogens and chemically induced carcinogenesis"
+         "Lecture 4 - The Hallmarks of Cancer: Molecular Characteristics of Cancer Cells"
+         "Lecture 5 - The Cell Cycle, Oncogenes & Tumour Suppressor Genes: Driving the Cancer Phenotype"
+         "Lecture 6 - Anatomy of the Lymphatic System"
+         "Lecture 7 - Psychological Impact of a Diagnosis of Cancer"
+         "Lecture 8 - Clinical Assessment, Diagnosis, Markers, & Staging"
+         "Lecture 9 - Tumour Immunology: How Cancer Re-programmes Our Immune System"
+         "Lecture 10 - Mechanistic Organic Chemistry: mechanisms of DNA damage"
+         "Lecture 11 - Angiogenesis & Metastasis: Mechanisms of Cancer Progression"
+         "Lecture 12 - Tumour Metabolism: Powering the Growth & Dissemination of Cancer"
+         "Lecture 13 - Cancer screening programmes (Part 1 & 2)"
+         "Lecture 14 - Cancer vaccines"
+         "Lecture 15 - Overview of Cancer Treatment Options: (Surgery,  Radiotherapy, Chemotherapy)"
+         )

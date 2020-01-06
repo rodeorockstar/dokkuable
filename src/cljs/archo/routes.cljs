@@ -16,6 +16,7 @@
     [clojure.set :refer [rename-keys]]
     [reagent.core :as r]
     [archo.mem.assets :as mem-assets]
+    ;[archo.views.org :as view-org]
     ;[hubble.mem.history :as mem-history]
     ;[hubble.mem.profile :as mem-profile]
     ;[hubble.mem.analytics :as mem-analytics]
@@ -35,12 +36,22 @@
 
 (def routes
   ;; apply Spec coercion to all routes
-  ["/" {:coercion    reitit.coercion.spec/coercion
-        ; fetch orgs on any route match
-        :controllers []}
-   ["" {:name :route/home}]
-   ["files" {:name :route/files}]
-   ])
+  ["" {:coercion    reitit.coercion.spec/coercion
+       ; fetch orgs on any route match
+       :controllers [{:identity identity
+                      :start    (fn []
+                                  (dispatch [::mem-assets/fetch-orgs])
+                                  (dispatch [::mem-assets/fetch-spaces])
+                                  )}]}
+   ["/org"
+    ["/{org/short-name}" {:parameters {:path {:org/short-name string?}}}
+     ["" {:name :route/org-home}]
+     ["/space/{space/uuid}" {:parameters {:path {:space/uuid uuid?}}}
+      ["" {:name :route/space}]
+      ["/split" {:name :route/split}]]]]
+   ["/files" {:name :route/files}]])
+
+; http://localhost:5000/org/cbs/1ac3385f-39d8-4673-8697-95ddb3f80810
 
 ; def the reitit router which can later be referenced by reitit.core/match-by-name
 (defonce router (rf/router routes {:conflicts nil}))

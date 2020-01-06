@@ -8,7 +8,8 @@
 
 
 (defn main []
-  (let [file (subscribe [::mem-upload/stage-file])]
+  (let [file (subscribe [::mem-upload/stage-file])
+        r (subscribe [:archo.mem.view/active-space])]
     (fn []
       [:div.mb-2.border-bottom
        [:input {:type      "file"
@@ -16,6 +17,10 @@
 
                              (dispatch [::mem-upload/store-stage-file
                                         (first (array-seq (oget e :target :files)))])
-                             (dispatch [::mem-upload/fetch-nodes-from-object "cms-sandbox.obrizum" (oget (first (array-seq (oget e :target :files))) :name)])
+                             (dispatch [::mem-upload/fetch-nodes-from-object
+                                        "cms-sandbox.obrizum"
+                                        (oget (first (array-seq (oget e :target :files))) :name)
+                                        (:node/uuid @r)
+                                        ])
                              )}]
        [pdf/main {:file @file}]])))

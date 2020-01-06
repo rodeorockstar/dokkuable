@@ -77,10 +77,14 @@
 (reg-event-fx ::save-nodes-success trim-v save-nodes-success)
 
 
-(defn fetch-nodes-from-object [_ [s3-bucket s3-key]]
+(defn fetch-nodes-from-object [_ [s3-bucket s3-key space-uuid]]
   {::fx/api {
              ; match the API endpoint via its stored name in the router
-             :uri        (str "/assets/origin/" (url-encode s3-bucket) "/" (url-encode s3-key))
+             :uri        (str "/assets/origin/" space-uuid "/" (url-encode s3-bucket) "/" (url-encode s3-key))
+             ;:uri        (str "/assets/origin")
+             ;:params     {:space/uuid space-uuid
+             ;             :s3/bucket  (url-encode s3-bucket)
+             ;             :s3/key     s3-key}
              :method     :get
              :on-success [::save-nodes-from-object s3-bucket s3-key]}})
 
@@ -100,8 +104,8 @@
                 (assoc db :modal tf)))
 
 (reg-sub ::show-modal?
-              (fn [db]
-                (get db :modal)))
+         (fn [db]
+           (get db :modal)))
 
 (reg-event-db ::clear-selection trim-v (fn [db]
                                          (update db :stage dissoc :selected)))

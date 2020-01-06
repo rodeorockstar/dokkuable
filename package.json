@@ -10,13 +10,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bootstrap": "^4.3.1",
+    "bootstrap": "^4.4.1",
     "create-react-class": "^15.6.3",
     "jquery": "^3.4.1",
     "popper.js": "^1.15.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-particles-js": "^2.7.0",
     "react-pdf": "^4.1.0",
     "webpack": "^4.41.0"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-pro": "^5.12.0"
   }
 }

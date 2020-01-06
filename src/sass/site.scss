@@ -1,14 +1,42 @@
 @import "../../node_modules/bootstrap/scss/bootstrap";
 
+$fa-font-path : 'https://cdn.obrizum.io/fonts';
+
+
+
+// @import "config";
+// @import "./themes/obrizum";
+//
+// @import "bootstrap-overrides";
+
+// Full bootstrap scss bundle.
+// Should be changed to partial chosen bootstrap modules when app is ready for production release.
+@import "../../node_modules/bootstrap/scss/bootstrap";
+@import "../../node_modules/@fortawesome/fontawesome-pro/scss/fontawesome";
+@import "../../node_modules/@fortawesome/fontawesome-pro/scss/solid";
+@import "../../node_modules/@fortawesome/fontawesome-pro/scss/regular";
+@import "../../node_modules/@fortawesome/fontawesome-pro/scss/duotone";
+@import "../../node_modules/@fortawesome/fontawesome-pro/scss/light";
+
 // @import "../../node_modules/react-pdf/dist/Page/AnnotationLayer";
 
 // @import "./canvas";
+
+
+$obr-color: #ececec;
 //
 body {
 
-    background-color: #e9ecef;
+    // background-color: #e9ecef;
 //     background-color: red;
+// background: linear-gradient(#0b7285, #0ca678);
 
+    background-color: $obr-color !important;
+
+}
+
+.bg-obr {
+    background-color: $obr-color !important;
 }
 
 
@@ -90,8 +118,54 @@ overflow: hidden;
 }
 
 .display-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 300;
     line-height: 1.2;
-    color: white;
+    // color: white;
+}
+
+
+
+
+
+
+
+// body {
+//   background: #e2e1e0;
+//   text-align: center;
+// }
+
+.acard {
+  background: #fff;
+  border-radius: 2px;
+  display: inline-block;
+  height: 300px;
+  margin: 1rem;
+  position: relative;
+  width: 300px;
+}
+
+.acard-1 {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+
+.acard-1:hover {
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+}
+
+.acard-2 {
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+.acard-3 {
+  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+.acard-4 {
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+}
+
+.acard-5 {
+  box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
 }

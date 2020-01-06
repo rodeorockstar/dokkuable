@@ -30,9 +30,10 @@
 (def routes
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
-    ["/origin/{s3/bucket}/{s3/key}" {:get {:parameters {:path {:s3/key    string?
-                                                               :s3/bucket string?}}
-                                           :handler    node-handlers/nodes-created-from-pages-handler}}]
+    ["/origin/{space/uuid}/{s3/bucket}/{s3/key}" {:get {:parameters {:path {:s3/key     string?
+                                                                            :s3/bucket  string?
+                                                                            :space/uuid uuid?}}
+                                                        :handler    node-handlers/nodes-created-from-pages-handler}}]
     ["/split" {:post {:parameters {:body {:s3/key      string?
                                           :page-groups ::page-groups}}
                       :handler    node-handlers/make-files-handler}}]
@@ -57,7 +58,8 @@
                       {:status 200
                        :body   {:total (+ x y)}})}]]
    ["/api"
-    ["/admin/orgs" {:get {:handler (fn [r] (resp/ok (queries/orgs (client/db))))}}]]
+    ["/admin/orgs" {:get {:handler (fn [r] (resp/ok (queries/orgs (client/db))))}}]
+    ["/admin/spaces" {:get {:handler (fn [r] (resp/ok (queries/all-spaces2 (client/db))))}}]]
 
    ;["/*" (ring/create-resource-handler)]
    ["/*" handler]

@@ -48,20 +48,20 @@
              (get-in assets [short-name :space uuid]))))
 
 
-(defn fetch-spaces [_world [route-name path-parameters store-in]]
-  (js/console.log "PP" path-parameters)
-  (let [m (reitit/match-by-name router route-name path-parameters)]
-    (js/console.log "M" m)
-    {::fx/api {
-               ; match the API endpoint via its stored name in the router
-               :uri        (:path m)
-               :on-success [::fetch-spaces-success path-parameters]}}))
-
-(defn fetch-spaces-success [db [{:keys [space/uuid org/short-name] :as _path-params} results]]
-  (assoc-in db [:assets short-name :space uuid] results))
-
-(reg-event-fx ::fetch-spaces trim-v fetch-spaces)
-(reg-event-db ::fetch-spaces-success trim-v fetch-spaces-success)
+;(defn fetch-spaces [_world [route-name path-parameters store-in]]
+;  (js/console.log "PP" path-parameters)
+;  (let [m (reitit/match-by-name router route-name path-parameters)]
+;    (js/console.log "M" m)
+;    {::fx/api {
+;               ; match the API endpoint via its stored name in the router
+;               :uri        (:path m)
+;               :on-success [::fetch-spaces-success path-parameters]}}))
+;
+;(defn fetch-spaces-success [db [{:keys [space/uuid org/short-name] :as _path-params} results]]
+;  (assoc-in db [:assets short-name :space uuid] results))
+;
+;(reg-event-fx ::fetch-spaces trim-v fetch-spaces)
+;(reg-event-db ::fetch-spaces-success trim-v fetch-spaces-success)
 
 
 (reg-event-fx ::get-some-api-data
@@ -97,4 +97,25 @@
 
 (reg-sub ::orgs
          (fn [db]
-           (get db :orgs)))
+           ;(sort-by (comp clojure.string/lower-case :org/short-name) (vals (get db :orgs)))
+           (get db :orgs)
+           ))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(reg-event-fx ::fetch-spaces
+              trim-v
+              (fn [_]
+                {::fx/api {
+                           :uri        "/api/admin/spaces"
+                           :method     :get
+                           :on-success [::fetch-spaces-success]}}))
+
+(reg-event-db ::fetch-spaces-success
+              trim-v
+              (fn [db [response]]
+                (assoc db :spaces response)))
+
+(reg-sub ::spaces
+         (fn [db]
+           (get db :spaces)))

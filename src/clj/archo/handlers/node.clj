@@ -13,6 +13,7 @@
             [datomic.client.api :as d]
             [ring.util.http-response :as resp]
             [pdfboxing.text :as text]
+            [archo.config :as config]
             )
   (:import org.apache.commons.io.FileUtils
            org.apache.pdfbox.io.IOUtils
@@ -58,7 +59,7 @@
      :document/format :application/pdf
      :node/source     {:source/pages  #{1 2 3}
                        :source/object {:s3/key    "cms/playground/aaaaaaaa.pdf"
-                                       :s3/bucket "cms-sandbox.obrizum"}}
+                                       :s3/bucket archo.config/upload-bucket}}
      :node/ext-id     "abc"}
 
   (let [existing-origin-edge nil #_(ffirst (d/q '{:find  [(pull ?n [])]
@@ -68,32 +69,45 @@
                                                           ]}
                                                 (client/db)))
 
-        node-to-create       {:db/id           "anode"
+        node-to-create       {:db/id           "new-node"
                               :node/uuid       (java.util.UUID/randomUUID)
                               :node/kind       :document
                               :media/extension ["pdf"]
                               :text/title      {:lang/en title}
                               :text/tran       {:lang/en tran}
-                              :db/doc          "archo-rsci"
+                              ;:db/doc          "archo-rsci"
+                              :db/doc          "archo-rscilin"
 
                               :document/format :application/pdf
                               ;:node/source     {:source/pages  #{1 2 3}
                               ;                  :source/object {:s3/key    "cms/playground/aaaaaaaa.pdf"
-                              ;                                  :s3/bucket "cms-sandbox.obrizum"}}
+                              ;                                  :s3/bucket archo.config/upload-bucket}}
                               ;:node/ext-id     "deleteme"
 
                               ; store information about the origin of the content
-                              :content/origins [
-                                                {:origin/pages     page-group
-                                                 :origin/s3.object {
-                                                                    :s3/bucket     "cms-sandbox.obrizum"
-                                                                    :s3/key        key
-                                                                    :s3/bucket+key ["cms-sandbox.obrizum" key]
-                                                                    ;:s3/bucket+key  [[:person/uuid "abc"] key]
-                                                                    ;:media/produced "anode"
-                                                                    }
-                                                 }
-                                                ]
+                              ;:content/origins [
+                              ;                  {:origin/pages     page-group
+                              ;                   :origin/s3.object {
+                              ;                                      :s3/bucket     archo.config/upload-bucket
+                              ;                                      :s3/key        key
+                              ;                                      :s3/bucket+key [archo.config/upload-bucket key]
+                              ;                                      ;:s3/bucket+key  [[:person/uuid "abc"] key]
+                              ;                                      ;:media/produced "anode"
+                              ;                                      }
+                              ;                   }
+                              ;                  ]
+
+
+                              ;;;;
+
+                              ;{:origin/s3.object {:s3/bucket+key [archo.config/upload-bucket key]}}
+
+                              }
+
+        _                    {:obr/kind      :source
+                              :origin/source {:s3/bucket+key [archo.config/upload-bucket key]}
+                              :origin/pages  page-group
+                              :origin/target "new-node"
                               }
 
         ]
@@ -107,8 +121,10 @@
                                                               ;:node/uuid   #uuid"3c9b9086-22b8-4978-961c-001140fcba94"
                                                               ; Monty space
                                                               ;:node/uuid   #uuid"4635dd9e-d1d5-4d2a-8844-ae207f422334"
-                                                              ; RCSI space
-                                                              :node/uuid   #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"
+                                                              ; RCSI adaptive space
+                                                              ;:node/uuid   #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"
+                                                              ; RCIS linear space
+                                                              :node/uuid   #uuid"7d9217eb-a3c7-487a-978c-e91ad350b5f3"
                                                               :space/point [node-to-create]}
 
                                                              ]}))
@@ -145,8 +161,8 @@
       page-groups :page-groups
       title       :title} :body} :parameters}]
   ; load the PDF from S3
-  (let [doc (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
-        ;doc2 (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
+  (let [doc (->> s3-key (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)
+        ;doc2 (->> s3-key (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)
         ]
 
     #_(let [new-pdf      (keep-pages doc (map dec (first page-groups)))
@@ -156,7 +172,7 @@
 
           (doall (put-s3-object
                    "obr-vod-destination-vpx8y5wsew25"
-                   ;"cms-sandbox.obrizum"
+                   ;archo.config/upload-bucket
                    (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
 
           (resp/ok {:success true})
@@ -165,7 +181,7 @@
 
         )
 
-    (let [doc      (->> s3-key (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)
+    (let [doc      (->> s3-key (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)
           stripper (PDFTextStripper.)]
       (let [pages-to-keep (map dec (first page-groups))
             page-count    (range (.getNumberOfPages doc))
@@ -179,7 +195,7 @@
         ;(.save o "tada.pdf")
         (put-s3-object
           "obr-vod-destination-vpx8y5wsew25"
-          ;"cms-sandbox.obrizum"
+          ;archo.config/upload-bucket
           (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream doc))
 
         ))
@@ -194,13 +210,13 @@
 
 (comment
 
-  (let [document (PDDocument/load (:Body (get-object "cms-sandbox.obrizum" "cms/playground/sample.pdf")))]
+  (let [document (PDDocument/load (:Body (get-object archo.config/upload-bucket "cms/playground/sample.pdf")))]
     (def adoc (first (split-pdfs document [[1 2 3] [4 5 6] [7 8 9 10 11 12]]))))
 
-  (put-s3-object "cms-sandbox.obrizum" "somefile.pdf" (let [out (java.io.ByteArrayOutputStream.)]
-                                                        (.save adoc out)
-                                                        (.close adoc)
-                                                        (java.io.ByteArrayInputStream. (.toByteArray out))))
+  (put-s3-object archo.config/upload-bucket "somefile.pdf" (let [out (java.io.ByteArrayOutputStream.)]
+                                                             (.save adoc out)
+                                                             (.close adoc)
+                                                             (java.io.ByteArrayInputStream. (.toByteArray out))))
   )
 
 
@@ -222,15 +238,15 @@
                             :document/format :application/pdf
                             ;:node/source     {:source/pages  #{1 2 3}
                             ;                  :source/object {:s3/key    "cms/playground/aaaaaaaa.pdf"
-                            ;                                  :s3/bucket "cms-sandbox.obrizum"}}
+                            ;                                  :s3/bucket archo.config/upload-bucket}}
                             :node/ext-id     "deleteme"
 
                             ; store information about the origin of the content
                             :content/origins [
                                               {:origin/pages     page-group
-                                               :origin/s3.object {:s3/bucket      "cms-sandbox.obrizum"
+                                               :origin/s3.object {:s3/bucket      archo.config/upload-bucket
                                                                   :s3/key         key
-                                                                  :s3/bucket+key  ["cms-sandbox.obrizum" key]
+                                                                  :s3/bucket+key  [archo.config/upload-bucket key]
                                                                   :media/produced "anode"}
                                                }
                                               ]
@@ -239,9 +255,13 @@
                            ]}))
   )
 
-(defn nodes-created-from-pages-handler [{{{s3-bucket :s3/bucket s3-key :s3/key} :path} :parameters}]
+(defn nodes-created-from-pages-handler [{{{s3-bucket  :s3/bucket
+                                           s3-key     :s3/key
+                                           space-uuid :space/uuid} :path} :parameters}]
 
-  (r/ok (node-queries/nodes-created-from-pages2 (client/db) s3-bucket s3-key)))
+  (println "SIDIS" space-uuid)
+
+  (r/ok (node-queries/nodes-created-from-pages2 (client/db) s3-bucket s3-key space-uuid)))
 
 
 (comment
@@ -260,9 +280,9 @@
                                             ;; store information about the origin of the content
                                             :content/origins [
                                                               {:origin/pages     page-group
-                                                               :origin/s3.object {:s3/bucket      "cms-sandbox.obrizum"
+                                                               :origin/s3.object {:s3/bucket      archo.config/upload-bucket
                                                                                   :s3/key         key
-                                                                                  :s3/bucket+key  ["cms-sandbox.obrizum" key]
+                                                                                  :s3/bucket+key  [archo.config/upload-bucket key]
                                                                                   :media/produced "anode"}
                                                                }
                                                               ]
@@ -285,13 +305,14 @@
                                                              [?title :lang/en ?title-en]
                                                              [?o :origin/pages ?pages]
                                                              [?o :origin/s3.object ?n]
-                                                             [?n :s3/key "introduction_to_cyber_security__stay_safe_online.pdf"]
+                                                             ;[?n :s3/key "introduction_to_cyber_security__stay_safe_online.pdf"]
+                                                             [?n :s3/key "L13 Cancer Screening Programmes.pdf"]
                                                              ]}
                                                    (client/db)))))
 
 
 (defn fix-pdf22 [bucket-name pages]
-  (let [doc (->> "AZURE BACKUP.pdf" (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
+  (let [doc (->> "AZURE BACKUP.pdf" (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)]
 
     (let [new-pdf (keep-pages doc (map dec (sort pages)))]
 
@@ -299,7 +320,7 @@
 
         (doall (put-s3-object
                  "obr-vod-destination-vpx8y5wsew25"
-                 ;"cms-sandbox.obrizum"
+                 ;archo.config/upload-bucket
                  (str new-node-uuid "/" new-node-uuid ".pdf") (pdf->input-stream new-pdf)))
 
         (resp/ok {:success true})
@@ -311,7 +332,7 @@
     ))
 
 (defn fix-pdf [original-file-name node-uuid pages]
-  (let [doc (->> original-file-name (get-s3-object "cms-sandbox.obrizum") :Body PDDocument/load)]
+  (let [doc (->> original-file-name (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)]
 
     (let [new-pdf (keep-pages doc (map dec (sort pages)))]
 
@@ -319,7 +340,7 @@
 
         (doall (put-s3-object
                  "obr-vod-destination-vpx8y5wsew25"
-                 ;"cms-sandbox.obrizum"
+                 ;archo.config/upload-bucket
                  (str node-uuid "/" node-uuid ".pdf") (pdf->input-stream new-pdf)))
 
         (resp/ok {:success true})

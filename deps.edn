@@ -13,8 +13,8 @@
              metosin/ring-http-response         {:mvn/version "0.9.1"}
              metosin/reitit                     {:mvn/version "0.3.10"}
              com.datomic/ion                    {:mvn/version "0.9.35"}
-             com.datomic/client-cloud           {:mvn/version "0.8.78"}
-             com.datomic/ion-dev                {:mvn/version "0.9.234"}
+             com.datomic/client-cloud           {:mvn/version "0.8.81"}
+             com.datomic/ion-dev                {:mvn/version "0.9.247"}
              com.taoensso/timbre                {:mvn/version "4.10.0"}
              jumblerg/ring-cors                 {:mvn/version "2.0.0"}
              metosin/reitit-ring                {:mvn/version "0.3.7"}
