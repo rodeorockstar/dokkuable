@@ -110,6 +110,29 @@
                                              [?space :node/uuid ?space-uuid]]}
                                    db s3-bucket s3-key space-uuid)))
 
+(defn nodes-created-from-pages3
+  "Nodes created from origin"
+  [db s3-bucket s3-key space-uuid]
+  (group-by-reduce first last (d/q '{:find  [?pages (pull ?target [:node/uuid :text/title])]
+                                     :in    [$ ?bucket ?key ?space-uuid]
+                                     :where [
+
+                                             ; Bind the original source document on S3
+                                             [?source :s3/bucket ?bucket]
+                                             [?source :s3/key ?key]
+
+                                             ; Find the source connection between the document and a node
+                                             [?origin :origin/source ?source]
+                                             [?origin :origin/target ?target]
+                                             [?origin :origin/pages ?pages]
+
+                                             ; Only select target nodes within the space
+                                             [?space :node/uuid ?space-uuid]
+                                             [?space :space/point ?target]
+
+                                             ]}
+                                   db s3-bucket s3-key space-uuid)) )
+
 
 (comment
   (nodes-created-from-pages2 (client/db) "cms-sandbox.obrizum" "cms/playground/sample.pdf"))

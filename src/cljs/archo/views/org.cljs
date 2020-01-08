@@ -31,9 +31,9 @@
                orgs))))
 
 (defn space-card []
-  (fn [{:keys [node/uuid space/title text/tran]}]
+  (fn [{:keys [node/uuid space/title text/tran]} org-short-name]
     [:a.card.rounded-0.shadow.p-4
-     {:href (routes/url-for :route/space {:org/short-name "rcsi"
+     {:href (routes/url-for :route/space {:org/short-name org-short-name
                                           :space/uuid uuid})}
      title]))
 
@@ -49,7 +49,7 @@
         ]
     (fn []
       (into [:div]
-            (map (fn [s] [space-card s]) (vals @xxx)))
+            (map (fn [s] [space-card s (:org/short-name @theview)]) (vals @xxx)))
       )))
 
 (defn some-space []

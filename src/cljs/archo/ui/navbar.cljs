@@ -5,7 +5,8 @@
 
 (defn main []
   (let [active-org   (subscribe [::mem-view/active-org])
-        active-space (subscribe [::mem-view/active-space])]
+        active-space (subscribe [::mem-view/active-space])
+        theview (subscribe [::mem-view/active])]
     (fn []
 
       ; blue #0380fd
@@ -19,7 +20,7 @@
         [:div#navbarCollapse.collapse.navbar-collapse.flex-column.align-items-start.ml-lg-2.ml-0
          [:div.display-title.pl-2
           ;(-> @active-org :org/name)
-          [:a {:href (url-for :route/org-home {:org/short-name "rcsi"})} [:i.fas.fa-home-alt]]
+          [:a {:href (url-for :route/org-home {:org/short-name (:org/short-name @theview)})} [:i.fas.fa-home-alt]]
           ;[:i.fad.fa-chevron-right.mx-2]
           (-> @active-space :space/title)
           ]
@@ -46,10 +47,10 @@
             [:li.nav-item
              [:a.nav-link {:href "#"} "Events"]]]
          [:ul.navbar-nav ;.flex-row.mt-4 ;.mb-md-1.mt-md-0.mb-3.mt-2
-          [:li.nav-item
+          #_[:li.nav-item
            [:a.nav-link.py-0.pr-3 {:href "#"} [:i.fa.fa-chart-pie-alt.mr-2] [:span "Coverage"]]]
           [:li.nav-item
-           [:a.nav-link.py-0.pr-3 {:href (url-for :route/split {:org/short-name "rcsi"
+           [:a.nav-link.py-0.pr-3 {:href (url-for :route/split {:org/short-name (:org/short-name @theview)
                                                                 :space/uuid (:node/uuid @active-space)})} [:i.fa.fa-archive.mr-2] [:span "Files"]]]
           [:li.nav-item
            [:a.nav-link.py-0.pr-3 {:href "#"}]]]]]])))

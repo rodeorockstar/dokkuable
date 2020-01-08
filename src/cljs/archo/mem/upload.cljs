@@ -31,11 +31,12 @@
 (reg-sub ::selected-pages (fn [db]
                             (apply sorted-set (get-in db [:stage :selected]))))
 
-(defn store-selection [{db :db} [{s3-key :s3/key title :title}]]
-  (js/console.log "doing with" s3-key)
+(defn store-selection [{db :db} [{s3-key :s3/key title :title space-uuid :space/uuid}]]
+  (js/console.log "thespace with" space-uuid)
+  (js/console.log "doing with" s3-key space-uuid)
   {:db       (-> db
                  (update-in [:stage :selections] conj (get-in db [:stage :selected])))
-   :dispatch [::save-nodes [(get-in db [:stage :selected])] s3-key title]})
+   :dispatch [::save-nodes [(get-in db [:stage :selected])] s3-key title space-uuid]})
 
 (reg-event-fx ::store-selection trim-v store-selection)
 
@@ -50,10 +51,11 @@
 
 ;;;;;
 
-(defn save-nodes [{db :db} [pages s3-key title]]
-  (js/console.log "pages" pages)
-  (js/console.log "filename" (-> db :stage :file (oget :name)))
-  (js/console.log "TITLEIS" title)
+(defn save-nodes [{db :db} [pages s3-key title space-id]]
+  ;(js/console.log "pages" pages)
+  ;(js/console.log "filename" (-> db :stage :file (oget :name)))
+  ;(js/console.log "TITLEIS" title)
+  (js/console.log "SPACEID" space-id)
   {:db      (update db :stage assoc :storing? true)
    ::fx/api {
              ; match the API endpoint via its stored name in the router
@@ -61,23 +63,27 @@
              :method     :post
              :params     {:s3/key      s3-key
                           :page-groups (map vec (sort pages))
-                          :title       title}
-             :on-success [::save-nodes-success s3-key]}})
+                          :title       title
+                          :space/uuid  space-id
+                          }
+             :on-success [::save-nodes-success s3-key space-id]}})
 
-(defn save-nodes-success [{db :db} [s3-key response]]
+(defn save-nodes-success [{db :db} [s3-key space-id response]]
+  (js/console.log "SAVENODESUCCESS" space-id)
   (js/console.log "RES" response)
   {:db         (-> db
                    (update :stage dissoc :storing?)
                    (update :stage dissoc :selected))
    :dispatch-n [
                 [::show-modal false]
-                [::fetch-nodes-from-object "cms-sandbox.obrizum" s3-key]]})
+                [::fetch-nodes-from-object "cms-sandbox.obrizum" s3-key space-id]]})
 
 (reg-event-fx ::save-nodes trim-v save-nodes)
 (reg-event-fx ::save-nodes-success trim-v save-nodes-success)
 
 
 (defn fetch-nodes-from-object [_ [s3-bucket s3-key space-uuid]]
+  (println "FETCHING SPACEID" space-uuid)
   {::fx/api {
              ; match the API endpoint via its stored name in the router
              :uri        (str "/assets/origin/" space-uuid "/" (url-encode s3-bucket) "/" (url-encode s3-key))

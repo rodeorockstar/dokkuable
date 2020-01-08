@@ -9,11 +9,14 @@
     [cljs-bean.core :refer [bean ->clj ->js]]
     [promesa.core :as p]
     [archo.mem.assets :as mem-assets]
+    [archo.mem.view :as mem-view]
     [cljs-bean.core :refer [bean ->clj ->js]]))
 
 (defn modal []
-  (let [node-name (r/atom nil)]
+  (let [node-name (r/atom nil)
+        theview   (subscribe [::mem-view/active])]
     (fn [{:keys [s3/key selected-pages file]}]
+      (js/console.log "ACTIVE" @theview)
       [:div.popup
        [:div.popup-background
         [:div.popup-dialog
@@ -92,7 +95,7 @@
 
             [:button.btn.btn-primary
              {:on-click (fn []
-                          (dispatch [::mem-upload/store-selection {:s3/key key :title @node-name}])
+                          (dispatch [::mem-upload/store-selection {:s3/key key :title @node-name :space/uuid (:space/uuid @theview)}])
                           )}
              "Make Node"]
 
@@ -105,7 +108,7 @@
       (let [nodes             @(subscribe [::mem-upload/page-nodes "cms-sandbox.obrizum" s3-key page])
             is-last-selected? (= @page-number (apply max selected))
             selected?         (contains? selected @page-number)]
-        [:div.position-relative.d-flex.flex-column.m-2
+        [:div.position-relative.d-flex.flex-column.m-2.text-truncated
          {:class (cond
                    (contains? selected @page-number) ["is-selected"] #_["pdf-selected" "shadow" "border" "border-primary" "rounded"]
                    nodes ["has-nodes" "border-success" "shadow"]
@@ -167,8 +170,8 @@
       [:div
 
        #_[:button.btn.btn-outline-secondary
-        {:on-click (fn [] (dispatch [::mem-assets/fetch-orgs]))}
-        "ORGS"]
+          {:on-click (fn [] (dispatch [::mem-assets/fetch-orgs]))}
+          "ORGS"]
 
        #_[:div
           [:button.btn.btn-primary

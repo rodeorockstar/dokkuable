@@ -50,7 +50,7 @@
     (doseq [pd-page (map (partial get-page pd-document) page-numbers)] (add-page new-pddocument pd-page))
     new-pddocument))
 
-(defn create-node [db key title page-group tran]
+(defn create-node [db key title page-group tran space-uuid]
   #_{:node/uuid       (java.util.UUID/randomUUID)
      :node/kind       :document
      :media/extension ["pdf"]
@@ -61,6 +61,9 @@
                        :source/object {:s3/key    "cms/playground/aaaaaaaa.pdf"
                                        :s3/bucket archo.config/upload-bucket}}
      :node/ext-id     "abc"}
+
+
+  (println "CREATENODESPACEID" space-uuid)
 
   (let [existing-origin-edge nil #_(ffirst (d/q '{:find  [(pull ?n [])]
                                                   :in    [$]
@@ -75,44 +78,21 @@
                               :media/extension ["pdf"]
                               :text/title      {:lang/en title}
                               :text/tran       {:lang/en tran}
-                              ;:db/doc          "archo-rsci"
                               :db/doc          "archo-rscilin"
+                              :document/format :application/pdf}]
 
-                              :document/format :application/pdf
-                              ;:node/source     {:source/pages  #{1 2 3}
-                              ;                  :source/object {:s3/key    "cms/playground/aaaaaaaa.pdf"
-                              ;                                  :s3/bucket archo.config/upload-bucket}}
-                              ;:node/ext-id     "deleteme"
-
-                              ; store information about the origin of the content
-                              ;:content/origins [
-                              ;                  {:origin/pages     page-group
-                              ;                   :origin/s3.object {
-                              ;                                      :s3/bucket     archo.config/upload-bucket
-                              ;                                      :s3/key        key
-                              ;                                      :s3/bucket+key [archo.config/upload-bucket key]
-                              ;                                      ;:s3/bucket+key  [[:person/uuid "abc"] key]
-                              ;                                      ;:media/produced "anode"
-                              ;                                      }
-                              ;                   }
-                              ;                  ]
-
-
-                              ;;;;
-
-                              ;{:origin/s3.object {:s3/bucket+key [archo.config/upload-bucket key]}}
-
-                              }
-
-        _                    {:obr/kind      :source
-                              :origin/source {:s3/bucket+key [archo.config/upload-bucket key]}
-                              :origin/pages  page-group
-                              :origin/target "new-node"
-                              }
-
-        ]
+    (println "CREATINGWITH" {:s3/bucket+key [archo.config/upload-bucket key]})
 
     (println "TXIS" (d/transact (client/get-conn) {:tx-data [
+
+                                                             {:obr/kind      :source
+                                                              :origin/source {:s3/key        key
+                                                                              :s3/bucket     archo.config/upload-bucket
+                                                                              :s3/bucket+key [archo.config/upload-bucket key]}
+                                                              :origin/pages  page-group
+                                                              :origin/target "new-node"
+                                                              }
+
 
                                                              {
                                                               ; westcoast space
@@ -124,7 +104,10 @@
                                                               ; RCSI adaptive space
                                                               ;:node/uuid   #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"
                                                               ; RCIS linear space
-                                                              :node/uuid   #uuid"7d9217eb-a3c7-487a-978c-e91ad350b5f3"
+                                                              ;:node/uuid   #uuid"7d9217eb-a3c7-487a-978c-e91ad350b5f3"
+                                                              ; josh test space
+                                                              ;:node/uuid   #uuid"9482933f-5a3a-4f5d-98f1-f0a7e0696d21"
+                                                              :node/uuid   space-uuid
                                                               :space/point [node-to-create]}
 
                                                              ]}))
@@ -159,8 +142,11 @@
   - :page-groups a collection of page numbers [[1 2 3] [4 5 6]] each of which become a PDF"
   [{{{s3-key      :s3/key
       page-groups :page-groups
-      title       :title} :body} :parameters}]
+      title       :title
+      space-uuid  :space/uuid
+      } :body} :parameters}]
   ; load the PDF from S3
+  (println "MFHIS" space-uuid)
   (let [doc (->> s3-key (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)
         ;doc2 (->> s3-key (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)
         ]
@@ -191,8 +177,9 @@
           (.removePage doc p)))
 
       (let [extracted-text (.getText stripper doc)
-            {new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) extracted-text)]
+            {new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) extracted-text space-uuid)]
         ;(.save o "tada.pdf")
+        (println "SAVINGTOCDN" (str new-node-uuid "/" new-node-uuid ".pdf"))
         (put-s3-object
           "obr-vod-destination-vpx8y5wsew25"
           ;archo.config/upload-bucket
@@ -261,7 +248,7 @@
 
   (println "SIDIS" space-uuid)
 
-  (r/ok (node-queries/nodes-created-from-pages2 (client/db) s3-bucket s3-key space-uuid)))
+  (r/ok (node-queries/nodes-created-from-pages3 (client/db) s3-bucket s3-key space-uuid)))
 
 
 (comment

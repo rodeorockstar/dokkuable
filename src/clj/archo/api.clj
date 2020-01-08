@@ -35,7 +35,8 @@
                                                                             :space/uuid uuid?}}
                                                         :handler    node-handlers/nodes-created-from-pages-handler}}]
     ["/split" {:post {:parameters {:body {:s3/key      string?
-                                          :page-groups ::page-groups}}
+                                          :page-groups ::page-groups
+                                          :space/uuid  uuid?}}
                       :handler    node-handlers/make-files-handler}}]
     ["/orgs"
      ["" {:get {:handler (fn [r]
