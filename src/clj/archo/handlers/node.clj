@@ -53,7 +53,8 @@
 
 
 (defn available-files-handler [req]
-  (r/ok (s3-fns/ls config/upload-bucket ""))
+  ;(println "PARAMSARE" (-> req :parameters :path :org/short-name))
+  (r/ok (s3-fns/ls config/upload-bucket (-> req :parameters :path :org/short-name)))
   )
 (defn create-node [db key title page-group tran space-uuid]
   #_{:node/uuid       (java.util.UUID/randomUUID)

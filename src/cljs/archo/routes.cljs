@@ -44,7 +44,9 @@
                                   (dispatch [::mem-assets/fetch-spaces])
                                   (dispatch [::mem-assets/fetch-available-files])
                                   )}]}
-   ["/org"
+   ["/org" {:controllers [{:identity identity
+                           :start (fn [e]
+                                    (dispatch [::mem-assets/fetch-available-files (-> e :parameters :path :org/short-name)]))}]}
     ["/{org/short-name}" {:parameters {:path {:org/short-name string?}}}
      ["" {:name :route/org-home}]
      ["/space/{space/uuid}" {:parameters {:path {:space/uuid uuid?}}}

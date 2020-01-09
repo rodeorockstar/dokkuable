@@ -30,7 +30,8 @@
 (def routes
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
-    ["/available-files" {:get {:handler node-handlers/available-files-handler}}]
+    ["/available-files/{org/short-name}" {:get {:parameters {:path {:org/short-name string?}}
+                                                :handler    node-handlers/available-files-handler}}]
     ["/origin/{space/uuid}/{s3/bucket}/{s3/key}" {:get {:parameters {:path {:s3/key     string?
                                                                             :s3/bucket  string?
                                                                             :space/uuid uuid?}}

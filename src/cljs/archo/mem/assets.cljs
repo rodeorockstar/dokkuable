@@ -124,9 +124,9 @@
 
 (reg-event-fx ::fetch-available-files
               trim-v
-              (fn [_]
+              (fn [db [short-name]]
                 {::fx/api {
-                           :uri        "/assets/available-files"
+                           :uri        (str "/assets/available-files/" short-name)
                            :method     :get
                            :on-success [::store-available-files]}}))
 
