@@ -42,6 +42,7 @@
                       :start    (fn []
                                   (dispatch [::mem-assets/fetch-orgs])
                                   (dispatch [::mem-assets/fetch-spaces])
+                                  (dispatch [::mem-assets/fetch-available-files])
                                   )}]}
    ["/org"
     ["/{org/short-name}" {:parameters {:path {:org/short-name string?}}}

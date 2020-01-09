@@ -14,6 +14,7 @@
             [ring.util.http-response :as resp]
             [pdfboxing.text :as text]
             [archo.config :as config]
+            [archo.s3 :as s3-fns]
             )
   (:import org.apache.commons.io.FileUtils
            org.apache.pdfbox.io.IOUtils
@@ -50,6 +51,10 @@
     (doseq [pd-page (map (partial get-page pd-document) page-numbers)] (add-page new-pddocument pd-page))
     new-pddocument))
 
+
+(defn available-files-handler [req]
+  (r/ok (s3-fns/ls config/upload-bucket ""))
+  )
 (defn create-node [db key title page-group tran space-uuid]
   #_{:node/uuid       (java.util.UUID/randomUUID)
      :node/kind       :document

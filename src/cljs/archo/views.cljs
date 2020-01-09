@@ -95,7 +95,7 @@
 
 (defn- panels [panel-name]
   [:div.container
-   (js/console.log "panel-name" panel-name)
+   ;(js/console.log "panel-name" panel-name)
    (case panel-name
      :route/home [wizard/main]
      :route/split [wizard/main]

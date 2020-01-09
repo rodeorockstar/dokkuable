@@ -16,7 +16,6 @@
   (let [node-name (r/atom nil)
         theview   (subscribe [::mem-view/active])]
     (fn [{:keys [s3/key selected-pages file]}]
-      (js/console.log "ACTIVE" @theview)
       [:div.popup
        [:div.popup-background
         [:div.popup-dialog
@@ -26,7 +25,7 @@
           [:div.row
            [:div.col-auto
             [:> Document
-             {:file            file
+             {:file            (str "https://s3-eu-west-1.amazonaws.com/cms-sandbox.obrizum/" (js/encodeURIComponent file))
               :className       "document"
               :rotate          0
               :on-load-success (fn [e]
@@ -45,7 +44,6 @@
                                         ;(js/console.log "PAGENU" e)
                                         (p/then (ocall e :getTextContent)
                                                 (fn [x]
-                                                  (js/console.log "SSSSS" (clojure.string/trim "     "))
                                                   (let [[{font-name :fontName} :as lines] (drop-while
                                                                                             (fn [s]
                                                                                               (clojure.string/blank? (-> s :str clojure.string/trim))
@@ -122,7 +120,7 @@
            :renderTextLayer       (contains? selected @page-number)
            :renderAnnotationLayer false
            :width                 200
-           :className             "page"
+           :className             "page d-flex flex-grow-1"
            :on-click              (fn []
                                     (when-not selected?
                                       (dispatch [::mem-upload/select-page @page-number])))
@@ -167,6 +165,7 @@
         ]
     (fn [{:keys [file]}]
 
+
       [:div
 
        #_[:button.btn.btn-outline-secondary
@@ -191,7 +190,10 @@
        ;[:pre (str @all-groups)]
 
        (into [:> Document
-              {:file            file
+              {
+               ;:file            file
+               :file            (str "https://s3-eu-west-1.amazonaws.com/cms-sandbox.obrizum/" (js/encodeURIComponent file))
+               ;:file            "https://s3-eu-west-1.amazonaws.com/cms-sandbox.obrizum/2019%20Davies_Ability_of_an_Arterial_Waveform_Analysis.pdf"
                :className       "document"
                :rotate          0
                :on-load-success (fn [e]
@@ -203,19 +205,24 @@
                                      (js/console.log "OUTLINE" e))}]
               ]
              (map (fn [p] [page {:page     p
-                                 :s3-key   (some-> @stage-file (oget :name))
+                                 ;:s3-key   (some-> @stage-file (oget :name))
+                                 :s3-key   file
                                  :selected @selected-pages}]) (take @show-count (range 1 (inc @page-count)))))
 
-       [:button.btn.btn-primary
-        {:on-click (fn []
-                     (dispatch [::mem-upload/change-show-count + 50])
-                     )}
-        "+ 50 pages"]
+
+       (when (<= (or @show-count 0) (or @page-count 0))
+         [:button.btn.btn-primary.btn-lg
+          {:on-click (fn []
+                       (dispatch [::mem-upload/change-show-count + 50])
+                       )}
+          "Display 50 more pages"])
 
        (when @show-modal?
          [modal
           {:selected-pages @selected-pages
-           :s3/key         (some-> @stage-file (oget :name))
-           :file           file}])
+           ;:s3/key         (some-> @stage-file (oget :name))
+           :s3/key         file
+           :file           file
+           }])
 
        ])))

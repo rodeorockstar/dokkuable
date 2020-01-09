@@ -119,3 +119,22 @@
 (reg-sub ::spaces
          (fn [db]
            (get db :spaces)))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(reg-event-fx ::fetch-available-files
+              trim-v
+              (fn [_]
+                {::fx/api {
+                           :uri        "/assets/available-files"
+                           :method     :get
+                           :on-success [::store-available-files]}}))
+
+(reg-event-db ::store-available-files
+              trim-v
+              (fn [db [response]]
+                (assoc db :available-files response)))
+
+(reg-sub ::available-files
+         (fn [db]
+           (-> db :available-files :Contents)))

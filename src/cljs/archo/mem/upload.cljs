@@ -16,7 +16,9 @@
 (reg-event-db ::render-page-success trim-v render-page-success)
 
 (defn stage-file [db]
-  (get-in db [:stage :file]))
+  (str "https://s3-eu-west-1.amazonaws.com/cms-sandbox.obrizum/" (js/encodeURIComponent (get-in db [:stage :file])))
+  (get-in db [:stage :file])
+  )
 
 (reg-sub ::stage-file stage-file)
 
@@ -83,7 +85,6 @@
 
 
 (defn fetch-nodes-from-object [_ [s3-bucket s3-key space-uuid]]
-  (println "FETCHING SPACEID" space-uuid)
   {::fx/api {
              ; match the API endpoint via its stored name in the router
              :uri        (str "/assets/origin/" space-uuid "/" (url-encode s3-bucket) "/" (url-encode s3-key))
