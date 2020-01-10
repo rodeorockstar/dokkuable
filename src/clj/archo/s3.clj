@@ -23,10 +23,18 @@
   "List the top level contents of a folder within an S3 bucket"
   [bucket prefix]
   ; ensure that the root key ends with a / which represents a folder
-  (let [safe-prefix (str/rtrim prefix "/")]
+  (let [safe-prefix (if (empty? prefix)
+                      ""
+                      (if (clojure.string/ends-with? prefix "/")
+                        prefix
+                        (str prefix "/"))
+
+
+                      #_(str/rtrim prefix "/"))]
     (->> {:op      :ListObjectsV2
           :request {:Bucket    bucket
                     :Prefix    safe-prefix
+                    ;:Prefix    prefix
                     :Delimiter "/"}}
          (aws/invoke s3)
          (postwalk (unquote-kv :ETag)))))

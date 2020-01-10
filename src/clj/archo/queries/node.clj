@@ -15,8 +15,8 @@
       :else (recur rest1 rest2))))
 
 (defn prepare-string [s]
-  (let [s (or s "")
-        parts (vec (clojure.string/split s #"\d+"))
+  (let [s       (or s "")
+        parts   (vec (clojure.string/split s #"\d+"))
         numbers (->> (re-seq #"\d+" s)
                      (map parse-int)
                      (vec))]
@@ -131,7 +131,7 @@
                                              [?space :space/point ?target]
 
                                              ]}
-                                   db s3-bucket s3-key space-uuid)) )
+                                   db s3-bucket s3-key space-uuid)))
 
 
 (comment
@@ -205,3 +205,27 @@
          "Lecture 14 - Cancer vaccines"
          "Lecture 15 - Overview of Cancer Treatment Options: (Surgery,  Radiotherapy, Chemotherapy)"
          )
+
+(defn nodes-created-from-document [db space-uuid s3-key]
+  (d/q '{:find  [?node (pull ?origin [*])]
+         :in    [$ ?space-uuid ?s3-key]
+         :where [
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
+
+
+                 [?node :content/origins ?origin]
+                 [?origin :origin/s3.object ?obj]
+                 [?obj :s3/key ?s3-key]
+
+                 ]}
+       (client/db) space-uuid s3-key)
+  )
+
+(defn retract-all-nodes-from-document [db space-uuid s3-key]
+  (let [nodes (nodes-created-from-document db space-uuid s3-key)]
+    (println "RETRACTING" (count nodes) "FOR" s3-key)
+    (d/transact (client/get-conn) {:tx-data (map (fn [id]
+                                                  [:db/retractEntity id]) (map first nodes))})))
+
+; (retract-all-nodes-from-document (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f" "L12 Y3M5 Tumour Metabolism, Powering the Growth  Dissemination of Cancer - AC 2019(1).pdf")
