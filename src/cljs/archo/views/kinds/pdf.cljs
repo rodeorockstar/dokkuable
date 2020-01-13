@@ -13,8 +13,9 @@
     [cljs-bean.core :refer [bean ->clj ->js]]))
 
 (defn modal []
-  (let [node-name (r/atom nil)
-        theview   (subscribe [::mem-view/active])]
+  (let [node-name    (r/atom nil)
+        theview      (subscribe [::mem-view/active])
+        is-adaptive? (r/atom true)]
     (fn [{:keys [s3/key selected-pages file]}]
       [:div.popup
        [:div.popup-background
@@ -72,6 +73,14 @@
                                     :value     @node-name
                                     :on-change (fn [e]
                                                  (reset! node-name (not-empty (oget e :target :value))))}]]
+
+             [:div.form-group
+              [:div.form-check
+               [:input#gridCheck.form-check-input {:type "checkbox"
+                                                   :on-click (fn [] (swap! is-adaptive? not))
+                                                   :checked @is-adaptive?}]
+               [:label.form-check-label {:for "gridCheck"} "Check me out"]]]
+
              ]
 
 
@@ -93,7 +102,10 @@
 
             [:button.btn.btn-primary
              {:on-click (fn []
-                          (dispatch [::mem-upload/store-selection {:s3/key key :title @node-name :space/uuid (:space/uuid @theview)}])
+                          (dispatch [::mem-upload/store-selection {:s3/key         key
+                                                                   :title          @node-name
+                                                                   :node/adaptive? @is-adaptive?
+                                                                   :space/uuid     (:space/uuid @theview)}])
                           )}
              "Make Node"]
 
@@ -145,7 +157,17 @@
             "Make Node"])
          (into [:<>]
                (map (fn [n]
-                      [:div.node (-> n :text/title :lang/en)]) nodes))
+                      (if (:node/adaptive? n)
+
+                        [:span.badge-primary [:i.fas.fa-chart-] (str (-> n :text/title :lang/en)) " (Adaptive)"]
+                        [:span.badge-secondary (str (-> n :text/title :lang/en) " (Non Adaptive")]
+
+                        )
+                      #_[:span.badge
+                       {:class (if (:node/adaptive? n) "badge-success" "badge-secondary")}
+
+                       (-> n :text/title :lang/en)]
+                      ) nodes))
          #_[:div [:i.fal.fa-search-plus]
             (into [:ul]
                   (map (fn [n]

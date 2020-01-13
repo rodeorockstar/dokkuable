@@ -125,6 +125,7 @@
 (reg-event-fx ::fetch-available-files
               trim-v
               (fn [db [short-name]]
+                (js/console.log "SHORT NAME" short-name)
                 {::fx/api {
                            :uri        (str "/assets/available-files/" short-name)
                            :method     :get

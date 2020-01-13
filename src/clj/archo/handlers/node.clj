@@ -56,7 +56,7 @@
   ;(println "PARAMSARE" (-> req :parameters :path :org/short-name))
   (r/ok (s3-fns/ls config/upload-bucket (-> req :parameters :path :org/short-name)))
   )
-(defn create-node [db key title page-group tran space-uuid]
+(defn create-node [db key title page-group tran space-uuid adaptive?]
   #_{:node/uuid       (java.util.UUID/randomUUID)
      :node/kind       :document
      :media/extension ["pdf"]
@@ -78,14 +78,15 @@
                                                           ]}
                                                 (client/db)))
 
-        node-to-create       {:db/id           "new-node"
-                              :node/uuid       (java.util.UUID/randomUUID)
-                              :node/kind       :document
-                              :media/extension ["pdf"]
-                              :text/title      {:lang/en title}
-                              :text/tran       {:lang/en tran}
-                              :db/doc          "archo-rscilin"
-                              :document/format :application/pdf}]
+        node-to-create       (cond-> {:db/id           "new-node"
+                                      :node/uuid       (java.util.UUID/randomUUID)
+                                      :node/kind       :document
+                                      :media/extension ["pdf"]
+                                      :text/title      {:lang/en title}
+                                      :text/tran       {:lang/en tran}
+                                      :db/doc          "archo-rscilin"
+                                      :document/format :application/pdf}
+                                     adaptive? (assoc :node/adaptive? true))]
 
     (println "CREATINGWITH" {:s3/bucket+key [archo.config/upload-bucket key]})
 
@@ -150,9 +151,10 @@
       page-groups :page-groups
       title       :title
       space-uuid  :space/uuid
+      adaptive?   :node/adaptive?
       } :body} :parameters}]
   ; load the PDF from S3
-  (println "MFHIS" space-uuid)
+  (println "NODEISADAPTIVE" adaptive?)
   (let [doc (->> s3-key (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)
         ;doc2 (->> s3-key (get-s3-object archo.config/upload-bucket) :Body PDDocument/load)
         ]
@@ -183,7 +185,7 @@
           (.removePage doc p)))
 
       (let [extracted-text (.getText stripper doc)
-            {new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) extracted-text space-uuid)]
+            {new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) extracted-text space-uuid adaptive?)]
         ;(.save o "tada.pdf")
         (println "SAVINGTOCDN" (str new-node-uuid "/" new-node-uuid ".pdf"))
         (put-s3-object

@@ -36,9 +36,10 @@
                                                                             :s3/bucket  string?
                                                                             :space/uuid uuid?}}
                                                         :handler    node-handlers/nodes-created-from-pages-handler}}]
-    ["/split" {:post {:parameters {:body {:s3/key      string?
-                                          :page-groups ::page-groups
-                                          :space/uuid  uuid?}}
+    ["/split" {:post {:parameters {:body {:s3/key         string?
+                                          :page-groups    ::page-groups
+                                          :space/uuid     uuid?
+                                          :node/adaptive? boolean?}}
                       :handler    node-handlers/make-files-handler}}]
     ["/orgs"
      ["" {:get {:handler (fn [r]
