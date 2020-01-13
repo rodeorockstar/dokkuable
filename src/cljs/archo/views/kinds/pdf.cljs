@@ -79,7 +79,7 @@
                [:input#gridCheck.form-check-input {:type "checkbox"
                                                    :on-click (fn [] (swap! is-adaptive? not))
                                                    :checked @is-adaptive?}]
-               [:label.form-check-label {:for "gridCheck"} "Check me out"]]]
+               [:label.form-check-label {:for "gridCheck"} "Adaptive?"]]]
 
              ]
 
