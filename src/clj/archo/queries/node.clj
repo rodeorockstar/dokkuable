@@ -1,6 +1,7 @@
 (ns archo.queries.node
   (:require [datomic.client.api :as d]
-            [archo.client :as client]))
+            [archo.client :as client]
+            [cuerdas.core :as str]))
 
 
 
@@ -226,6 +227,176 @@
   (let [nodes (nodes-created-from-document db space-uuid s3-key)]
     (println "RETRACTING" (count nodes) "FOR" s3-key)
     (d/transact (client/get-conn) {:tx-data (map (fn [id]
-                                                  [:db/retractEntity id]) (map first nodes))})))
+                                                   [:db/retractEntity id]) (map first nodes))})))
 
 ; (retract-all-nodes-from-document (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f" "L12 Y3M5 Tumour Metabolism, Powering the Growth  Dissemination of Cancer - AC 2019(1).pdf")
+
+
+(defn documents-in-space [db space-uuid]
+
+  )
+
+(defn space-sources [db space-uuid]
+  (d/q '{:find  [?s3-key ?node (distinct ?pages)]
+         :in    [$ ?space-uuid]
+         :keys  [s3-key node-id pages]
+         :where [
+
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
+
+                 [?origin :origin/target ?node]
+                 [?origin :origin/source ?source]
+                 [?origin :origin/pages ?pages]
+
+                 [?source :s3/key ?s3-key]
+
+                 ]}
+       db space-uuid)
+  )
+
+
+; (group-by :s3-key (space-sources (client/db) #uuid"bc1e7cc7-8bb6-44aa-96aa-346a97ef5475"))
+
+(defn space-sources2 [db space-uuid]
+  (d/q '{:find  [
+                 ?s3-key
+                 ;?source
+                 ?node
+                 (distinct ?pages)
+                 ]
+         :in    [$ ?space-uuid]
+         ;:keys  [s3-key node-id pages]
+         :where [
+
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
+
+                 [?origin :origin/target ?node]
+                 [?origin :origin/source ?source]
+                 [?origin :origin/pages ?pages]
+
+                 [?source :s3/key ?s3-key]
+
+                 ]}
+       db space-uuid))
+
+(defn tags-node-id [db space-uuid]
+  (ffirst (d/q '{:find  [?node]
+                 :in    [$ ?space-uuid]
+                 :where [
+
+                         [?space :node/uuid ?space-uuid]
+                         [?space :space/point ?node]
+                         [?node :node/kind :tags]
+
+                         ]}
+               db space-uuid)))
+
+(defn tag-by-name [db space-uuid tag-name]
+  (ffirst (d/q '{:find  [?node]
+                 :in    [$ ?space-uuid ?tag-name]
+                 :where [
+
+                         [?space :node/uuid ?space-uuid]
+                         [?space :space/point ?node]
+                         [?node :node/kind :tag]
+                         [?node :text/tran ?tran]
+                         [?tran :lang/en ?tag-name]
+
+                         ]}
+               db space-uuid tag-name)))
+
+(defn space-source-keys [db space-uuid]
+  (map (fn [k]
+         (last (str/split (first k) #"/"))
+         ) (d/q '{:find  [
+                          ?s3-key
+                          ;?source
+                          ;?node
+                          ;(distinct ?pages)
+                          ]
+                  :in    [$ ?space-uuid]
+                  ;:keys  [s3-key node-id pages]
+                  :where [
+
+                          [?space :node/uuid ?space-uuid]
+                          [?space :space/point ?node]
+
+                          [?origin :origin/target ?node]
+                          [?origin :origin/source ?source]
+                          [?origin :origin/pages ?pages]
+
+                          [?source :s3/key ?s3-key]
+
+                          ]}
+                db space-uuid)))
+
+(defn ensure-tags-by-source [db space-id]
+
+  (let [source-keys (space-source-keys db space-id)]
+    (let [names-to-create (remove nil? (map (fn [k]
+                                              (if-not (tag-by-name db space-id k) k)
+                                              ) source-keys))]
+      (let [tag-id (tags-node-id db space-id)
+            tag-nodes (map (fn [n]
+                             {:list/index                   (rand-int 10000),
+                              :node/kind                    :tag,
+                              :node/uuid                    (java.util.UUID/randomUUID),
+                              :text/tran                    {:lang/en n},
+                              :module.exploration/unlocked? true}
+                             ) names-to-create)]
+        (d/transact (client/get-conn)
+                    {:tx-data [{:node/uuid   space-id
+                                :space/point [
+                                              {:db/id     tag-id
+                                               :node/edge (map (fn [x]
+                                                                 {:edge/node x}
+                                                                 ) tag-nodes)}
+                                              ]}]})
+        )
+      ))
+
+  )
+
+
+
+
+(comment
+  (let [space-id  #uuid"bc1e7cc7-8bb6-44aa-96aa-346a97ef5475"
+        tags-node (tags-node-id (client/db) space-id)]
+    (->> (space-sources2 (client/db) space-id)
+         (group-by first)
+         (mapcat (fn [[s3-key nodes]]
+                   (let [file-name (last (str/split s3-key #"/"))]
+                     (let [existing-tag-node (tag-by-name (client/db) space-id file-name)]
+
+
+
+                       (map (fn [[k node-id pages]]
+                              {:db/id     node-id
+                               :node/edge [{:edge/kind :tag
+                                            :edge/name file-name
+                                            :edge/mass (double (apply min pages))
+                                            :edge/node    existing-tag-node
+                                            }]}) nodes))))))))
+
+
+(comment (d/transact (client/get-conn)
+                     {:tx-data (let [space-id  #uuid"bc1e7cc7-8bb6-44aa-96aa-346a97ef5475"
+                                     tags-node (tags-node-id (client/db) space-id)]
+                                 (->> (space-sources2 (client/db) space-id)
+                                      (group-by first)
+                                      (mapcat (fn [[s3-key nodes]]
+                                                (let [file-name (last (str/split s3-key #"/"))]
+                                                  (let [existing-tag-node (tag-by-name (client/db) space-id file-name)]
+
+
+
+                                                    (map (fn [[k node-id pages]]
+                                                           {:db/id     node-id
+                                                            :node/edge [{:edge/kind :tag
+                                                                         :edge/name file-name
+                                                                         :edge/mass (double (apply min pages))
+                                                                         :edge/node existing-tag-node
+                                                                         }]}) nodes)))))))}))
