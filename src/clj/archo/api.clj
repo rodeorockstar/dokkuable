@@ -30,12 +30,17 @@
 (def routes
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
+    ["/node/{node/uuid}" {:delete  {:parameters {:path {:node/uuid uuid?}}}
+                          :handler node-handlers/retract-node}]
     ["/available-files/{org/short-name}" {:get {:parameters {:path {:org/short-name string?}}
                                                 :handler    node-handlers/available-files-handler}}]
     ["/origin/{space/uuid}/{s3/bucket}/{s3/key}" {:get {:parameters {:path {:s3/key     string?
                                                                             :s3/bucket  string?
                                                                             :space/uuid uuid?}}
                                                         :handler    node-handlers/nodes-created-from-pages-handler}}]
+
+
+
     ["/split" {:post {:parameters {:body {:s3/key         string?
                                           :page-groups    ::page-groups
                                           :space/uuid     uuid?

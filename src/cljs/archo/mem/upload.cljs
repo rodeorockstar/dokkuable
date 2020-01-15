@@ -125,3 +125,30 @@
 (reg-event-db ::change-show-count trim-v
               (fn [db [f amount]]
                 (update-in db [:stage :count] f amount)))
+
+;;;;
+
+(defn delete-node [{db :db} [node-uuid s3-key space-id]]
+
+  {
+   ;:db      (update db :stage assoc :storing? true)
+   ::fx/api {
+             ; match the API endpoint via its stored name in the router
+             :uri        (str "/assets/node/" node-uuid)
+             :method     :delete
+             ;:params     {:s3/key         s3-key
+             ;             :page-groups    (map vec (sort pages))
+             ;             :title          title
+             ;             :node/adaptive? adaptive?
+             ;             :space/uuid     space-id
+             ;             }
+             :on-success [::delete-node-success s3-key space-id]}})
+
+(defn delete-node-success [{db :db} [s3-key space-id]]
+  {:db       db
+   :dispatch [::fetch-nodes-from-object "cms-sandbox.obrizum" s3-key space-id]}
+
+  )
+
+(reg-event-fx ::delete-node trim-v delete-node)
+(reg-event-fx ::delete-node-success trim-v delete-node-success)

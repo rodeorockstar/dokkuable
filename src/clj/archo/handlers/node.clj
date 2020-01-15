@@ -250,6 +250,11 @@
                            ]}))
   )
 
+(defn retract-node [{parameters :parameters}]
+  (if (:db-after (d/transact (client/get-conn) {:tx-data [[:db/retractEntity [:node/uuid (-> parameters :path :node/uuid)]]]}))
+    (r/ok {:node/uuid (-> parameters :path :node/uuid)})
+    (r/bad-request {:status false})))
+
 (defn nodes-created-from-pages-handler [{{{s3-bucket  :s3/bucket
                                            s3-key     :s3/key
                                            space-uuid :space/uuid} :path} :parameters}]

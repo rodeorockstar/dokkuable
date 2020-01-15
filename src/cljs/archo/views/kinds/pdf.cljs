@@ -10,6 +10,7 @@
     [promesa.core :as p]
     [archo.mem.assets :as mem-assets]
     [archo.mem.view :as mem-view]
+    [cuerdas.core :as cuerdas]
     [cljs-bean.core :refer [bean ->clj ->js]]))
 
 (defn modal []
@@ -50,9 +51,9 @@
                                                                                               (clojure.string/blank? (-> s :str clojure.string/trim))
                                                                                               )
                                                                                             (:items (js->clj x :keywordize-keys true)))
-                                                        maybe-title (clojure.string/join " " (map :str (take-while (fn [s]
-                                                                                                                     (= font-name (:fontName s))
-                                                                                                                     ) lines)))]
+                                                        maybe-title (cuerdas/clean (clojure.string/join " " (map :str (take-while (fn [s]
+                                                                                                                      (= font-name (:fontName s))
+                                                                                                                      ) lines))))]
                                                     (reset! node-name maybe-title)
                                                     )
                                                   )))
@@ -113,7 +114,8 @@
 
 
 (defn page []
-  (let [page-number (r/atom nil)]
+  (let [page-number (r/atom nil)
+        theview (subscribe [::mem-view/active])]
     (fn [{:keys [page selected s3-key]}]
       (let [nodes             @(subscribe [::mem-upload/page-nodes "cms-sandbox.obrizum" s3-key page])
             is-last-selected? (= @page-number (apply max selected))
@@ -157,12 +159,23 @@
             "Make Node"])
          (into [:<>]
                (map (fn [n]
-                      (if (:node/adaptive? n)
+                      [:div.node-toolbar
 
-                        [:span.badge-primary [:i.fas.fa-chart-] (str (-> n :text/title :lang/en)) " (Adaptive)"]
-                        [:span.badge-secondary (str (-> n :text/title :lang/en) " (Non Adaptive")]
+                       [:div.toolbar-title.border.text-truncate (-> n :text/title :lang/en)]
+                       [:button.btn.btn-danger.btn-sm
+                        {:on-click (fn []
+                                     (dispatch [::mem-upload/delete-node (:node/uuid n) s3-key (:space/uuid @theview) ]))}
+                        [:i.fas.fa-trash]]
 
-                        )
+                       #_(if (:node/adaptive? n)
+
+                         [:span.badge-primary [:i.fas.fa-chart-] (str (-> n :text/title :lang/en)) " (Adaptive)"]
+                         [:span.badge-secondary (str (-> n :text/title :lang/en) " (Non Adaptive")]
+
+                         )
+
+
+                       ]
                       #_[:span.badge
                        {:class (if (:node/adaptive? n) "badge-success" "badge-secondary")}
 
