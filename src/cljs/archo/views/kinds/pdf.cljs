@@ -11,7 +11,124 @@
     [archo.mem.assets :as mem-assets]
     [archo.mem.view :as mem-view]
     [cuerdas.core :as cuerdas]
+    ["react-flip-move" :as FlipMove]
     [cljs-bean.core :refer [bean ->clj ->js]]))
+
+
+
+(defn editable []
+  (let [el             (r/atom nil)
+        state          (r/atom nil)
+        new-state      (r/atom nil)
+        editable?      (r/atom true)
+        temp-value     (r/atom nil)
+        confirm?       (r/atom false)
+        original-value (r/atom nil)
+        okey           (r/atom (gensym))]
+    (r/create-class
+      {:component-did-mount     (fn [this]
+                                  (reset! original-value (:v (r/props this)))
+                                  (reset! temp-value (:v (r/props this)))
+                                  )
+       :should-component-update (fn [this]
+                                  ;(r/force-update this)
+                                  true
+                                  )
+       :reagent-render          (fn [{v :v s3-key :s3/key node-uuid :node/uuid space-uuid :space/uuid}]
+                                  [:div
+                                   ;[:div.has-background-info (str @okey)]
+                                   ;[:div.has-background-info (str @original-value)]
+                                   ;[:div.has-background-warning (str @temp-value)]
+                                   [:div.can-edit {:style {:position "relative"}}
+
+                                    ^{:key @okey} [:div.editable {
+                                                                  :contentEditable         @editable?
+                                                                  ;:class (when @editable? "is-editing has-background-info")
+                                                                  :ref                     (fn [dom-node] (reset! el dom-node))
+                                                                  :dangerouslySetInnerHTML {:__html @original-value}
+                                                                  :on-focus                (fn [evt]
+                                                                                             (reset! state (oget evt :target :innerText))
+                                                                                             ;(dispatch [::mem-browser/toggle-modal true])
+                                                                                             )
+                                                                  :on-blur                 (fn [evt]
+                                                                                             (when (not= @state (oget evt :target :innerText))
+                                                                                               ;#_(dispatch [::mem-browser/edit entity a (oget el :target :innerText)])
+                                                                                               (reset! confirm? true)
+                                                                                               )
+                                                                                             ;(reset! editable? false)
+                                                                                             )
+                                                                  :on-key-up               (fn [evt] (if (= 13 (oget evt :keyCode))
+                                                                                                       (-> evt
+                                                                                                           (oget :target)
+                                                                                                           (ocall :blur))
+                                                                                                       (reset! temp-value (oget evt :target :innerText))))
+                                                                  :on-key-down             (fn [evt]
+                                                                                             (if (= 13 (oget evt :keyCode))
+                                                                                               (do
+                                                                                                 (ocall evt :preventDefault)
+                                                                                                 (ocall evt :stopPropagation)
+                                                                                                 (-> evt (oget :target) (ocall :blur)))
+                                                                                               ))
+                                                                  }]
+
+                                    [:> FlipMove {:class            ""
+                                                  :enter-animation  "fade"
+                                                  :appear-animation "fade"
+                                                  :leave-animation  "fade"
+                                                  }
+                                     ^{:key (str "modal" a v)}
+
+                                     (when @confirm?
+                                       [:div.popup.text-dark
+                                        [:div.popup-background
+                                         {:on-click (fn []
+                                                      ;(dispatch [::mem-browser/toggle-modal false])
+                                                      )}
+                                         [:div.popup-dialog
+                                          [:div.popup-body
+                                           [:div.row
+
+                                            [:div.col-auto
+                                             [:div.media-left
+                                              [:figure
+                                               [:i.fad.fa-exclamation-triangle.fa-4x.text-warning]]]]
+                                            [:div.col
+                                             [:div.content
+                                              [:p.is-size-5 "You are about to change a value in the database."]
+                                              [:p "Do you want to continue?"]
+                                              [:div.modal-footer
+                                               [:button.btn.btn-primary
+                                                {:on-click (fn []
+                                                             (dispatch [::mem-upload/rename-node node-uuid @temp-value s3-key space-uuid])
+                                                             (reset! confirm? false)
+                                                             )}
+                                                "Transact"]
+                                               [:button.btn.btn-secondary
+                                                {:on-click (fn []
+                                                             (reset! confirm? false)
+                                                             (reset! okey (gensym))
+                                                             (reset! temp-value @original-value)
+                                                             )}
+                                                "Cancel"]]]]
+
+                                            ]]]]
+                                        ])
+                                     ]
+
+
+
+                                    #_[:div.controls.has-background-info {:style {:position "relative"
+                                                                                  ;:bottom   "-30px"
+                                                                                  :width    "100%"
+                                                                                  :padding  "10px"
+                                                                                  }}
+                                       [:i.fad.fa-pencil
+                                        {:on-click (fn []
+                                                     (swap! editable? not)
+                                                     (js/setTimeout
+                                                       (fn [] (ocall @el :focus))
+                                                       1))}]]]])})))
+
 
 (defn modal []
   (let [node-name    (r/atom nil)
@@ -52,8 +169,8 @@
                                                                                               )
                                                                                             (:items (js->clj x :keywordize-keys true)))
                                                         maybe-title (cuerdas/clean (clojure.string/join " " (map :str (take-while (fn [s]
-                                                                                                                      (= font-name (:fontName s))
-                                                                                                                      ) lines))))]
+                                                                                                                                    (= font-name (:fontName s))
+                                                                                                                                    ) lines))))]
                                                     (reset! node-name maybe-title)
                                                     )
                                                   )))
@@ -77,9 +194,9 @@
 
              [:div.form-group
               [:div.form-check
-               [:input#gridCheck.form-check-input {:type "checkbox"
+               [:input#gridCheck.form-check-input {:type     "checkbox"
                                                    :on-click (fn [] (swap! is-adaptive? not))
-                                                   :checked @is-adaptive?}]
+                                                   :checked  @is-adaptive?}]
                [:label.form-check-label {:for "gridCheck"} "Adaptive?"]]]
 
              ]
@@ -115,14 +232,14 @@
 
 (defn page []
   (let [page-number (r/atom nil)
-        theview (subscribe [::mem-view/active])]
+        theview     (subscribe [::mem-view/active])]
     (fn [{:keys [page selected s3-key]}]
       (let [nodes             @(subscribe [::mem-upload/page-nodes "cms-sandbox.obrizum" s3-key page])
             is-last-selected? (= @page-number (apply max selected))
             selected?         (contains? selected @page-number)]
         [:div.position-relative.d-flex.flex-column.m-2.text-truncated
          {:class (cond
-                   (contains? selected @page-number) ["is-selected"] #_["pdf-selected" "shadow" "border" "border-primary" "rounded"]
+                   (contains? selected @page-number) ["is-selected border-success"] #_["pdf-selected" "shadow" "border" "border-primary" "rounded"]
                    nodes ["has-nodes" "border-success" "shadow"]
 
                    :else [nil]
@@ -151,7 +268,7 @@
                                     )
            }]
          (when is-last-selected?
-           [:button.btn.btn-secondary
+           [:button.btn.btn-success
             {:on-click (fn []
                          ;(dispatch [::mem-upload/store-selection {:s3/key s3-key}])
                          (dispatch [::mem-upload/show-modal true])
@@ -159,31 +276,38 @@
             "Make Node"])
          (into [:<>]
                (map (fn [n]
+                      ^{:key (str "a" (:node/uuid n) (-> n :text/title :lang/en))}
                       [:div.node-toolbar.border-bottom
                        {:class (if (:node/adaptive? n)
                                  "bg-primary text-light" "bg-secondary text-light")}
 
                        [:div.toolbar-title.text-truncate
-                        [:div (-> n :text/title :lang/en)]
+                        #_[editable {:v          "This is a value"
+                                     :node/uuid  (:node/uuid n)
+                                     :s3/key     s3-key
+                                     :space/uuid (:space/uuid @theview)}]
+                        [:div [editable {:v          (-> n :text/title :lang/en)
+                                         :node/uuid  (:node/uuid n)
+                                         :s3/key     s3-key
+                                         :space/uuid (:space/uuid @theview)}]]
                         [:div.font-weight-light (if (:node/adaptive? n) "(Adaptive)" "(Linear)")]]
                        [:button.btn.btn-danger.btn-sm.ml-2
                         {:on-click (fn []
-                                     (dispatch [::mem-upload/delete-node (:node/uuid n) s3-key (:space/uuid @theview) ]))}
+                                     (dispatch [::mem-upload/delete-node (:node/uuid n) s3-key (:space/uuid @theview)]))}
                         [:i.fas.fa-trash]]
 
                        #_(if (:node/adaptive? n)
 
-                         [:span.badge-primary [:i.fas.fa-chart-] (str (-> n :text/title :lang/en)) " (Adaptive)"]
-                         [:span.badge-secondary (str (-> n :text/title :lang/en) " (Non Adaptive")]
+                           [:span.badge-primary [:i.fas.fa-chart-] (str (-> n :text/title :lang/en)) " (Adaptive)"]
+                           [:span.badge-secondary (str (-> n :text/title :lang/en) " (Non Adaptive")]
 
-                         )
-
+                           )
 
                        ]
                       #_[:span.badge
-                       {:class (if (:node/adaptive? n) "badge-success" "badge-secondary")}
+                         {:class (if (:node/adaptive? n) "badge-success" "badge-secondary")}
 
-                       (-> n :text/title :lang/en)]
+                         (-> n :text/title :lang/en)]
                       ) nodes))
          #_[:div [:i.fal.fa-search-plus]
             (into [:ul]

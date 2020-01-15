@@ -97,6 +97,7 @@ overflow: hidden;
         display: flex;
         align-items: flex-start;
         justify-content: center;
+        z-index: 999;
 
         .popup-dialog {
             background-color: white;
@@ -179,5 +180,15 @@ overflow: hidden;
 
     .toolbar-title {
         flex: 1;
+    }
+}
+
+.editable {
+    &:focus {
+        color: green;
+        outline-color: red;
+        outline-width: 1px;
+        background-color: white;
+        color: black;
     }
 }

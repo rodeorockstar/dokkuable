@@ -134,7 +134,7 @@
    ;:db      (update db :stage assoc :storing? true)
    ::fx/api {
              ; match the API endpoint via its stored name in the router
-             :uri        (str "/assets/node/" node-uuid)
+             :uri        (str "/assets/node/retract/" node-uuid)
              :method     :delete
              ;:params     {:s3/key         s3-key
              ;             :page-groups    (map vec (sort pages))
@@ -145,6 +145,7 @@
              :on-success [::delete-node-success s3-key space-id]}})
 
 (defn delete-node-success [{db :db} [s3-key space-id]]
+
   {:db       db
    :dispatch [::fetch-nodes-from-object "cms-sandbox.obrizum" s3-key space-id]}
 
@@ -152,3 +153,37 @@
 
 (reg-event-fx ::delete-node trim-v delete-node)
 (reg-event-fx ::delete-node-success trim-v delete-node-success)
+
+
+
+(reg-event-db ::toggle-modal2 trim-v
+              (fn [db [val]]
+                (assoc db :show-modal? val)
+                ))
+
+(reg-sub ::modal-status2
+         (fn [db]
+           (get db :show-modal2?)))
+
+
+
+
+;;;;
+
+(defn rename-node [{db :db} [node-uuid lang-en s3-key space-id]]
+
+  {
+   ;:db      (update db :stage assoc :storing? true)
+   ::fx/api {
+             ; match the API endpoint via its stored name in the router
+             :uri        (str "/assets/node/rename")
+             :method     :post
+             :params     {:node/uuid node-uuid
+                          :lang/en lang-en}
+             :on-success [::delete-node-success s3-key space-id]
+             }})
+
+
+
+(reg-event-fx ::rename-node trim-v rename-node)
+

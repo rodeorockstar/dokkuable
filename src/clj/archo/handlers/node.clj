@@ -255,6 +255,16 @@
     (r/ok {:node/uuid (-> parameters :path :node/uuid)})
     (r/bad-request {:status false})))
 
+(defn rename-node [{parameters :parameters}]
+  (println "RENAMING" parameters)
+  (if (:db-after (d/transact (client/get-conn) {:tx-data [
+                                                          {:node/uuid  (-> parameters :body :node/uuid)
+                                                           :text/title {:lang/en (-> parameters :body :lang/en)}}
+                                                          ]}))
+    (r/ok {:node/uuid (-> parameters :body :node/uuid)
+           :parameters parameters})
+    (r/bad-request {:status false})))
+
 (defn nodes-created-from-pages-handler [{{{s3-bucket  :s3/bucket
                                            s3-key     :s3/key
                                            space-uuid :space/uuid} :path} :parameters}]
