@@ -159,10 +159,14 @@
             "Make Node"])
          (into [:<>]
                (map (fn [n]
-                      [:div.node-toolbar
+                      [:div.node-toolbar.border-bottom
+                       {:class (if (:node/adaptive? n)
+                                 "bg-primary text-light" "bg-secondary text-light")}
 
-                       [:div.toolbar-title.border.text-truncate (-> n :text/title :lang/en)]
-                       [:button.btn.btn-danger.btn-sm
+                       [:div.toolbar-title.text-truncate
+                        [:div (-> n :text/title :lang/en)]
+                        [:div.font-weight-light (if (:node/adaptive? n) "(Adaptive)" "(Linear)")]]
+                       [:button.btn.btn-danger.btn-sm.ml-2
                         {:on-click (fn []
                                      (dispatch [::mem-upload/delete-node (:node/uuid n) s3-key (:space/uuid @theview) ]))}
                         [:i.fas.fa-trash]]
