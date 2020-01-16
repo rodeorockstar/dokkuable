@@ -56,7 +56,7 @@
   ;(println "PARAMSARE" (-> req :parameters :path :org/short-name))
   (r/ok (s3-fns/ls config/upload-bucket (-> req :parameters :path :org/short-name)))
   )
-(defn create-node [db key title page-group tran space-uuid adaptive?]
+(defn create-node [db key title page-group tran space-uuid adaptive? node-kind]
   #_{:node/uuid       (java.util.UUID/randomUUID)
      :node/kind       :document
      :media/extension ["pdf"]
@@ -80,7 +80,7 @@
 
         node-to-create       (cond-> {:db/id           "new-node"
                                       :node/uuid       (java.util.UUID/randomUUID)
-                                      :node/kind       :document
+                                      :node/kind       node-kind
                                       :media/extension ["pdf"]
                                       :text/title      {:lang/en title}
                                       :text/tran       {:lang/en tran}
@@ -152,6 +152,7 @@
       title       :title
       space-uuid  :space/uuid
       adaptive?   :node/adaptive?
+      node-kind   :node/kind
       } :body} :parameters}]
   ; load the PDF from S3
   (println "NODEISADAPTIVE" adaptive?)
@@ -185,7 +186,7 @@
           (.removePage doc p)))
 
       (let [extracted-text (.getText stripper doc)
-            {new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) extracted-text space-uuid adaptive?)]
+            {new-node-uuid :node/uuid} (create-node (client/db) s3-key title (first page-groups) extracted-text space-uuid adaptive? node-kind)]
         ;(.save o "tada.pdf")
         (println "SAVINGTOCDN" (str new-node-uuid "/" new-node-uuid ".pdf"))
         (put-s3-object
@@ -261,7 +262,7 @@
                                                           {:node/uuid  (-> parameters :body :node/uuid)
                                                            :text/title {:lang/en (-> parameters :body :lang/en)}}
                                                           ]}))
-    (r/ok {:node/uuid (-> parameters :body :node/uuid)
+    (r/ok {:node/uuid  (-> parameters :body :node/uuid)
            :parameters parameters})
     (r/bad-request {:status false})))
 

@@ -114,7 +114,7 @@
 (defn nodes-created-from-pages3
   "Nodes created from origin"
   [db s3-bucket s3-key space-uuid]
-  (group-by-reduce first last (d/q '{:find  [?pages (pull ?target [:node/uuid :text/title :node/adaptive?])]
+  (group-by-reduce first last (d/q '{:find  [?pages (pull ?target [:node/uuid :text/title :node/adaptive? :node/kind])]
                                      :in    [$ ?bucket ?key ?space-uuid]
                                      :where [
 

@@ -131,9 +131,10 @@
 
 
 (defn modal []
-  (let [node-name    (r/atom nil)
-        theview      (subscribe [::mem-view/active])
-        is-adaptive? (r/atom true)]
+  (let [node-name        (r/atom nil)
+        theview          (subscribe [::mem-view/active])
+        is-adaptive?     (r/atom true)
+        node-kind-select (r/atom :document)]
     (fn [{:keys [s3/key selected-pages file]}]
       [:div.popup
        [:div.popup-background
@@ -181,12 +182,12 @@
              ]]
            [:div.col
 
-            [:div @node-name]
+
 
 
             [:div.form
              [:div.form-group
-              [:label {:for "formGroupExampleInput"} "Example label"]
+              [:label {:for "formGroupExampleInput"} "Title of node"]
               [:input.form-control {:type      "text"
                                     :value     @node-name
                                     :on-change (fn [e]
@@ -198,6 +199,13 @@
                                                    :on-click (fn [] (swap! is-adaptive? not))
                                                    :checked  @is-adaptive?}]
                [:label.form-check-label {:for "gridCheck"} "Adaptive?"]]]
+
+
+             [:div.form-group
+              [:label "Choose which kind of node to create"]
+              (into [:select.form-control {:value     @node-kind-select
+                                           :on-change (fn [e] (reset! node-kind-select (keyword (oget e :target :value))))}]
+                    (map (fn [k] [:option k]) ["document" "paper" "product"]))]
 
              ]
 
@@ -218,14 +226,15 @@
                           )}
              "Cancel"]
 
-            [:button.btn.btn-primary
+            [:button.btn.btn-primary.ml-2
              {:on-click (fn []
                           (dispatch [::mem-upload/store-selection {:s3/key         key
                                                                    :title          @node-name
                                                                    :node/adaptive? @is-adaptive?
+                                                                   :node/kind      (or @node-kind-select :document)
                                                                    :space/uuid     (:space/uuid @theview)}])
                           )}
-             "Make Node"]
+             "Create Node"]
 
             ]]]]]])))
 
@@ -274,12 +283,15 @@
                          (dispatch [::mem-upload/show-modal true])
                          )}
             "Make Node"])
+
          (into [:<>]
                (map (fn [n]
                       ^{:key (str "a" (:node/uuid n) (-> n :text/title :lang/en))}
                       [:div.node-toolbar.border-bottom
                        {:class (if (:node/adaptive? n)
                                  "bg-primary text-light" "bg-secondary text-light")}
+
+
 
                        [:div.toolbar-title.text-truncate
                         #_[editable {:v          "This is a value"

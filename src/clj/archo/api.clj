@@ -31,7 +31,7 @@
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
     ["/node/retract/{node/uuid}" {:delete  {:parameters {:path {:node/uuid uuid?}}}
-                          :handler node-handlers/retract-node}]
+                                  :handler node-handlers/retract-node}]
     ["/node/rename" {:post    {:parameters {:body {:node/uuid uuid?
                                                    :lang/en   string?}}}
                      :handler node-handlers/rename-node}]
@@ -47,7 +47,9 @@
     ["/split" {:post {:parameters {:body {:s3/key         string?
                                           :page-groups    ::page-groups
                                           :space/uuid     uuid?
-                                          :node/adaptive? boolean?}}
+                                          :node/adaptive? boolean?
+                                          :node/kind      keyword?
+                                          }}
                       :handler    node-handlers/make-files-handler}}]
     ["/orgs"
      ["" {:get {:handler (fn [r]

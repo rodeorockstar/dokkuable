@@ -30,6 +30,7 @@
              com.cognitect.aws/batch            {:mvn/version "741.2.505.0"}
              com.cemerick/url                   {:mvn/version "0.1.1"}
              yogthos/config                     {:mvn/version "1.1.7"}
+             ;com.cemerick/url                   {:mvn/version "0.1.1"}
 
              pdfboxing                          {:sha     "fb538eb290df9bec87e314663db5c3bebbc61583"
                                                  :git/url "https://github.com/joshkh/pdfboxing"}

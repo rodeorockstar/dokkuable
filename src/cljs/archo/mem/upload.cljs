@@ -33,12 +33,12 @@
 (reg-sub ::selected-pages (fn [db]
                             (apply sorted-set (get-in db [:stage :selected]))))
 
-(defn store-selection [{db :db} [{s3-key :s3/key title :title space-uuid :space/uuid adaptive? :node/adaptive?}]]
+(defn store-selection [{db :db} [{s3-key :s3/key title :title space-uuid :space/uuid adaptive? :node/adaptive? node-kind :node/kind}]]
   (js/console.log "thespace with" space-uuid)
   (js/console.log "doing with" s3-key space-uuid)
   {:db       (-> db
                  (update-in [:stage :selections] conj (get-in db [:stage :selected])))
-   :dispatch [::save-nodes [(get-in db [:stage :selected])] s3-key title space-uuid adaptive?]})
+   :dispatch [::save-nodes [(get-in db [:stage :selected])] s3-key title space-uuid adaptive? node-kind]})
 
 (reg-event-fx ::store-selection trim-v store-selection)
 
@@ -53,7 +53,7 @@
 
 ;;;;;
 
-(defn save-nodes [{db :db} [pages s3-key title space-id adaptive?]]
+(defn save-nodes [{db :db} [pages s3-key title space-id adaptive? node-kind]]
   ;(js/console.log "pages" pages)
   ;(js/console.log "filename" (-> db :stage :file (oget :name)))
   ;(js/console.log "TITLEIS" title)
@@ -68,6 +68,7 @@
                           :title          title
                           :node/adaptive? adaptive?
                           :space/uuid     space-id
+                          :node/kind      node-kind
                           }
              :on-success [::save-nodes-success s3-key space-id]}})
 
@@ -179,7 +180,7 @@
              :uri        (str "/assets/node/rename")
              :method     :post
              :params     {:node/uuid node-uuid
-                          :lang/en lang-en}
+                          :lang/en   lang-en}
              :on-success [::delete-node-success s3-key space-id]
              }})
 

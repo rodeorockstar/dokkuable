@@ -2,7 +2,8 @@
   (:require [cognitect.aws.client.api :as aws]
             [archo.config :as config]
             [cuerdas.core :as str]
-            [clojure.walk :refer [postwalk]]))
+            [clojure.walk :refer [postwalk]]
+            [cemerick.url :refer (url url-encode)]))
 
 (defn str->uuid [s]
   (java.util.UUID/fromString s))
