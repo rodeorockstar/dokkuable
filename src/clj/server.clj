@@ -64,6 +64,6 @@
   (let [port 5000]
     (println "Web server starting on port" port)
     (println "using db" (client/db))
-    ;(kit/run-server app {:port port :max-body 524288000})
-    (jetty/run-jetty app {:port port})
+    (kit/run-server app {:port port :max-body 524288000})
+    ;(jetty/run-jetty app {:port port})
     ))

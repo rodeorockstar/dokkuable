@@ -437,40 +437,40 @@
   (let [s3-objects    (map first (s3-objects-without-tags db space-uuid))
         tags-node     (tags-node-id db space-uuid)
 
-        new-tag-nodes (map-indexed (fn [idx o]
-                                     [
-                                      {:node/uuid                    (java.util.UUID/randomUUID)
-                                       :node/kind                    :tag
-                                       :db/id                        (str "tag" idx)
-                                       :list/index                   (rand-int 10000)
-                                       :text/tran                    {:lang/en (-> o :s3/key last-key)}
-                                       :module.exploration/unlocked? true}
-                                      {:origin/source (:db/id o)
-                                       :obr/kind      :origin-test
-                                       :origin/target (str "tag" idx)}
-                                      ]
-                                     ) s3-objects)
+        new-tag-nodes (not-empty (map-indexed (fn [idx o]
+                                                [
+                                                 {:node/uuid                    (java.util.UUID/randomUUID)
+                                                  :node/kind                    :tag
+                                                  :db/id                        (str "tag" idx)
+                                                  :list/index                   (rand-int 10000)
+                                                  :text/tran                    {:lang/en (-> o :s3/key last-key)}
+                                                  :module.exploration/unlocked? true}
+                                                 {:origin/source (:db/id o)
+                                                  :obr/kind      :origin-test
+                                                  :origin/target (str "tag" idx)}
+                                                 ]
+                                                ) s3-objects))
         ]
 
     ;new-tag-nodes
 
 
-    {:tx-data (concat
-                [{:node/uuid   space-uuid
-                 :space/point (concat
-                                (map first new-tag-nodes)
-                                [
+    (if new-tag-nodes {:tx-data (concat
+                                  [{:node/uuid   space-uuid
+                                    :space/point (concat
+                                                   (map first new-tag-nodes)
+                                                   [
 
-                                 {:db/id     tags-node
-                                  :node/edge (map (fn [{tid :db/id}]
-                                                    {:edge/node tid}
-                                                    ) (map first new-tag-nodes))}
+                                                    {:db/id     tags-node
+                                                     :node/edge (map (fn [{tid :db/id}]
+                                                                       {:edge/node tid}
+                                                                       ) (map first new-tag-nodes))}
 
-                                 ]
-                                )}
-                ]
-                (map second new-tag-nodes)
-                )}
+                                                    ]
+                                                   )}
+                                   ]
+                                  (map second new-tag-nodes)
+                                  )} [])
 
     )
   )
@@ -479,3 +479,33 @@
 
 ; (d/transact (client/get-conn) (ensure-tags-in-space (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"))
 
+
+(defn doit [db space-id]
+  (let [links (d/q '{:find  [?node (min ?pages) ?tag]
+                     :in    [$ ?space-id]
+                     :where [
+                             [?space :node/uuid ?space-id]
+                             [?space :space/point ?node]
+
+                             [?node-origin :origin/target ?node]
+                             [?node-origin :origin/source ?node-source]
+                             [?node-origin :origin/pages ?pages]
+
+                             [?tag-origin :origin/source ?node-source]
+                             [?tag-origin :origin/target ?tag]
+                             [?tag :node/kind :tag]
+
+                             ;[?tag ]
+                             ]}
+                   db space-id)]
+    {:tx-data (map (fn [[node index tag]]
+                     {:db/id     node
+                      :node/edge [{:edge/mass (double index)
+                                   :edge/node tag}]}
+                     ) links)}
+    )
+  )
+
+; (doit (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f")
+
+; (d/transact (client/get-conn) (doit (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"))

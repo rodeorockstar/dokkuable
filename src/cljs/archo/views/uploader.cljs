@@ -25,7 +25,7 @@
                   [:tr
                    [:td
                     [:div name]
-                    [:div (h/filesize size :format " %.0f" " ")]]
+                    [:div.font-weight-lighter (h/filesize size :format " %.0f" " ")]]
                    [:td]])
                 details))]))
 
@@ -52,7 +52,7 @@
         {:on-click (fn [] (dispatch [::mem-uploader/upload-file @staged-files "cbs"]))}
         "Upload"]
 
-       [:button.btn.btn-info
+       #_[:button.btn.btn-info
         {:on-click (fn []
 
 

@@ -51,7 +51,7 @@
           [:li.nav-item
            [:a.nav-link.py-0.pr-3 {:href (url-for :route/space @theview)} [:i.fas.fa-cabinet-filing.mr-2] [:span "Space"]]]
 
-          [:li.nav-item
+          #_[:li.nav-item
            [:a.nav-link.py-0.pr-3 {:href (url-for :route/upload @theview)} [:i.fas.fa-cabinet-filing.mr-2] [:span "Upload"]]]
           #_[:li.nav-item
            [:a.nav-link.py-0.pr-3 {:href (url-for :route/split {:org/short-name (:org/short-name @theview)
