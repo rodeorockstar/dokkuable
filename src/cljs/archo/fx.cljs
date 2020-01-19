@@ -1,26 +1,27 @@
 (ns archo.fx
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [re-frame.core :refer [reg-fx subscribe dispatch reg-sub reg-event-db trim-v reg-event-fx]]
-            ;[taoensso.timbre :refer-macros [debug debugf]]
-            [cljs.core.async :refer [<! timeout]]
+    ;[taoensso.timbre :refer-macros [debug debugf]]
+            [cljs.core.async :as async :refer [<! timeout]]
             [cljs-http.client :as http]
             [archo.config :as config]
             [cljs-http.core :as http-core]
+            [ajax.core :refer [GET POST]]
             ))
 
-(defn fetch [{:keys    [fetch/method
-                        fetch/url
-                        fetch/params
-                        fetch/on-success
-                        fetch/on-error
-                        ] :as fetch-desc}]
+(defn fetch [{:keys [fetch/method
+                     fetch/url
+                     fetch/params
+                     fetch/on-success
+                     fetch/on-error
+                     ] :as fetch-desc}]
   (let [
         ;token   (-> @(subscribe [:hubble.mem.ident/data]) :person/tokens :access :token/value)
         http-fn (case method
-                  :get    http/get
-                  :post   http/post
+                  :get http/get
+                  :post http/post
                   :delete http/delete
-                  :put    http/put
+                  :put http/put
                   http/get)]
     (let [c (http-fn url (merge {:with-credentials? false}
                                 params))]
@@ -36,6 +37,23 @@
               ))))))
 
 
+(def pchan (async/chan))
+
+(go-loop []
+         (let [ppp (<! pchan)]
+           (js/console.log "pchan" ppp (gensym))
+           (recur)))
+
+(js/setInterval (fn [s]
+                  (go (println "S" (<! pchan)))) 1000)
+
+;(defn watchit [c]
+;  (when c (go-loop []
+;            (let [ppp (<! c)]
+;              (js/console.log "pppp" ppp (gensym))
+;              (recur))))
+;  )
+
 (defn api [{:keys [method
                    uri
                    params
@@ -43,6 +61,8 @@
                    on-error
                    is-retry?
                    track-id
+                   progress
+                   multipart-params
                    delay] :as req}]
   (let [
         ;token    (-> @(subscribe [:hubble.mem.ident/data]) :person/tokens :access :token/value)
@@ -62,7 +82,13 @@
                                                         ;token (update :headers assoc "Authorization" token)
                                                         (and params (not= method :get)) (assoc :transit-params params)
                                                         (and params (= method :get)) (assoc :query-params params)
-                                                        true (assoc :with-credentials? false)))]
+                                                        multipart-params (assoc :multipart-params multipart-params)
+                                                        true (assoc :with-credentials? false)
+                                                        true (assoc :progress pchan)))]
+
+        ;(when progress (watchit progress))
+
+
         (go
           (let [{:keys [status body success] :as response} (<! c)]
             ;(debugf "http ⬇ ┃ %s" response)
@@ -138,3 +164,6 @@
 
 (reg-event-db ::store-blob trim-v store-blob)
 (reg-fx ::cache fetch-as-blob)
+
+
+(reg-fx ::api2 (fn [{:keys []}]))

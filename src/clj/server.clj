@@ -8,15 +8,16 @@
             [compojure.route :refer [resources]]
             [ring.util.response :refer [resource-response content-type]]
             [jumblerg.middleware.cors :refer [wrap-cors]]
+            [reitit.ring.middleware.multipart :as multipart]
 
-
-    ;[ring.adapter.jetty :as jetty]
+    [ring.adapter.jetty :as jetty]
             [ring.middleware.params :as params]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [muuntaja.core :as m]
             [reitit.ring.coercion :as coercion]
             [reitit.ring :as ring]
             [archo.client :as client]
+            [clojure.java.io :as io]
     ;[example.plain]
     ;[example.dspec]
     ;[example.schema]
@@ -51,6 +52,7 @@
                                 coercion/coerce-exceptions-middleware
                                 coercion/coerce-request-middleware
                                 coercion/coerce-response-middleware
+                                multipart/multipart-middleware
                                 [wrap-cors identity]]}})
     (ring/routes
       ;(ring/create-resource-handler {:path "/"})
@@ -62,4 +64,6 @@
   (let [port 5000]
     (println "Web server starting on port" port)
     (println "using db" (client/db))
-    (kit/run-server app {:port port})))
+    ;(kit/run-server app {:port port :max-body 524288000})
+    (jetty/run-jetty app {:port port})
+    ))

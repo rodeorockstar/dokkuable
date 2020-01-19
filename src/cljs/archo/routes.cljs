@@ -51,6 +51,8 @@
      ["" {:name :route/org-home}]
      ["/space/{space/uuid}" {:parameters {:path {:space/uuid uuid?}}}
       ["" {:name :route/space}]
+      ["/upload" {:name :route/upload}]
+
       ["/split" {:name :route/split}]]]]
    ["/files" {:name :route/files}]])
 

@@ -3,7 +3,8 @@
             [archo.config :as config]
             [cuerdas.core :as str]
             [clojure.walk :refer [postwalk]]
-            [cemerick.url :refer (url url-encode)]))
+            [cemerick.url :refer (url url-encode)]
+            [clojure.java.io :as io]))
 
 (defn str->uuid [s]
   (java.util.UUID/fromString s))
@@ -32,11 +33,24 @@
 
 
                       #_(str/rtrim prefix "/"))]
-    (->> {:op      :ListObjectsV2
-          :request {:Bucket    bucket
-                    :Prefix    safe-prefix
-                    ;:Prefix    prefix
-                    :Delimiter "/"}}
-         (aws/invoke s3)
-         (postwalk (unquote-kv :ETag)))))
+    (cond->
+      (->> {:op      :ListObjectsV2
+            :request {:Bucket    bucket
+                      :Prefix    safe-prefix
+                      ;:Prefix    prefix
+                      :Delimiter "/"}}
+           (aws/invoke s3)
+           (postwalk (unquote-kv :ETag)))
+      (not-empty safe-prefix) (update :Contents rest))))
 
+
+(defn upload [prefix file]
+  (println "uploading" prefix file)
+  (let [puts (for [f file]
+               (future (->> {:op      :PutObject
+                             :request {:Bucket      "cms-sandbox.obrizum"
+                                       :Key         (str prefix "/" (:filename f))
+                                       :Body        (io/input-stream (:tempfile f))
+                                       :ContentType (:content-type f)}}
+                            (aws/invoke s3))))]
+    (map deref puts)))

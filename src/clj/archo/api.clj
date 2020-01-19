@@ -14,6 +14,8 @@
     [reitit.ring :as ring]
     [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
     [ring.util.http-response :as resp]
+    [reitit.ring.middleware.multipart :as multipart]
+    [ring.util.http-response :as r]
     [ring.util.response :refer [resource-response content-type]]))
 
 
@@ -30,6 +32,15 @@
 (def routes
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
+    ["/upload" {:post {:summary "upload a file"
+                       :parameters {:multipart {:file some? ;multipart/temp-file-part
+                                                :org string?}}
+                       ;:responses {200 {:body {:name string?, :size int?}}}
+                       :handler node-handlers/file-handler
+                       ;:handler (fn [req]
+                       ;           (r/ok {:success true}))
+
+                       }}]
     ["/node/retract/{node/uuid}" {:delete  {:parameters {:path {:node/uuid uuid?}}}
                                   :handler node-handlers/retract-node}]
     ["/node/rename" {:post    {:parameters {:body {:node/uuid uuid?

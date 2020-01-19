@@ -3,7 +3,8 @@
             [clojure.set :as set]
             [archo.fx :as fx]
             [oops.core :refer [oget oset!]]
-            [cemerick.url :refer (url url-encode)]))
+            [cemerick.url :refer (url url-encode)]
+            [cljs.core.async :as async]))
 
 (defn store-stage-file [db [f]]
   (assoc-in db [:stage :file] f))
@@ -187,4 +188,41 @@
 
 
 (reg-event-fx ::rename-node trim-v rename-node)
+
+
+;;;;
+
+(def progress-chan (async/chan))
+
+(defn upload-file [{db :db} [file org-name]]
+
+  (println "ON" org-name)
+
+  {
+   ;:db      (update db :stage assoc :storing? true)
+   ::fx/api {
+             ; match the API endpoint via its stored name in the router
+             :uri              (str "/assets/upload")
+             :method           :post
+             :multipart-params [["file" file]
+                                ["org" org-name]]
+             :progress         progress-chan
+             ;:params     {:node/uuid node-uuid
+             ;             :lang/en   lang-en}
+             :on-success       [::upload-file-success]
+             }})
+
+
+
+(reg-event-fx ::upload-file trim-v upload-file)
+
+;;;;
+
+(defn upload-file-success [{db :db} [response]]
+  (js/console.log "RESPONSE" response)
+  {:db db})
+
+
+
+(reg-event-fx ::upload-file-success trim-v upload-file-success)
 

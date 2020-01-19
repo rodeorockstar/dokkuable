@@ -15,6 +15,7 @@
             [pdfboxing.text :as text]
             [archo.config :as config]
             [archo.s3 :as s3-fns]
+
             )
   (:import org.apache.commons.io.FileUtils
            org.apache.pdfbox.io.IOUtils
@@ -26,6 +27,16 @@
 
 
 (def s3 (aws/client {:api :s3}))
+
+(defn file-handler [{{{:keys [file org]} :multipart} :parameters}]
+  (clojure.pprint/pprint file)
+  ;(r/ok {:test true})
+  (r/ok {:response (s3-fns/upload org file)})
+  (let [finished (s3-fns/upload org file)]
+    (println "FINISHED" finished)
+    (r/ok {:response false})
+    )
+  )
 
 (defn get-s3-object
   "Get an object from an S3 bucket"

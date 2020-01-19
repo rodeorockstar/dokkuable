@@ -47,8 +47,12 @@
             [:li.nav-item
              [:a.nav-link {:href "#"} "Events"]]]
          [:ul.navbar-nav ;.flex-row.mt-4 ;.mb-md-1.mt-md-0.mb-3.mt-2
-          #_[:li.nav-item
-           [:a.nav-link.py-0.pr-3 {:href "#"} [:i.fa.fa-chart-pie-alt.mr-2] [:span "Coverage"]]]
+
+          [:li.nav-item
+           [:a.nav-link.py-0.pr-3 {:href (url-for :route/space @theview)} [:i.fas.fa-cabinet-filing.mr-2] [:span "Space"]]]
+
+          [:li.nav-item
+           [:a.nav-link.py-0.pr-3 {:href (url-for :route/upload @theview)} [:i.fas.fa-cabinet-filing.mr-2] [:span "Upload"]]]
           #_[:li.nav-item
            [:a.nav-link.py-0.pr-3 {:href (url-for :route/split {:org/short-name (:org/short-name @theview)
                                                                 :space/uuid (:node/uuid @active-space)})} [:i.fa.fa-archive.mr-2] [:span "Files"]]]

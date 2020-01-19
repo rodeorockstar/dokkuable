@@ -244,8 +244,9 @@
         theview     (subscribe [::mem-view/active])]
     (fn [{:keys [page selected s3-key]}]
       (let [nodes             @(subscribe [::mem-upload/page-nodes "cms-sandbox.obrizum" s3-key page])
-            is-last-selected? (= @page-number (apply max selected))
+            is-last-selected? (and (some? @page-number) (some? selected) (= @page-number (apply max selected)))
             selected?         (contains? selected @page-number)]
+        (js/console.log "XXXXXX" @page-number (apply max selected))
         [:div.position-relative.d-flex.flex-column.m-2.text-truncated
          {:class (cond
                    (contains? selected @page-number) ["is-selected border-success"] #_["pdf-selected" "shadow" "border" "border-primary" "rounded"]

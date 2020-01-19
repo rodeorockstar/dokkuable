@@ -8,6 +8,7 @@
     [archo.views.wizard :as wizard]
     [archo.ui.navbar :as navbar]
     [archo.views.fs :as fs]
+    [archo.views.uploader :as uploader]
     [reagent.core :as r]
     ["react-particles-js" :refer [Particles]]))
 
@@ -105,6 +106,7 @@
      ;:route/space [org/some-space]
      :route/space [wizard/main]
      :route/org-home [org/main]
+     :route/upload [uploader/main]
      ;:route/space [space/main]
      :route/files [fs/main]
      ;[:div.test-container "404"]

@@ -308,29 +308,29 @@
                db space-uuid tag-name)))
 
 (defn space-source-keys [db space-uuid]
-  (map (fn [k]
-         (last (str/split (first k) #"/"))
-         ) (d/q '{:find  [
-                          ?s3-key
-                          ;?source
-                          ;?node
-                          ;(distinct ?pages)
-                          ]
-                  :in    [$ ?space-uuid]
-                  ;:keys  [s3-key node-id pages]
-                  :where [
+  (d/q '{:find  [
+                 ;?s3-key
+                 ;?source
+                 ;?node
+                 ;(distinct ?pages)
 
-                          [?space :node/uuid ?space-uuid]
-                          [?space :space/point ?node]
+                 (pull ?source [*])
+                 ]
+         :in    [$ ?space-uuid]
+         ;:keys  [s3-key node-id pages]
+         :where [
 
-                          [?origin :origin/target ?node]
-                          [?origin :origin/source ?source]
-                          [?origin :origin/pages ?pages]
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
 
-                          [?source :s3/key ?s3-key]
+                 [?origin :origin/target ?node]
+                 [?origin :origin/source ?source]
+                 [?origin :origin/pages ?pages]
 
-                          ]}
-                db space-uuid)))
+                 [?source :s3/key ?s3-key]
+
+                 ]}
+       db space-uuid))
 
 (defn ensure-tags-by-source [db space-id]
 
@@ -338,7 +338,7 @@
     (let [names-to-create (remove nil? (map (fn [k]
                                               (if-not (tag-by-name db space-id k) k)
                                               ) source-keys))]
-      (let [tag-id (tags-node-id db space-id)
+      (let [tag-id    (tags-node-id db space-id)
             tag-nodes (map (fn [n]
                              {:list/index                   (rand-int 10000),
                               :node/kind                    :tag,
@@ -378,7 +378,7 @@
                                :node/edge [{:edge/kind :tag
                                             :edge/name file-name
                                             :edge/mass (double (apply min pages))
-                                            :edge/node    existing-tag-node
+                                            :edge/node existing-tag-node
                                             }]}) nodes))))))))
 
 
@@ -400,3 +400,82 @@
                                                                          :edge/mass (double (apply min pages))
                                                                          :edge/node existing-tag-node
                                                                          }]}) nodes)))))))}))
+
+
+(defn last-key [s]
+  (last (str/split s #"/")))
+
+
+(defn s3-objects-without-tags [db space-uuid]
+  (d/q '{:find  [(pull ?source [*])]
+         :in    [$ ?space-uuid]
+         :where [
+
+                 ; all of the nodes in a space
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
+
+
+                 ; and their origins
+                 [?origin :origin/target ?node]
+                 [?origin :origin/source ?source]
+                 [?origin :origin/pages ?pages]
+
+                 ; which are files on S3
+                 [?source :s3/key ?s3-key]
+
+                 ; which do not have sources with targets which are tags
+                 (not-join [?source]
+                           [?tag-origin :origin/source ?source]
+                           [?tag-origin :origin/target ?tag]
+                           [?tag :node/kind :tag]
+                           [?space :space/point ?tag])]}
+       db space-uuid))
+
+
+(defn ensure-tags-in-space [db space-uuid]
+  (let [s3-objects    (map first (s3-objects-without-tags db space-uuid))
+        tags-node     (tags-node-id db space-uuid)
+
+        new-tag-nodes (map-indexed (fn [idx o]
+                                     [
+                                      {:node/uuid                    (java.util.UUID/randomUUID)
+                                       :node/kind                    :tag
+                                       :db/id                        (str "tag" idx)
+                                       :list/index                   (rand-int 10000)
+                                       :text/tran                    {:lang/en (-> o :s3/key last-key)}
+                                       :module.exploration/unlocked? true}
+                                      {:origin/source (:db/id o)
+                                       :obr/kind      :origin-test
+                                       :origin/target (str "tag" idx)}
+                                      ]
+                                     ) s3-objects)
+        ]
+
+    ;new-tag-nodes
+
+
+    {:tx-data (concat
+                [{:node/uuid   space-uuid
+                 :space/point (concat
+                                (map first new-tag-nodes)
+                                [
+
+                                 {:db/id     tags-node
+                                  :node/edge (map (fn [{tid :db/id}]
+                                                    {:edge/node tid}
+                                                    ) (map first new-tag-nodes))}
+
+                                 ]
+                                )}
+                ]
+                (map second new-tag-nodes)
+                )}
+
+    )
+  )
+
+
+
+; (d/transact (client/get-conn) (ensure-tags-in-space (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"))
+
