@@ -36,17 +36,45 @@
              "Cancel"]
             [:button.btn.btn-primary.ml-2
              {:on-click (fn [] (dispatch [::mem-assets/mkdir Prefix @new-key]))}
-             "Save"]]]
+             "Save"]]]]]]])))
 
-          ]]]])))
+(defn modal-delete []
+  (let [new-key (r/atom nil)]
+    (fn [{:keys [Prefix]} selected-key]
+      [:div.popup
+       [:div.popup-background
+        [:div.popup-dialog.rounded.shadow
+         [:div.popup-body
+          [:div.container
+           [:div.alert.alert-danger
+            [:h4 "Are you sure you want to delete this file?"]
+            [:code (str selected-key)]]
+           [:button.btn
+            {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
+            "Cancel"]
+           [:button.btn.btn-danger.ml-2
+            {:on-click (fn [] (dispatch [::mem-assets/rm Prefix selected-key]))}
+            "Delete"]
+           #_[:div.form
+            [:div.form-group
+             [:label "Delete" (str selected-key)]
+             [:input.form-control {:type      "text"
+                                   :value     @new-key
+                                   :on-change (reset-input! new-key)}]]
+            [:button.btn
+             {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
+             "Cancel"]
+            [:button.btn.btn-primary.ml-2
+             {:on-click (fn [] (dispatch [::mem-assets/mkdir Prefix @new-key]))}
+             "Save"]]]]]]])))
 
 (defn content-table []
   (let [r  (subscribe [::mem-view/active-space])
         a  (subscribe [::mem-view/active])
         ar (subscribe [::mem-view/active-route])]
     (fn [{{:keys [Contents CommonPrefixes Prefix] :as x} :files
-          {:keys [back]}                                 :nav}]
-      (js/console.log "FILES" x)
+          {:keys [back]}                                 :nav
+          selected-key                                   :selected-key}]
       [:div
 
 
@@ -54,10 +82,17 @@
        [:div.btn-group
         [:a.btn.btn-lg
          {:href (url-for :route/upload @a {:Prefix back})}
-         [:i.fal.fa-arrow-alt-left.fa-2x]]
+         [:i.fal.fa-arrow-alt-left]]
         [:button.btn.btn-lg
          {:on-click (fn [] (dispatch [::mem-assets/show-modal :new-folder]))}
-         [:i.fal.fa-folder-plus.fa-2x]]
+         [:i.fal.fa-folder-plus]]
+        [:button.btn.btn-lg
+         {:disabled (not selected-key)
+          :class (when-not selected-key "disabled" )
+          :on-click (fn [] (dispatch [::mem-assets/show-modal :delete]))
+          ;:on-click (fn [] (dispatch [::mem-assets/rm Prefix selected-key]))
+          }
+         [:i.fal.fa-trash]]
 
         ]
        [:table.table
@@ -69,25 +104,32 @@
           [:th "Size"]
           ]]
         [:tbody
-         [:<> (map (fn [{:keys [Prefix Display]}]
-                     ^{:key Prefix} [:tr
-                                     [:td [:i.fas.fa-folder]]
-                                     [:td.text-monospace
-                                      [:a {:href (url-for :route/upload @a {:Prefix Prefix})}
-                                       Display]]
-                                     [:td]])
-                   CommonPrefixes)]
-         [:<> (map (fn [{:keys [Display Key LastModified ETag Size StorageClass] :as p}]
-                     ^{:key Key} [:tr
-                                  [:td [:i.fad.fa-file]]
-                                  [:td.text-monospace Display]
-                                  [:td (h/filesize Size)]
-                                  #_[:td [:button.btn.btn-outline-secondary
-                                          {:on-click (fn []
-                                                       (dispatch [::mem-uploader/make-video {:s3/key     Key
-                                                                                             :space/uuid (:node/uuid @r)}]))}
-                                          "Video"]]])
-                   Contents)]]]]
+         [:<> (doall (map (fn [{:keys [Prefix Display]}]
+                            ^{:key Prefix} [:tr
+                                            [:td [:i.fas.fa-folder]]
+                                            [:td.text-monospace
+                                             [:a {:href (url-for :route/upload @a {:Prefix Prefix})}
+                                              Display]]
+                                            [:td]])
+                          CommonPrefixes))]
+         [:<> (doall (map (fn [{:keys [Display Key LastModified ETag Size StorageClass] :as p}]
+                            ^{:key Key} [:tr.text-monospace
+                                         {:class (when (= Key selected-key) "table-primary")
+                                          :on-click (fn []
+                                                      (dispatch [::mem-assets/set-selected-key Key]))}
+                                         [:td [:i.fad.fa-file]]
+                                         [:td.text-monospace
+                                          {:style {:word-wrap   "break-word"
+                                                   :white-space "pre-wrap"
+                                                   :word-break  "break-all"}}
+                                          Display]
+                                         [:td (h/filesize Size)]
+                                         #_[:td [:button.btn.btn-outline-secondary
+                                                 {:on-click (fn []
+                                                              (dispatch [::mem-uploader/make-video {:s3/key     Key
+                                                                                                    :space/uuid (:node/uuid @r)}]))}
+                                                 "Video"]]])
+                          Contents))]]]]
       )))
 
 (defn file-table []
@@ -122,7 +164,8 @@
         progress-chan       (subscribe [::mem-uploader/progress-chan])
         fs                  (subscribe [::mem-assets/current-files])
         nav                 (subscribe [::mem-assets/nav])
-        showing-modal (subscribe [::mem-assets/showing-modal])]
+        selected-key        (subscribe [::mem-assets/selected-key])
+        showing-modal       (subscribe [::mem-assets/showing-modal])]
     (fn []
       (js/console.log "SHOWING" @showing-modal)
       [:div.p-4.border.shadow.bg-light
@@ -130,7 +173,7 @@
        ;(js/console.log "P" @progress-chan @staged-files)
        ;(js/console.log "FS" @fs)
 
-       [file-table {:files @fs :nav @nav}]
+       [file-table {:files @fs :nav @nav :selected-key @selected-key}]
 
 
        #_[:div.form
@@ -199,5 +242,6 @@
           "Rando"]
        (when-let [modal-kw @showing-modal]
          (case modal-kw
-           :new-folder [modal-new-folder @fs]))
+           :new-folder [modal-new-folder @fs]
+           :delete [modal-delete @fs @selected-key]))
        ])))

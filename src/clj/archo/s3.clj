@@ -72,3 +72,9 @@
                             :Key        dest-key
                             }}))
 
+
+(defn delete-object [bucket prefix]
+  (->> {:op      :DeleteObject
+        :request {:Bucket bucket
+                  :Key    prefix}}
+       (aws/invoke s3)))

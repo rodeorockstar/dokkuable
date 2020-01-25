@@ -166,10 +166,30 @@
                            :params     {:key (str current-key k "/")}
                            :on-success [::ls current-key]}}))
 
+(reg-event-fx ::rm
+              trim-v
+              (fn [{db :db} [current-key k]]
+                {
+                 :db      (update db :fs dissoc :modal-kw)
+                 ::fx/api {
+                           :uri        "/fs/rm"
+                           :method     :post
+                           :params     {:key k}
+                           :on-success [::ls current-key]}}))
+
 (reg-event-db ::close-modal
               trim-v
               (fn [db]
                 (update db :fs dissoc :modal-kw)))
+
+(reg-event-db ::set-selected-key
+              trim-v
+              (fn [db [k]]
+                (assoc-in db [:fs :selected-key] k)))
+
+(reg-sub ::selected-key
+         (fn [db]
+           (get-in db [:fs :selected-key])))
 
 (reg-event-db ::show-modal
               trim-v

@@ -94,6 +94,8 @@
                   :handler node-handlers/fs-ls-handler}}]
     ["/mkdir" {:post {:parameters {:body {:key string?}}}
                :handler node-handlers/fs-mkdir-handler}]
+    ["/rm" {:post {:parameters {:body {:key string?}}}
+               :handler node-handlers/fs-rm-object}]
     ]
    ["/api"
     ["/admin/orgs" {:get {:handler (fn [r] (resp/ok (queries/orgs (client/db))))}}]

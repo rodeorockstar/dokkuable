@@ -223,6 +223,11 @@
   (r/ok (s3-fns/mkdir "cms-sandbox.obrizum" (-> req :parameters :body :key)))
   )
 
+(defn fs-rm-object [req]
+  ;(println "PARAMS" (-> req :parameters :query))
+  (r/ok (s3-fns/delete-object "cms-sandbox.obrizum" (-> req :parameters :body :key)))
+  )
+
 
 
 
