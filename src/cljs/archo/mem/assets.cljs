@@ -4,6 +4,7 @@
             [archo.mem.events :as mem-events]
             [reitit.coercion.spec]
             [reitit.coercion :as coercion]
+            [cuerdas.core :as str]
             [re-frame.core :refer [reg-sub reg-event-db reg-event-fx reg-sub trim-v]]))
 
 
@@ -139,3 +140,83 @@
 (reg-sub ::available-files
          (fn [db]
            (-> db :available-files :Contents)))
+
+
+;;;;;
+
+;;;;;;;;;;;;;;;;;;;;
+
+(reg-event-fx ::ls
+              trim-v
+              (fn [{db :db} [k]]
+                {:db      (assoc-in db [:fs :view] k)
+                 ::fx/api {
+                           :uri        "/fs/ls"
+                           :method     :get
+                           :params     {:key k}
+                           :on-success [::store-ls]}}))
+
+(reg-event-fx ::mkdir
+              trim-v
+              (fn [{db :db} [current-key k]]
+                {:db      (update db :fs dissoc :modal-kw)
+                 ::fx/api {
+                           :uri        "/fs/mkdir"
+                           :method     :post
+                           :params     {:key (str current-key k "/")}
+                           :on-success [::ls current-key]}}))
+
+(reg-event-db ::close-modal
+              trim-v
+              (fn [db]
+                (update db :fs dissoc :modal-kw)))
+
+(reg-event-db ::show-modal
+              trim-v
+              (fn [db [modal-kw]]
+                (assoc-in db [:fs :modal-kw] modal-kw)))
+
+(reg-sub ::showing-modal
+         (fn [db]
+           (get-in db [:fs :modal-kw])))
+
+(reg-event-db ::store-ls
+              trim-v
+              (fn [db [{:keys [Prefix] :as response}]]
+                (assoc-in db [:fs :files Prefix] response)))
+
+(reg-sub ::fs
+         (fn [db]
+           (get-in db [:fs])))
+
+(reg-sub ::fs-view
+         :<- [::fs]
+         (fn [fs]
+           (get fs :view)))
+
+(reg-sub ::fs-files
+         :<- [::fs]
+         (fn [fs]
+           (get fs :files)))
+
+(defn display-name [m]
+  (map (fn [s] (assoc s :Display (-> s :Key (str/split #"/") last))) m)
+  )
+
+(defn display-name2 [m]
+  (map (fn [s] (assoc s :Display (-> s :Prefix (str/split #"/") last))) m)
+  )
+
+(reg-sub ::current-files
+         :<- [::fs-files]
+         :<- [::fs-view]
+         (fn [[files view]]
+           (js/console.log "GOTFILES" (get files view))
+           (-> (get files view)
+               (update :Contents display-name)
+               (update :CommonPrefixes display-name2))))
+
+(reg-sub ::nav
+         :<- [::fs-view]
+         (fn [view]
+           {:back (str/join "" (interleave (butlast (str/split view #"/")) (repeat "/")))}))

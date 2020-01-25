@@ -38,14 +38,14 @@
 
 
 (def pchan (async/chan))
-
-(go-loop []
-         (let [ppp (<! pchan)]
-           (js/console.log "pchan" ppp (gensym))
-           (recur)))
-
-(js/setInterval (fn [s]
-                  (go (println "S" (<! pchan)))) 1000)
+;
+;(go-loop []
+;         (let [ppp (<! pchan)]
+;           (js/console.log "pchan" ppp (gensym))
+;           (recur)))
+;
+;(js/setInterval (fn [s]
+;                  (go (println "S" (<! pchan)))) 1000)
 
 ;(defn watchit [c]
 ;  (when c (go-loop []

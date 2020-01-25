@@ -49,3 +49,30 @@
 
 
 (reg-event-fx ::upload-file-success trim-v upload-file-success)
+
+
+;;; video
+
+;; video
+
+(defn make-video [{db :db} [params]]
+
+
+  {
+   ;:db      (update db :stage assoc :storing? true)
+   ::fx/api {
+             ; match the API endpoint via its stored name in the router
+             :uri        (str "/assets/video")
+             :method     :post
+             :params     params
+             :on-success [::video-success]
+             }})
+
+
+
+(reg-event-fx ::make-video trim-v make-video)
+
+(reg-event-db ::video-success trim-v (fn [db [response]]
+                                       (js/console.log "VIDEO RES" response)
+                                       db))
+

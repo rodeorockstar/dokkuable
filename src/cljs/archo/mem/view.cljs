@@ -7,6 +7,10 @@
             [reitit.coercion :as coercion]
             [re-frame.core :refer [reg-sub reg-event-db reg-event-fx reg-sub trim-v]]))
 
+(reg-sub ::active-route
+         (fn [db]
+           (:active-route db)))
+
 (reg-sub ::active
          (fn [db]
            (let [parameters (-> db :active-route :parameters)]

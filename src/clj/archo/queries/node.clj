@@ -332,6 +332,69 @@
                  ]}
        db space-uuid))
 
+(defn nodes-created-from-sources [db space-uuid s3-keys]
+  (d/q '{:find  [
+                 ;?s3-key
+                 ;?source
+                 ;?node
+                 ;(distinct ?pages)
+
+                 ;(pull ?source [*])
+                 ?node
+                 ]
+         :in    [$ ?space-uuid [?s3-key ...]]
+         ;:keys  [s3-key node-id pages]
+         :where [
+
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
+
+                 [?origin :origin/target ?node]
+                 [?origin :origin/source ?source]
+                 [?origin :origin/pages ?pages]
+
+                 [?source :s3/key ?s3-key]
+
+                 ]}
+       db space-uuid s3-keys))
+
+
+
+
+
+(defn nodes-not-created-from-sources [db space-uuid s3-keys]
+  (d/q '{:find  [
+                 ;?s3-key
+                 ;?source
+                 ;?node
+                 ;(distinct ?pages)
+
+                 ;(pull ?source [*])
+                 ?node
+                 ]
+         :in    [$ ?space-uuid ?s3-keys]
+         ;:keys  [s3-key node-id pages]
+         :where [
+
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
+
+                 [?origin :origin/target ?node]
+                 [?origin :origin/source ?source]
+                 [?origin :origin/pages ?pages]
+
+                 [?source :s3/key ?s3-key]
+                 (not [(get ?s3-keys ?s3-key)])
+
+                 ]}
+       db space-uuid s3-keys))
+
+
+
+
+
+
+
 (defn ensure-tags-by-source [db space-id]
 
   (let [source-keys (space-source-keys db space-id)]
@@ -480,7 +543,7 @@
 ; (d/transact (client/get-conn) (ensure-tags-in-space (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"))
 
 
-(defn doit [db space-id]
+(defn link-nodes-to-tags-from-their-sources [db space-id]
   (let [links (d/q '{:find  [?node (min ?pages) ?tag]
                      :in    [$ ?space-id]
                      :where [
@@ -506,6 +569,39 @@
     )
   )
 
+
+(defn link-nodes-to-tags-from-their-sources2 [db space-id tag-ids]
+  (let [links (d/q '{:find  [?node (min ?pages) ?tag]
+                     :in    [$ ?space-id [?tag-id ...]]
+                     :where [
+                             [?space :node/uuid ?space-id]
+                             [?space :space/point ?node]
+
+                             [?node-origin :origin/target ?node]
+                             [?node-origin :origin/source ?node-source]
+                             [?node-origin :origin/pages ?pages]
+
+                             [?tag-origin :origin/source ?node-source]
+                             [?tag-origin :origin/target ?tag]
+                             [?tag :node/kind :tag]
+                             [?tag :node/uuid ?tag-id]
+
+                             ;[?tag ]
+                             ]}
+                   db space-id tag-ids)]
+    (map (fn [[node index tag]]
+           {:db/id     node
+            :node/edge [{:edge/mass (double index)
+                         :edge/node tag}]}
+           ) links)
+    )
+  )
+
 ; (doit (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f")
 
 ; (d/transact (client/get-conn) (doit (client/db) #uuid"a0701313-a516-4edc-a6e6-2ecbde4ba09f"))
+
+
+(defn parse-vtt [vtt]
+  (str/clean (clojure.string/replace vtt #"(?:WEBVTT\n\n)?\d+\n\d{2}:\d{2}:\d{2}\.\d+ +--> \d{2}:\d{2}:\d{2}\.\d+\n" ""))
+  )

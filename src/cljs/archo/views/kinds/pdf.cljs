@@ -277,6 +277,7 @@
                                     (dispatch [::mem-upload/render-page-success (aget e "pageNumber")])
                                     )
            }]
+         ;[:div (str nodes)]
          (when is-last-selected?
            [:button.btn.btn-success
             {:on-click (fn []

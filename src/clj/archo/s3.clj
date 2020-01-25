@@ -54,3 +54,21 @@
                                        :ContentType (:content-type f)}}
                             (aws/invoke s3))))]
     (map deref puts)))
+
+(defn mkdir [bucket prefix]
+  (->> {:op      :PutObject
+        :request {:Bucket bucket
+                  :Key    prefix}}
+       (aws/invoke s3)))
+
+(defn copy-object [src-bucket src-key dest-bucket dest-key]
+  (aws/invoke s3 {:op      :CopyObject
+                  :request {
+                            ; the source file including the bucket name
+                            :CopySource (url-encode (str src-bucket "/" src-key))
+                            ; the destination bucket
+                            :Bucket     dest-bucket
+                            ; the destination key
+                            :Key        dest-key
+                            }}))
+

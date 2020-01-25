@@ -2,7 +2,7 @@
   (:require [ring.util.http-response :as r]
             [archo.client :as client]
             [archo.queries.node :as node-queries]
-            [clojure.string :as str]
+
             [pdfboxing.split :as pdf]
             [clojure.java.io :as io]
             [cognitect.aws.client.api :as aws]
@@ -15,6 +15,7 @@
             [pdfboxing.text :as text]
             [archo.config :as config]
             [archo.s3 :as s3-fns]
+            [cuerdas.core :as str]
 
             )
   (:import org.apache.commons.io.FileUtils
@@ -212,6 +213,16 @@
   )
 
 
+(defn fs-ls-handler [req]
+  ;(println "PARAMS" (-> req :parameters :query))
+  (r/ok (s3-fns/ls "cms-sandbox.obrizum" (-> req :parameters :query :key)))
+  )
+
+(defn fs-mkdir-handler [req]
+  ;(println "PARAMS" (-> req :parameters :query))
+  (r/ok (s3-fns/mkdir "cms-sandbox.obrizum" (-> req :parameters :body :key)))
+  )
+
 
 
 
@@ -379,3 +390,51 @@
                         (fix-pdf "introduction_to_cyber_security__stay_safe_online.pdf" node-id pages)
 
                         ) doc-pages))
+
+
+(defn create-video-node [video-node-id bucket key & [space-id]]
+
+  (cond-> [
+           ; Create a new video node
+           {:db/id           "video-node"
+            :node/uuid       video-node-id
+            :media/extension ["mp4"],
+            :node/kind       :video
+            :text/title      {:lang/en (-> key (str/split #"/") last)}
+            :node/ext-id     "archo-video"}
+
+           ; And track its source
+           {:origin/target "video-node"
+            :origin/source {:s3/bucket     bucket
+                            :s3/key        key
+                            :s3/bucket+key [bucket key]}}]
+
+          ; and if we have a space-id then add the video node to the space
+          space-id (conj {:node/uuid   space-id
+                          :space/point ["video-node"]})))
+
+
+(defn create-video-handler [{{{source-key :s3/key
+                               space-id   :space/uuid} :body} :parameters}]
+  (let [video-id (java.util.UUID/randomUUID)
+        tx-data  (create-video-node video-id config/upload-bucket source-key space-id)]
+    (do
+      (s3-fns/copy-object config/upload-bucket source-key config/video-pipeline-in-bucket (str video-id "." (-> source-key (str/split #"\.") last)))
+      (d/transact (client/get-conn) {:tx-data tx-data}))
+
+    (r/ok {:node/uuid video-id})
+    ))
+
+
+(comment (create-video-handler {:parameters {:body {:s3/key     "edw/videos/videoplayback.mp4"
+                                                    :space/uuid #uuid"9482933f-5a3a-4f5d-98f1-f0a7e0696d21"}}}))
+
+
+;(d/transact (client/get-conn) {:tx-data (map (fn [id]
+;                                               [:db/retractEntity id]
+;                                               ) (map first (d/q '{:find  [?n]
+;                                                                   :in    [$]
+;                                                                   :where [
+;                                                                           [?n :node/ext-id "archo-video"]
+;                                                                           ]}
+;                                                                 (client/db))))})

@@ -51,7 +51,12 @@
      ["" {:name :route/org-home}]
      ["/space/{space/uuid}" {:parameters {:path {:space/uuid uuid?}}}
       ["" {:name :route/space}]
-      ["/upload" {:name :route/upload}]
+      ["/upload" {:name        :route/upload
+                  :parameters  {:query {(ds/opt :Prefix) string?}}
+                  :controllers [{:identity identity
+                                 :start    (fn [m]
+                                             (when-let [Prefix (-> m :parameters :query :Prefix)]
+                                               (dispatch [::mem-assets/ls Prefix])))}]}]
 
       ["/split" {:name :route/split}]]]]
    ["/files" {:name :route/files}]])

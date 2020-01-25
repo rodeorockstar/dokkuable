@@ -62,6 +62,13 @@
                                           :node/kind      keyword?
                                           }}
                       :handler    node-handlers/make-files-handler}}]
+
+
+    ["/video" {:post {:parameters {:body {:s3/key         string?
+                                          :space/uuid     uuid?}}
+                      :handler    node-handlers/create-video-handler}}]
+
+
     ["/orgs"
      ["" {:get {:handler (fn [r]
                            (resp/ok (queries/orgs (client/db))))}}]
@@ -82,6 +89,12 @@
               :post (fn [{{:keys [x y]} :body-params}]
                       {:status 200
                        :body   {:total (+ x y)}})}]]
+   ["/fs"
+    ["/ls" {:get {:parameters {:query {:key string?}}
+                  :handler node-handlers/fs-ls-handler}}]
+    ["/mkdir" {:post {:parameters {:body {:key string?}}}
+               :handler node-handlers/fs-mkdir-handler}]
+    ]
    ["/api"
     ["/admin/orgs" {:get {:handler (fn [r] (resp/ok (queries/orgs (client/db))))}}]
     ["/admin/spaces" {:get {:handler (fn [r] (resp/ok (queries/all-spaces2 (client/db))))}}]]
