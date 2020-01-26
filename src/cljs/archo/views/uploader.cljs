@@ -106,6 +106,9 @@
         [:tbody
          [:<> (doall (map (fn [{:keys [Prefix Display]}]
                             ^{:key Prefix} [:tr
+                                            {:class (when (= Prefix selected-key) "table-primary")
+                                             :on-click (fn []
+                                                         (dispatch [::mem-assets/set-selected-key Prefix]))}
                                             [:td [:i.fas.fa-folder]]
                                             [:td.text-monospace
                                              [:a {:href (url-for :route/upload @a {:Prefix Prefix})}
