@@ -21,6 +21,10 @@
       (update m k str/unquote)
       m)))
 
+(defn remove-self [k results]
+  (filter (comp (partial not= k) :Key) results)
+  )
+
 (defn ls
   "List the top level contents of a folder within an S3 bucket"
   [bucket prefix]
@@ -33,15 +37,20 @@
 
 
                       #_(str/rtrim prefix "/"))]
-    (cond->
-      (->> {:op      :ListObjectsV2
-            :request {:Bucket    bucket
-                      :Prefix    safe-prefix
-                      ;:Prefix    prefix
-                      :Delimiter "/"}}
-           (aws/invoke s3)
-           (postwalk (unquote-kv :ETag)))
-      (not-empty safe-prefix) (update :Contents rest))))
+
+    (println "LSFORIS" safe-prefix )
+    (update (cond->
+       (->> {:op      :ListObjectsV2
+             :request {:Bucket    bucket
+                       :Prefix    safe-prefix
+                       ;:Prefix    prefix
+                       :Delimiter "/"}}
+            (aws/invoke s3)
+            ;(remove-self safe-prefix)
+            (postwalk (unquote-kv :ETag))
+            )
+       ;(not-empty safe-prefix) (update :Contents rest)
+       ) :Contents (partial remove-self safe-prefix))))
 
 
 (defn upload [prefix file]
@@ -79,3 +88,46 @@
         :request {:Bucket bucket
                   :Key    prefix}}
        (aws/invoke s3)))
+
+;
+;(defn remove-nested [bucket prefix]
+;  (let [all-keys (->> {:op      :ListObjectsV2
+;                       :request {:Bucket    bucket
+;                                 :Prefix    prefix
+;                                 ;:Prefix    prefix
+;                                 :Delimiter ""}}
+;                      (aws/invoke s3)
+;                      :Contents
+;                      (map :Key)
+;                      (cons prefix)
+;                      distinct
+;                      )]
+;    all-keys)
+;  )
+;
+;(defn remove-nested [bucket prefix]
+;  (let [all-keys (->> {:op      :ListObjectsV2
+;                       :request {:Bucket    bucket
+;                                 :Prefix    prefix
+;                                 ;:Prefix    prefix
+;                                 :Delimiter ""}}
+;                      (aws/invoke s3)
+;                      :Contents
+;                      (map :Key)
+;                      (cons prefix)
+;                      distinct
+;                      )]
+;    all-keys)
+;  )
+;
+;
+;(defn delete-object [bucket prefix]
+;  (aws/invoke s3 {:op      :DeleteObjects
+;                  :request {:Bucket "cms-sandbox.obrizum"
+;                            :Delete {:Objects (map (fn [k]
+;                                                     {:Key k}
+;                                                     ) (remove-nested bucket prefix))}}})
+;
+;
+;  )
+;

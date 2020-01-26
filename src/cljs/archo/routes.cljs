@@ -55,9 +55,11 @@
                   :parameters  {:query {(ds/opt :Prefix) string?}}
                   :controllers [{:identity identity
                                  :start    (fn [m]
+                                             (js/console.log "CONTR" m)
+                                             (js/console.log "RRR" (-> m :parameters :path :space/uuid))
                                              (dispatch [::mem-assets/set-selected-key])
                                              (when-let [Prefix (or (-> m :parameters :query :Prefix) "")]
-                                               (dispatch [::mem-assets/ls Prefix])))}]}]
+                                               (dispatch [::mem-assets/ls Prefix (-> m :parameters :path :space/uuid)])))}]}]
 
       ["/split" {:name :route/split}]]]]
    ["/files" {:name :route/files}]])

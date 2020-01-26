@@ -3,9 +3,9 @@
 $fa-font-path : 'https://cdn.obrizum.io/fonts';
 
 
-@import "../../node_modules/bootswatch/dist/yeti/_variables";
+// @import "../../node_modules/bootswatch/dist/yeti/_variables";
 @import "../../node_modules/bootstrap/scss/bootstrap";
-@import "../../node_modules/bootswatch/dist/yeti/_bootswatch";
+// @import "../../node_modules/bootswatch/dist/yeti/_bootswatch";
 
 
 
@@ -197,3 +197,10 @@ overflow: hidden;
         color: black;
     }
 }
+
+.dropzone {
+    width: 100%;
+    min-height: 300px;
+    border: 2px dashed grey;
+}
+

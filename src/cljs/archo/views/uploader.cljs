@@ -22,45 +22,74 @@
   (let [new-key      (r/atom nil)
         file-details (subscribe [::mem-uploader/file-details])
         files        (subscribe [::mem-uploader/files])
-        status       (subscribe [::mem-uploader/uploader-status])]
-    (fn [{:keys [Prefix]}]
-      [:div.popup
-       [:div.popup-background
-        [:div.popup-dialog.rounded.shadow
-         [:div.popup-body
-          [:div.container
-           [:div.form
-            [:h1 @status]
-
-            [:div.form
-             [:div.form-group
-              [:input {:type      "file"
-                       :multiple  true
-                       :on-change (fn [e]
-                                    (dispatch [::mem-uploader/add-file (oget e :target :files)]))}]]]
-
-            [:table.table
-             (into [:tbody]
-                   (map (fn [{:keys [name size]}]
-                          [:tr
-                           [:td name]
-                           [:td (h/filesize size)]]
-                          ) @file-details))]
+        status       (subscribe [::mem-uploader/uploader-status])
+        file-el      (r/atom nil)]
+    (r/create-class
+      {:component-will-unmount (fn []
+                                 (dispatch [::mem-uploader/add-file nil]))
+       :reagent-render         (fn [{:keys [Prefix]}]
+                                 (js/console.log "files" @files)
+                                 [:div.popup
+                                  [:div.popup-background
+                                   [:div.popup-dialog.rounded.shadow
+                                    [:div.popup-body
+                                     [:div.container
+                                      [:div.form
 
 
+                                       (if (not-empty @files)
+                                         [:table.table
+                                          [:thead
+                                           [:tr
+                                            [:th "File"]
+                                            [:th "Size"]]]
+                                          (into [:tbody]
+                                                (map (fn [{:keys [name size]}]
+                                                       [:tr
+                                                        [:td name]
+                                                        [:td (h/filesize size)]]
+                                                       ) @file-details))]
+                                         [:form.p-4.dropzone.border-primary.rounded.d-flex.align-items-center.justify-content-center
+                                          {:on-drop      (fn [e]
+                                                           (ocall e :preventDefault)
+                                                           (ocall e :stopPropagation)
+                                                           (js/console.log "DROPPING")
+                                                           (dispatch [::mem-uploader/add-file (oget e :dataTransfer :files)]))
+                                           :on-drag-over (fn [e]
+                                                           (ocall e :preventDefault)
+                                                           (ocall e :stopPropagation)
+                                                           (js/console.log "DRAGOVER"))
+                                           :on-click     (fn []
+                                                           (ocall @file-el :click))}
+                                          [:div.d-flex.flex-column.align-items-center
+                                           [:h4.display-4 [:i.fal.fa-arrow-to-bottom]]
+                                           [:div [:span.font-weight-bold "Choose files"] " or drag them here."]]
+                                          ])
+
+                                       [:div.form.d-none
+                                        [:div.form-group
+                                         [:input {:type      "file"
+                                                  :ref       (fn [e] (reset! file-el e))
+                                                  :multiple  true
+                                                  :on-change (fn [e]
+                                                               (dispatch [::mem-uploader/add-file (oget e :target :files)]))}]]]
 
 
 
 
-            [:button.btn
-             {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
-             "Cancel"]
-            [:button.btn.btn-primary.ml-2
-             {:on-click (fn [] (dispatch [::mem-uploader/upload-file @files Prefix]))}
-             (when (= :uploading @status) [:span.spinner-border.spinner-border-sm])
-             [:span.ml-2 (if (= :uploading @status)
-                           "Uploading"
-                           "Upload")]]]]]]]])))
+
+
+
+                                       [:div.mt-4
+                                        [:button.btn
+                                         {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
+                                         "Cancel"]
+                                        [:button.btn.btn-primary.ml-2
+                                         {:on-click (fn [] (dispatch [::mem-uploader/upload-file @files Prefix]))}
+                                         (when (= :uploading @status) [:span.spinner-border.spinner-border-sm])
+                                         [:span.ml-2 (if (= :uploading @status)
+                                                       "Uploading"
+                                                       "Upload")]]]]]]]]])})))
 
 (defn modal-new-folder []
   (let [new-key (r/atom nil)]
@@ -199,6 +228,7 @@
          [:tr
           [:th nil]
           [:th "Name"]
+          [:th "Nodes"]
           [:th "Size"]
           ]]
         [:tbody
@@ -211,9 +241,10 @@
                                             [:td
                                              [:a.text-decoration-none.text-reset {:href (url-for :route/upload @a {:Prefix Prefix})}
                                               Display]]
+                                            [:td]
                                             [:td]])
                           CommonPrefixes))]
-         [:<> (doall (map (fn [{:keys [Display Key LastModified ETag Size StorageClass] :as p}]
+         [:<> (doall (map (fn [{:keys [Display Key LastModified ETag Size StorageClass Count] :as p}]
                             ^{:key Key} [:tr
                                          {:class    (when (= Key selected-key) "table-primary text-white")
                                           :on-click (fn []
@@ -224,6 +255,7 @@
                                                    :white-space "pre-wrap"
                                                    :word-break  "break-all"}}
                                           Display]
+                                         [:td [:span.badge.badge-success Count]]
                                          [:td (h/filesize Size)]
                                          #_[:td [:button.btn.btn-outline-secondary
                                                  {:on-click (fn []

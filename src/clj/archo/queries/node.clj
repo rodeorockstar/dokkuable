@@ -336,11 +336,40 @@
   (d/q '{:find  [
                  ;?s3-key
                  ;?source
+                 ?node
+                 ;(distinct ?pages)
+
+                 ;(pull ?source [*])
+                 ;?s3-key
+                 ;(count ?node)
+                 ]
+         :in    [$ ?space-uuid [?s3-key ...]]
+         ;:keys  [s3-key node-id pages]
+         :where [
+
+                 [?space :node/uuid ?space-uuid]
+                 [?space :space/point ?node]
+
+                 [?origin :origin/target ?node]
+                 [?origin :origin/source ?source]
+                 [?origin :origin/pages ?pages]
+
+                 [?source :s3/key ?s3-key]
+
+                 ]}
+       db space-uuid s3-keys))
+
+(defn node-count-created-from-sources [db space-uuid s3-keys]
+  (println "aboutto" space-uuid s3-keys)
+  (d/q '{:find  [
+                 ;?s3-key
+                 ;?source
                  ;?node
                  ;(distinct ?pages)
 
                  ;(pull ?source [*])
-                 ?node
+                 ?s3-key
+                 (count ?node)
                  ]
          :in    [$ ?space-uuid [?s3-key ...]]
          ;:keys  [s3-key node-id pages]

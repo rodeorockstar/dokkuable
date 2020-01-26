@@ -8,6 +8,8 @@
     [archo.handlers.node :as node-handlers]
     [archo.queries.entities :as queries]
     [clojure.spec.alpha :as s]
+    [spec-tools.data-spec :as ds]
+
     [compojure.core :refer [GET defroutes]]
     [compojure.route :refer [resources]]
     [datomic.client.api :as d]
@@ -32,11 +34,11 @@
 (def routes
   [
    ["/assets" {:coercion reitit.coercion.spec/coercion}
-    ["/upload" {:post {:summary "upload a file"
-                       :parameters {:multipart {:file some? ;multipart/temp-file-part
+    ["/upload" {:post {:summary    "upload a file"
+                       :parameters {:multipart {:file   some? ;multipart/temp-file-part
                                                 :Prefix string?}}
                        ;:responses {200 {:body {:name string?, :size int?}}}
-                       :handler node-handlers/file-handler
+                       :handler    node-handlers/file-handler
                        ;:handler (fn [req]
                        ;           (r/ok {:success true}))
 
@@ -64,8 +66,8 @@
                       :handler    node-handlers/make-files-handler}}]
 
 
-    ["/video" {:post {:parameters {:body {:s3/key         string?
-                                          :space/uuid     uuid?}}
+    ["/video" {:post {:parameters {:body {:s3/key     string?
+                                          :space/uuid uuid?}}
                       :handler    node-handlers/create-video-handler}}]
 
 
@@ -90,12 +92,13 @@
                       {:status 200
                        :body   {:total (+ x y)}})}]]
    ["/fs"
-    ["/ls" {:get {:parameters {:query {:key string?}}
-                  :handler node-handlers/fs-ls-handler}}]
-    ["/mkdir" {:post {:parameters {:body {:key string?}}}
+    ["/ls" {:get {:parameters {:query {:key     string?
+                                       (ds/opt :space) uuid?}}
+                  :handler    node-handlers/fs-ls-handler}}]
+    ["/mkdir" {:post    {:parameters {:body {:key string?}}}
                :handler node-handlers/fs-mkdir-handler}]
-    ["/rm" {:post {:parameters {:body {:key string?}}}
-               :handler node-handlers/fs-rm-object}]
+    ["/rm" {:post    {:parameters {:body {:key string?}}}
+            :handler node-handlers/fs-rm-object}]
     ]
    ["/api"
     ["/admin/orgs" {:get {:handler (fn [r] (resp/ok (queries/orgs (client/db))))}}]

@@ -10,7 +10,9 @@
 
 
 (defn add-file [{db :db} [files]]
-  {:db (assoc-in db [:uploader :files] (array-seq files))})
+  {:db (if files
+         (assoc-in db [:uploader :files] (array-seq files))
+         (dissoc db :uploader))})
 
 (reg-event-fx ::add-file trim-v add-file)
 

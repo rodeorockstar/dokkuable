@@ -148,12 +148,13 @@
 
 (reg-event-fx ::ls
               trim-v
-              (fn [{db :db} [k]]
+              (fn [{db :db} [k space-uuid]]
                 {:db      (assoc-in db [:fs :view] k)
                  ::fx/api {
                            :uri        "/fs/ls"
                            :method     :get
-                           :params     {:key k}
+                           :params     (cond-> {:key k}
+                                               space-uuid (assoc :space space-uuid))
                            :on-success [::store-ls]}}))
 
 (reg-event-fx ::mkdir
@@ -244,8 +245,8 @@
          (fn [view]
            (let
 
-             [parts  (str/split view #"/")
-              tf     (fn [n] (take n parts))]
+             [parts (str/split view #"/")
+              tf    (fn [n] (take n parts))]
 
              {:breadcrumb (conj (map (fn [i]
                                        (cond->
@@ -253,7 +254,7 @@
                                           :Prefix  (str/join "" (interleave (tf i) (repeat "/")))}
                                          (= i (count parts)) (assoc :Position :last)
                                          )) (range 1 (inc (count parts))))
-                                {:Display "Home"
-                                 :Prefix ""
+                                {:Display  "Home"
+                                 :Prefix   ""
                                  :Position :first})
-              :back (str/join "" (interleave (butlast (str/split view #"/")) (repeat "/")))})))
+              :back       (str/join "" (interleave (butlast (str/split view #"/")) (repeat "/")))})))

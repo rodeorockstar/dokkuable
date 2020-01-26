@@ -216,7 +216,18 @@
 
 (defn fs-ls-handler [req]
   ;(println "PARAMS" (-> req :parameters :query))
-  (r/ok (s3-fns/ls "cms-sandbox.obrizum" (-> req :parameters :query :key)))
+  (let [ls-results (s3-fns/ls "cms-sandbox.obrizum" (-> req :parameters :query :key))
+        s3-keys (map :Key (-> ls-results :Contents))
+        metadata   (if-let [space-id (-> req :parameters :query :space)]
+                     (into {} (node-queries/node-count-created-from-sources (client/db) space-id s3-keys))
+                     {})]
+    (r/ok (update ls-results :Contents (fn [contents] (map (fn [{Key :Key :as file}]
+                                                             (if-let [count (get metadata Key)]
+                                                               (assoc file :Count count)
+                                                               file)
+                                                        ) contents))))
+    ;(r/ok true)
+    )
   )
 
 (defn fs-mkdir-handler [req]
