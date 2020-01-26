@@ -1,11 +1,13 @@
 (ns archo.mem.uploader
-  (:require [re-frame.core :refer [reg-sub reg-event-db trim-v reg-event-fx]]
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require [re-frame.core :refer [reg-sub reg-event-db trim-v reg-event-fx dispatch reg-fx]]
             [clojure.set :as set]
             [archo.fx :as fx]
             [oops.core :refer [oget oset!]]
             [cemerick.url :refer (url url-encode)]
             [cljs.core.async :as async]
             [archo.mem.assets :as mem-assets]
+            [cljs.core.async :refer [<!]]
             [cljs-bean.core :refer [bean ->clj]]))
 
 
@@ -19,6 +21,8 @@
 (reg-sub ::files (fn [db] (map ->clj (get-in db [:uploader :files]))))
 (reg-sub ::file-details (fn [db] (map bean (get-in db [:uploader :files]))))
 (reg-sub ::progress-chan (fn [db] (get-in db [:uploader :progress-chan])))
+
+(def p-chan (async/chan))
 
 (defn upload-file [{db :db} [files prefix]]
 
@@ -37,7 +41,28 @@
                ;:params     {:node/uuid node-uuid
                ;             :lang/en   lang-en}
                :on-success       [::upload-file-success prefix]
-               }}))
+               }
+     ::report-upload progress-chan}))
+
+(defn report-upload-progress [db [progress]]
+  (assoc-in db [:uploader :progress] progress))
+
+(reg-sub ::upload-progress (fn [db]
+                             (let [{:keys [loaded total] :as p} (get-in db [:uploader :progress])]
+                               (when (and loaded total)
+                                 (assoc p :% (* 100 (/ loaded total)))))))
+
+(reg-event-db ::report-upload-progress trim-v report-upload-progress)
+
+
+(reg-fx ::report-upload (fn [pc]
+                          ;(js/console.log "THE END" pc)
+                          (go-loop []
+                                   (let [ppp (<! pc)]
+                                     ;(js/console.log "reporting" ppp)
+                                     (dispatch [::report-upload-progress ppp])
+                                     (recur)))))
+
 
 
 

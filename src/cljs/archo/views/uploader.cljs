@@ -19,16 +19,19 @@
     (reset! atom (oget evt :target :value))))
 
 (defn modal-upload []
-  (let [new-key      (r/atom nil)
-        file-details (subscribe [::mem-uploader/file-details])
-        files        (subscribe [::mem-uploader/files])
-        status       (subscribe [::mem-uploader/uploader-status])
-        file-el      (r/atom nil)]
+  (let [new-key         (r/atom nil)
+        file-details    (subscribe [::mem-uploader/file-details])
+        files           (subscribe [::mem-uploader/files])
+        status          (subscribe [::mem-uploader/uploader-status])
+        file-el         (r/atom nil)
+        upload-progress (subscribe [::mem-uploader/upload-progress])
+        ]
     (r/create-class
       {:component-will-unmount (fn []
                                  (dispatch [::mem-uploader/add-file nil]))
        :reagent-render         (fn [{:keys [Prefix]}]
                                  (js/console.log "files" @files)
+                                 (js/console.log "heyo" @upload-progress)
                                  [:div.popup
                                   [:div.popup-background
                                    [:div.popup-dialog.rounded.shadow
@@ -81,11 +84,19 @@
 
 
                                        [:div.mt-4
+                                        (when-let [% (:% @upload-progress)]
+                                          (let [finished? (= % 100)]
+                                            [:div.progress.my-2
+                                             [:div.progress-bar.bg-warning
+                                              {:class (if finished? "progress-success" "progress-info")
+                                               :style {:width (str % "%")}}]]))
                                         [:button.btn
                                          {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
                                          "Cancel"]
                                         [:button.btn.btn-primary.ml-2
-                                         {:on-click (fn [] (dispatch [::mem-uploader/upload-file @files Prefix]))}
+                                         {:class    (when (empty? @files) "disabled")
+                                          :disabled (empty? @files)
+                                          :on-click (fn [] (dispatch [::mem-uploader/upload-file @files Prefix]))}
                                          (when (= :uploading @status) [:span.spinner-border.spinner-border-sm])
                                          [:span.ml-2 (if (= :uploading @status)
                                                        "Uploading"
@@ -298,9 +309,11 @@
         fs                  (subscribe [::mem-assets/current-files])
         nav                 (subscribe [::mem-assets/nav])
         selected-key        (subscribe [::mem-assets/selected-key])
-        showing-modal       (subscribe [::mem-assets/showing-modal])]
+        showing-modal       (subscribe [::mem-assets/showing-modal])
+        ]
     (fn []
       ;(js/console.log "NAV" @nav)
+      ;(js/console.log "PO" @upload-progress)
       [:div.border.shadow.p-4 ;.p-4.border.shadow.bg-light
 
        ;(js/console.log "P" @progress-chan @staged-files)

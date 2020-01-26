@@ -37,13 +37,13 @@
               ))))))
 
 
-(def pchan (async/chan))
-;
+;(def pchan (async/chan))
+;;
 ;(go-loop []
 ;         (let [ppp (<! pchan)]
 ;           (js/console.log "pchan" ppp (gensym))
 ;           (recur)))
-;
+
 ;(js/setInterval (fn [s]
 ;                  (go (println "S" (<! pchan)))) 1000)
 
@@ -73,6 +73,7 @@
                    :put http/put
                    http/get)
         track-id (or track-id (random-uuid))]
+    (js/console.log "PROGRESS CHAN" progress)
     ;(debugf "http ⬆ ┃ %s %s %s" method uri params)
     ;(dispatch [:lens.http/track track-id uri])
     (go
@@ -84,7 +85,7 @@
                                                         (and params (= method :get)) (assoc :query-params params)
                                                         multipart-params (assoc :multipart-params multipart-params)
                                                         true (assoc :with-credentials? false)
-                                                        true (assoc :progress pchan)))]
+                                                        progress (assoc :progress progress)))]
 
         ;(when progress (watchit progress))
 
@@ -102,7 +103,11 @@
                 (js/setTimeout #(api (merge req {:is-retry? true
                                                  :track-id  track-id}))
                                1000)
-                (when on-error (dispatch (conj on-error body)))))))))))
+                (when on-error (dispatch (conj on-error body)))))
+
+
+
+            ))))))
 
 (defn media [{:keys [uri
                      on-success
