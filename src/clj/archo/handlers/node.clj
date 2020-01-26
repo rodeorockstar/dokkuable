@@ -29,13 +29,14 @@
 
 (def s3 (aws/client {:api :s3}))
 
-(defn file-handler [{{{:keys [file org]} :multipart} :parameters}]
+(defn file-handler [{{{:keys [file Prefix]} :multipart} :parameters}]
   (clojure.pprint/pprint file)
+  (println "TYPEIS" (type file))
   ;(r/ok {:test true})
-  (r/ok {:response (s3-fns/upload org file)})
-  (let [finished (s3-fns/upload org file)]
-    (println "FINISHED" finished)
-    (r/ok {:response false})
+  ;(r/ok {:response (s3-fns/upload Prefix file)})
+  (let [finished (doall (s3-fns/upload Prefix file))]
+
+    (r/ok {:response Prefix})
     )
   )
 

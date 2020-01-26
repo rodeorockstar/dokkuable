@@ -77,7 +77,7 @@
 (reg-event-db ::get-some-data-success
               trim-v
               (fn [db [extra-value response]]
-                (js/console.log "response: " extra-value response)
+                ;(js/console.log "response: " extra-value response)
                 db))
 
 
@@ -126,7 +126,7 @@
 (reg-event-fx ::fetch-available-files
               trim-v
               (fn [db [short-name]]
-                (js/console.log "SHORT NAME" short-name)
+                ;(js/console.log "SHORT NAME" short-name)
                 {::fx/api {
                            :uri        (str "/assets/available-files/" short-name)
                            :method     :get
@@ -185,7 +185,9 @@
 (reg-event-db ::set-selected-key
               trim-v
               (fn [db [k]]
-                (assoc-in db [:fs :selected-key] k)))
+                (if k
+                  (assoc-in db [:fs :selected-key] k)
+                  (update db :fs dissoc :selected-key))))
 
 (reg-sub ::selected-key
          (fn [db]
@@ -231,12 +233,27 @@
          :<- [::fs-files]
          :<- [::fs-view]
          (fn [[files view]]
-           (js/console.log "GOTFILES" (get files view))
            (-> (get files view)
                (update :Contents display-name)
                (update :CommonPrefixes display-name2))))
 
+
+
 (reg-sub ::nav
          :<- [::fs-view]
          (fn [view]
-           {:back (str/join "" (interleave (butlast (str/split view #"/")) (repeat "/")))}))
+           (let
+
+             [parts  (str/split view #"/")
+              tf     (fn [n] (take n parts))]
+
+             {:breadcrumb (conj (map (fn [i]
+                                       (cond->
+                                         {:Display (last (tf i))
+                                          :Prefix  (str/join "" (interleave (tf i) (repeat "/")))}
+                                         (= i (count parts)) (assoc :Position :last)
+                                         )) (range 1 (inc (count parts))))
+                                {:Display "Home"
+                                 :Prefix ""
+                                 :Position :first})
+              :back (str/join "" (interleave (butlast (str/split view #"/")) (repeat "/")))})))

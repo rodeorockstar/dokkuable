@@ -8,6 +8,7 @@
             [cljs.core.async :as async]
             [archo.mem.assets :as mem-assets]
             [cljs-http.client :as http]
+            [cuerdas.core :as str]
             [archo.mem.view :as mem-view]
             [cljs.core.async :refer [<!]]
             [archo.routes :refer [url-for]]
@@ -16,6 +17,50 @@
 (defn reset-input! [atom]
   (fn [evt]
     (reset! atom (oget evt :target :value))))
+
+(defn modal-upload []
+  (let [new-key      (r/atom nil)
+        file-details (subscribe [::mem-uploader/file-details])
+        files        (subscribe [::mem-uploader/files])
+        status       (subscribe [::mem-uploader/uploader-status])]
+    (fn [{:keys [Prefix]}]
+      [:div.popup
+       [:div.popup-background
+        [:div.popup-dialog.rounded.shadow
+         [:div.popup-body
+          [:div.container
+           [:div.form
+            [:h1 @status]
+
+            [:div.form
+             [:div.form-group
+              [:input {:type      "file"
+                       :multiple  true
+                       :on-change (fn [e]
+                                    (dispatch [::mem-uploader/add-file (oget e :target :files)]))}]]]
+
+            [:table.table
+             (into [:tbody]
+                   (map (fn [{:keys [name size]}]
+                          [:tr
+                           [:td name]
+                           [:td (h/filesize size)]]
+                          ) @file-details))]
+
+
+
+
+
+
+            [:button.btn
+             {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
+             "Cancel"]
+            [:button.btn.btn-primary.ml-2
+             {:on-click (fn [] (dispatch [::mem-uploader/upload-file @files Prefix]))}
+             (when (= :uploading @status) [:span.spinner-border.spinner-border-sm])
+             [:span.ml-2 (if (= :uploading @status)
+                           "Uploading"
+                           "Upload")]]]]]]]])))
 
 (defn modal-new-folder []
   (let [new-key (r/atom nil)]
@@ -38,6 +83,9 @@
              {:on-click (fn [] (dispatch [::mem-assets/mkdir Prefix @new-key]))}
              "Save"]]]]]]])))
 
+(defn key->friendly [s]
+  (last (str/split s #"/")))
+
 (defn modal-delete []
   (let [new-key (r/atom nil)]
     (fn [{:keys [Prefix]} selected-key]
@@ -47,8 +95,8 @@
          [:div.popup-body
           [:div.container
            [:div.alert.alert-danger
-            [:h4 "Are you sure you want to delete this file?"]
-            [:code (str selected-key)]]
+            [:h4 "Are you sure you want to delete this file?"]]
+           [:h4 (key->friendly selected-key)]
            [:button.btn
             {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
             "Cancel"]
@@ -56,46 +104,96 @@
             {:on-click (fn [] (dispatch [::mem-assets/rm Prefix selected-key]))}
             "Delete"]
            #_[:div.form
-            [:div.form-group
-             [:label "Delete" (str selected-key)]
-             [:input.form-control {:type      "text"
-                                   :value     @new-key
-                                   :on-change (reset-input! new-key)}]]
-            [:button.btn
-             {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
-             "Cancel"]
-            [:button.btn.btn-primary.ml-2
-             {:on-click (fn [] (dispatch [::mem-assets/mkdir Prefix @new-key]))}
-             "Save"]]]]]]])))
+              [:div.form-group
+               [:label "Delete" (str selected-key)]
+               [:input.form-control {:type      "text"
+                                     :value     @new-key
+                                     :on-change (reset-input! new-key)}]]
+              [:button.btn
+               {:on-click (fn [e] (dispatch [::mem-assets/close-modal]))}
+               "Cancel"]
+              [:button.btn.btn-primary.ml-2
+               {:on-click (fn [] (dispatch [::mem-assets/mkdir Prefix @new-key]))}
+               "Save"]]]]]]])))
+
+
+(defn breadcrumb-list []
+  (fn [steps]
+    (into [:div.d-flex.display-4]
+          (interpose
+            [:div.mx-2 "/"]
+            (map (fn [{:keys [Display Prefix Position]}]
+                   [:div (case Position
+                           :first [:i.fas.fa-home-alt]
+                           [:div Display])]
+                   ) steps)
+            ))
+    ))
+
+(def button-kind "btn-white")
 
 (defn content-table []
   (let [r  (subscribe [::mem-view/active-space])
         a  (subscribe [::mem-view/active])
         ar (subscribe [::mem-view/active-route])]
     (fn [{{:keys [Contents CommonPrefixes Prefix] :as x} :files
-          {:keys [back]}                                 :nav
+          {:keys [back breadcrumb]}                      :nav
           selected-key                                   :selected-key}]
+
+
       [:div
+       ;[breadcrumb-list breadcrumb]
+
+       [:h4.display-5.text-truncate (str Prefix)]
+
+       [:div.d-flex
+
+        ; left
+        [:div.flex-grow-1
+
+         [:div.btn-group.mr-2
+          [:a.btn.btn-lg
+           {:class button-kind
+            :href  (url-for :route/upload @a {:Prefix back})}
+           [:i.fal.fa-arrow-alt-left]]]
 
 
-       [:h4.display-5.text-truncate.text-monospace (str Prefix)]
-       [:div.btn-group
-        [:a.btn.btn-lg
-         {:href (url-for :route/upload @a {:Prefix back})}
-         [:i.fal.fa-arrow-alt-left]]
-        [:button.btn.btn-lg
-         {:on-click (fn [] (dispatch [::mem-assets/show-modal :new-folder]))}
-         [:i.fal.fa-folder-plus]]
-        [:button.btn.btn-lg
-         {:disabled (not selected-key)
-          :class (when-not selected-key "disabled" )
-          :on-click (fn [] (dispatch [::mem-assets/show-modal :delete]))
-          ;:on-click (fn [] (dispatch [::mem-assets/rm Prefix selected-key]))
-          }
-         [:i.fal.fa-trash]]
+         [:div.btn-group.mr-2
 
+          [:button.btn.btn-lg
+           {:class    button-kind
+            :on-click (fn [] (dispatch [::mem-assets/show-modal :new-folder]))}
+           [:i.fal.fa-folder-plus]]
+          [:button.btn.btn-lg
+           {
+            ;:disabled (not selected-key)
+            ;:class (when-not selected-key "disabled" )
+            :class    button-kind
+            :on-click (fn [] (dispatch [::mem-assets/show-modal :upload]))}
+           [:i.fal.fa-upload]]
+
+          ]
+
+         ]
+
+        ; right
+
+        [:div.flex-grow-0
+
+         [:button.btn.btn-lg
+          {:disabled (not selected-key)
+           :class    button-kind
+           ;:class (when-not selected-key "disabled" )
+           :on-click (fn [] (dispatch [::mem-assets/show-modal :delete]))}
+          [:i.fal.fa-trash]]
+
+         ]
         ]
-       [:table.table
+
+
+
+
+       [:table.table.table-hover
         [:thead
 
          [:tr
@@ -106,22 +204,22 @@
         [:tbody
          [:<> (doall (map (fn [{:keys [Prefix Display]}]
                             ^{:key Prefix} [:tr
-                                            {:class (when (= Prefix selected-key) "table-primary")
+                                            {:class    (when (= Prefix selected-key) "table-primary text-white")
                                              :on-click (fn []
                                                          (dispatch [::mem-assets/set-selected-key Prefix]))}
-                                            [:td [:i.fas.fa-folder]]
-                                            [:td.text-monospace
-                                             [:a {:href (url-for :route/upload @a {:Prefix Prefix})}
+                                            [:td [:i.fal.fa-folder]]
+                                            [:td
+                                             [:a.text-decoration-none.text-reset {:href (url-for :route/upload @a {:Prefix Prefix})}
                                               Display]]
                                             [:td]])
                           CommonPrefixes))]
          [:<> (doall (map (fn [{:keys [Display Key LastModified ETag Size StorageClass] :as p}]
-                            ^{:key Key} [:tr.text-monospace
-                                         {:class (when (= Key selected-key) "table-primary")
+                            ^{:key Key} [:tr
+                                         {:class    (when (= Key selected-key) "table-primary text-white")
                                           :on-click (fn []
                                                       (dispatch [::mem-assets/set-selected-key Key]))}
-                                         [:td [:i.fad.fa-file]]
-                                         [:td.text-monospace
+                                         [:td [:i.fal.fa-file]]
+                                         [:td
                                           {:style {:word-wrap   "break-word"
                                                    :white-space "pre-wrap"
                                                    :word-break  "break-all"}}
@@ -170,8 +268,8 @@
         selected-key        (subscribe [::mem-assets/selected-key])
         showing-modal       (subscribe [::mem-assets/showing-modal])]
     (fn []
-      (js/console.log "SHOWING" @showing-modal)
-      [:div.p-4.border.shadow.bg-light
+      ;(js/console.log "NAV" @nav)
+      [:div.border.shadow.p-4 ;.p-4.border.shadow.bg-light
 
        ;(js/console.log "P" @progress-chan @staged-files)
        ;(js/console.log "FS" @fs)
@@ -179,12 +277,7 @@
        [file-table {:files @fs :nav @nav :selected-key @selected-key}]
 
 
-       #_[:div.form
-          [:div.form-group
-           [:input {:type      "file"
-                    :multiple  true
-                    :on-change (fn [e]
-                                 (dispatch [::mem-uploader/add-file (oget e :target :files)]))}]]]
+
 
        #_[staged-files-list {:files @staged-files :details @staged-file-details}]
 
@@ -246,5 +339,7 @@
        (when-let [modal-kw @showing-modal]
          (case modal-kw
            :new-folder [modal-new-folder @fs]
-           :delete [modal-delete @fs @selected-key]))
+           :delete [modal-delete @fs @selected-key]
+           :upload [modal-upload @fs @selected-key]
+           ))
        ])))

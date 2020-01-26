@@ -46,10 +46,11 @@
 
 (defn upload [prefix file]
   (println "uploading" prefix file)
-  (let [puts (for [f file]
+  (let [file (if (sequential? file) file [file])
+        puts (for [f file]
                (future (->> {:op      :PutObject
                              :request {:Bucket      "cms-sandbox.obrizum"
-                                       :Key         (str prefix "/" (:filename f))
+                                       :Key         (str prefix (:filename f))
                                        :Body        (io/input-stream (:tempfile f))
                                        :ContentType (:content-type f)}}
                             (aws/invoke s3))))]

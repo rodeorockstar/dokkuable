@@ -34,7 +34,7 @@
    ["/assets" {:coercion reitit.coercion.spec/coercion}
     ["/upload" {:post {:summary "upload a file"
                        :parameters {:multipart {:file some? ;multipart/temp-file-part
-                                                :org string?}}
+                                                :Prefix string?}}
                        ;:responses {200 {:body {:name string?, :size int?}}}
                        :handler node-handlers/file-handler
                        ;:handler (fn [req]

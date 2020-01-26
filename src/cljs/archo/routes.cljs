@@ -55,6 +55,7 @@
                   :parameters  {:query {(ds/opt :Prefix) string?}}
                   :controllers [{:identity identity
                                  :start    (fn [m]
+                                             (dispatch [::mem-assets/set-selected-key])
                                              (when-let [Prefix (or (-> m :parameters :query :Prefix) "")]
                                                (dispatch [::mem-assets/ls Prefix])))}]}]
 
@@ -72,7 +73,7 @@
   (rfe/start!
     router
     (fn [new-match]
-      (js/console.log "MATCH" new-match)
+      ;(js/console.log "MATCH" new-match)
       (swap! match (fn [old-match]
                      (if new-match
                        (assoc new-match :controllers (rfc/apply-controllers (:controllers old-match) new-match)))))

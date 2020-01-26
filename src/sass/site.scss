@@ -1,6 +1,11 @@
-@import "../../node_modules/bootstrap/scss/bootstrap";
+// @import "../../node_modules/bootstrap/scss/bootstrap";
 
 $fa-font-path : 'https://cdn.obrizum.io/fonts';
+
+
+@import "../../node_modules/bootswatch/dist/yeti/_variables";
+@import "../../node_modules/bootstrap/scss/bootstrap";
+@import "../../node_modules/bootswatch/dist/yeti/_bootswatch";
 
 
 
@@ -11,7 +16,7 @@ $fa-font-path : 'https://cdn.obrizum.io/fonts';
 
 // Full bootstrap scss bundle.
 // Should be changed to partial chosen bootstrap modules when app is ready for production release.
-@import "../../node_modules/bootstrap/scss/bootstrap";
+// @import "../../node_modules/bootstrap/scss/bootstrap";
 @import "../../node_modules/@fortawesome/fontawesome-pro/scss/fontawesome";
 @import "../../node_modules/@fortawesome/fontawesome-pro/scss/solid";
 @import "../../node_modules/@fortawesome/fontawesome-pro/scss/regular";
@@ -31,12 +36,12 @@ body {
 //     background-color: red;
 // background: linear-gradient(#0b7285, #0ca678);
 
-    background-color: $obr-color !important;
+    // background-color: $obr-color !important;
 
 }
 
 .bg-obr {
-    background-color: $obr-color !important;
+    // background-color: $obr-color !important;
 }
 
 
